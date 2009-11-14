@@ -175,11 +175,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\configfile.cpp"
+				RelativePath=".\configfile.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\configitem_base.cpp"
+				RelativePath=".\configitem_base.cpp"
 				>
 			</File>
 			<File
@@ -213,27 +213,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\configfile.h"
+				RelativePath=".\configfile.h"
 				>
 			</File>
 			<File
-				RelativePath="..\configitem.h"
+				RelativePath=".\configitem.h"
 				>
 			</File>
 			<File
-				RelativePath="..\configitem_base.h"
-				>
-			</File>
-			<File
-				RelativePath="..\configmap.h"
-				>
-			</File>
-			<File
-				RelativePath="..\configsection.h"
-				>
-			</File>
-			<File
-				RelativePath="..\configvector.h"
+				RelativePath=".\configitem_base.h"
 				>
 			</File>
 			<File

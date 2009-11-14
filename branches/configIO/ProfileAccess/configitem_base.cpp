@@ -95,7 +95,7 @@ bool configitem_base::parse(const std::string& section,
 }
 
 /*
- * clear_value - remove this item from the configuration file
+ * clear_value - remove this item from the configuration file //通过加#符号注释掉该项
  */
 void configitem_base::clear_value()
 {
@@ -105,7 +105,7 @@ void configitem_base::clear_value()
 /*
  * clear_value - remove the named item from the section in the configuration file.
  */
-void configitem_base::clear_value(const std::string& name)
+void configitem_base::clear_value(const std::string& name) //注释当前节的name项
 {
 	comp_file->clear(comp_section, name);
 }

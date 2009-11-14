@@ -323,7 +323,7 @@ int configfile::parse_index(int index, const std::string& next)
 }
 
 /*
- * clear - comment out a parameter in the loaded config file
+ * clear - comment out a parameter in the loaded config file  //将传入的section的name项注释掉
  */
 void configfile::clear(const std::string& section, const std::string& name)
 {
@@ -434,7 +434,7 @@ bool configfile::match(const char* pattern, const char* data)
 		return true;
 	
 	// TODO: add regex matching.
-	// For now, just match wildcards
+	// For now, just match wildcards   针对通配符
 	if ('*' == pattern[0])
 		return true;
 	
