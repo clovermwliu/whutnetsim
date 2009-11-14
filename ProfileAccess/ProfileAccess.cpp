@@ -5,6 +5,7 @@
 
 #include "configfile.h"
 #include "configitem.h"
+#include "configitem_base.h"
 
 using namespace configlib;
 
@@ -12,9 +13,20 @@ using namespace configlib;
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
-	configfile f("c:\\1.ini.txt");
+	configfile f("1.ini.txt");
 
 	f.read();
+
+	configitem<int> item(f,"section4","key4","param_me",66);
+
+	if(item.parse("section4","key4")){
+		item.set(128);
+	}
+
+	f.write();
+
+
+
 
 	getchar();
 
