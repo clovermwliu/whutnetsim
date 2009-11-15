@@ -89,6 +89,10 @@ private:
 		iterator& operator=(const iterator& rhs);
 		iterator& operator++();
 		iterator& operator++(int) { return operator++(); }
+
+
+
+
 		operator std::vector<std::string>::iterator() { return index; }
 		
 	protected:
