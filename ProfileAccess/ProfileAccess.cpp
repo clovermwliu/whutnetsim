@@ -17,12 +17,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	f.read();
 
-	configitem<int> item(f,"section4","key4","param_me",66);
+	configitem<int> item(f,"section4","keyxxx","param_me",66);
 
-	if(item.parse("section4","key4")){
-		item.set(128);
-	}
+//	item++;
 
+	
 	f.write();
 
 

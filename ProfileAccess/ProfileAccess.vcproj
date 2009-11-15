@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FileConfig.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ProfileAccess.cpp"
 				>
 			</File>
@@ -222,6 +226,10 @@
 			</File>
 			<File
 				RelativePath=".\configitem_base.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FileConfig.h"
 				>
 			</File>
 			<File
