@@ -3,7 +3,8 @@
 #define FILECONFIG_H_
 
 #include <string>
-#include <vector>
+//#include <vector>
+#include <list>
 #include <fstream>
 #include <iostream>
 
@@ -13,7 +14,8 @@ namespace WhuTNetSimConfigClass{
 
 
 //Error Code
-#define ERROR_FILENOTEXSITING	 0x00000000
+#define ERROR_FILE_NOT_EXSITING	 0x00000000
+#define ERROR_FILE_WRITE_FAIL    0x00000002
 
 //Config file's marker
 #define CHAR_SECTION_BEGIN     '['
@@ -59,42 +61,45 @@ public:
 	CFileConfig(const string& strFilePath);
 	virtual ~CFileConfig(void);// CFileConfig有可能会被当作基类。当用一个基类的指针删除一个派生类的对象时，为保证派生类的析构函数被调用，需要将基类的析构函数设为虚函数
 
-	int ReadFile();
-	int ReadFile(int& Num_of_sections,int& Num_of_items);
+	int LoadFile();
+	int LoadFile(int& SectionNum,int& ConfigurationItemNum);
+	int UpdateFile();
 
 	const char* GetFileName() { return fileName.c_str(); }
 
 
-protected:
+public:
 
 	//定义了FileConfig里面的一个迭代器类型，类似其他标准C++中的容器的迭代器一样
 	class iterator  
 	{
 	public:
 		
-		iterator(vector<string>& vStrData); 
+		iterator(list<string>& vStrData); 
 
 		void begin();
 		bool end();
 
 
-		const std::string& get_section() { return section; } //section在parse()中被取出并设置好
-		const std::string get_name();// //返回某一个配置行=号左边的字符串
-		const std::string get_value();  //返回某一个配置行=号右边的字符串
-		std::vector<std::string>::iterator get_next() { return ++index; }
+		const string& GetCurSection() { return section; } 
+		const string GetCurKey();// //返回某一个配置行=号左边的字符串
+		const string GetCurValue();  //返回某一个配置行=号右边的字符串
+		void ReplaceCurValue(const string& value);
 
-		void insert(std::size_t pos, const std::string& str) { (*index).insert(pos, str); }
-		void replace_value(const std::string& value);
-
-
-
+       //重载一批操作符，以支持FileConfig::iterator
 		iterator& operator=(const iterator& rhs);
+		friend bool operator==(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs);
+		friend bool operator!=(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs);
+		
 		iterator& operator++();
+		iterator& operator--();//prefix operator
+		
 		iterator& operator++(int) { return operator++(); }
+		iterator& operator--(int) { return operator--(); }//postfix operator
+	
+		//operator list<string>::iterator() { return iter_cur_index; }
 
-		operator std::vector<std::string>::iterator() { return iter_cur_index; }
-
-	protected:
+	private:
 		int IsValidConfigurationLine( ); //看当前iter_cur_index是否指向一个Configuration Line
 	private:
 		string section ;    //与当前iter_cur_index指向的文本行对应的section内容。iter_cur_index只会指向具体的配置行，不会指向空行，注释行及节标记行
@@ -108,6 +113,8 @@ protected:
 protected:
 
 	string fileName;
+
+	int _SectionNum, _ItemNum;
     
 	list<string> fileData;
 
