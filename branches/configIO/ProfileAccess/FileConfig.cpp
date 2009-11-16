@@ -103,6 +103,107 @@ void CFileConfig::write()
 */
 
 
+
+//------------------------------------------------------------------------
+//以下是FileConfig中迭代器的实现
+//------------------------------------------------------------------------
+
+
+CFileConfig::iterator::iterator(vector<string>& vStrData)
+/*
+Constructor
+*/
+{
+	pStr = & vStrData;
+	iter_cur_index = pStr->begin();
+	while(IsValidConfigurationLine()){             
+		iter_cur_index++;
+	}
+}
+
+
+void CFileConfig::iterator:: begin() 
+/*
+描述：设置iter_cur_index指向第一个Configuration Line，并将其对应的section名读取到CFileConfig::iterator::section中
+
+*/
+{ 
+  iter_cur_index = pStr->begin(); 
+  section.erase();
+  if (IsValidConfigurationLine()!=CONFIGURATION_LINE)
+	  operator++();
+}
+
+
+
+bool void CFileConfig::iterator:: end() 
+/*
+描述：判断iter_cur_index是否指向文件尾
+
+*/
+{
+	return (pStr->end() == iter_cur_index);
+}
+
+
+int CFileConfig::iterator::IsValidConfigurationLine()
+/*
+
+描述：遍历pStr指向的容器，解析每一个string。
+      如遇到空字符串或以#和@开头的行则略过，自增iter_cur_index，使之指向pStr容器的下一行
+	  如遇到[ ]为开始（结尾）的，表示遇到一个新的section line,则将节名存放到CFileConfig::iterator::section中，并自增iter_cur_index，使之指向pStr容器的下一行
+
+返回：#define CONFIGURATION_LINE     0x00000001
+	  #define SECTION_LINE           0x00000010
+	  #define REMAK_LINE             0x00000100
+	  #define CANCEL_LINE            0x00001000
+	  #define FILE_END_LINE          0x00010000
+	  #define BLANK_LINE             0x00100000
+
+*/
+
+{
+	if (iter_cur_index==pStr->end()) //当前iter_cur_index已指向文件尾
+		return FILE_END_LINE; 
+
+	size_t start = (*iter_cur_index).find_first_not_of(CHAR_TAB);
+
+	if (string::npos == start){
+
+		return BLANK_LINE; // Blank line;
+	
+	}else if ((*iter_cur_index).at(start)==CHAR_REMARK_LINE ){
+
+		return REMAK_LINE;  // remark line;
+
+	}else if ((*iter_cur_index).at(start)==CHAR_REM ){
+
+		return CANCEL_LINE;	
+	
+	}else if (CHAR_SECTION_BEGIN == (*iter_cur_index).at(start)){
+
+		size_t end = (*iter_cur_index).find(']');
+		section = (*iter_cur_index).substr(start + 1, end - 1);
+		return SECTION_LINE; // Section line.
+
+	}else{
+
+		return CONFIGURATION_LINE; // Found a Valid Configuration Line
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 //end of FileConfig.cpp
 
 }
