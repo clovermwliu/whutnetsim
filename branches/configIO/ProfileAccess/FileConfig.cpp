@@ -8,7 +8,9 @@ namespace WhuTNetSimConfigClass{
 
 
 CFileConfig::CFileConfig(const string& strFilePath)//在初始化列表中对成员fileName赋值
-: fileName(strFilePath)
+: fileName(strFilePath),
+  _SectionNum(0),
+  _ItemNum(0)
 {
 	//nothing to do;
 }
@@ -19,7 +21,7 @@ CFileConfig::~CFileConfig(void)
 
 
 
-int  CFileConfig::ReadFile()
+int  CFileConfig::LoadFile()
 /*
 描述：打开并读取一个配置文件，文件路径存在于CFileConfig::fileName中
 返回：打开成功则返回1
@@ -31,16 +33,30 @@ int  CFileConfig::ReadFile()
 	ifstream infileStream(fileName.c_str());
 	if (infileStream){
 
+		_SectionNum=0;
+		_ItemNum=0;
+
 		while(getline(infileStream, line)){
 			
-			//data.push_back(line);
+			fileData.push_back(line);
+
+			size_t start = line.find_first_not_of(CHAR_TAB);
+
+			if (string::npos != start && line.at(start)!=CHAR_REMARK_LINE && line.at(start)!=CHAR_REM){
+
+				++_ItemNum;
+
+			}else if (line.at(start)==CHAR_SECTION_BEGIN){
+
+				++_SectionNum; 
+			}
 		}
 
 		infileStream.close();
 	
 	}else{
 
-		return ERROR_FILENOTEXSITING;
+		return ERROR_FILE_NOT_EXSITING;
 	}
 
 	// Now parse everything into the attatched objects.
@@ -50,58 +66,42 @@ int  CFileConfig::ReadFile()
 }
 
 
-int CFileConfig::ReadFile(int& Num_of_sections,int& Num_of_items)
+int CFileConfig::LoadFile(int& SectionNum,int& ConfigurationItemNum)
 /*
 描述：打开并读取一个配置文件，文件路径存在于CFileConfig::fileName中
-参数：[OUT]Num_of_sections:当前文件中的sections个数
-      [OUT]Num_of_items:当前文件中的配置项目个数
+参数：[OUT]SectionNum:当前文件中的sections个数
+      [OUT]ConfigurationItemNum:当前文件中的配置项目个数
 
 返回：打开成功则返回1
 否则返回错误码
 开发时间：2009/11/11
 */
 {
-	string line;
-	ifstream fileStream(fileName.c_str());
-	if (fileStream){
-
-		while(getline(fileStream, line)){
-			
-			//data.push_back(line);
-		}
-
-		fileStream.close();
-	}else{
-
-		return ERROR_FILENOTEXSITING;
-	}
-
-	// Now parse everything into the attatched objects.
-	//parse();
-
-	return 1;
+	int tmp=LoadFile();
+	SectionNum=_SectionNum;
+	ConfigurationItemNum=_ItemNum;
+	return tmp;
 
 }
 
 
 
-
-/*
-void CFileConfig::write()
+int CFileConfig::UpdateFile()
 {
 	std::ofstream fileStream(fileName.c_str(), std::ofstream::trunc);
 	if (fileStream) {
-		std::vector<std::string>::iterator it;
-		for (it = data.begin();it != data.end();it++)
+		list<string>::iterator iter;
+		for (iter = fileData.begin();iter != fileData.end();iter++)
 		{
-			fileStream << (*it) << std::endl;
+			fileStream << (*iter) << endl;
 		}
 
 		fileStream.close();
+		return 1;
+	}else{
+		return ERROR_FILE_WRITE_FAIL ;
 	}
 }
-*/
-
 
 
 //------------------------------------------------------------------------
@@ -109,7 +109,7 @@ void CFileConfig::write()
 //------------------------------------------------------------------------
 
 
-CFileConfig::iterator::iterator(vector<string>& vStrData)
+CFileConfig::iterator::iterator(list<string>& vStrData)
 /*
 Constructor
 */
@@ -136,7 +136,7 @@ void CFileConfig::iterator:: begin()
 
 
 
-bool void CFileConfig::iterator:: end() 
+bool CFileConfig::iterator:: end() 
 /*
 描述：判断iter_cur_index是否指向文件尾
 
@@ -145,6 +145,113 @@ bool void CFileConfig::iterator:: end()
 	return (pStr->end() == iter_cur_index);
 }
 
+
+const string CFileConfig::iterator::GetCurKey() 
+/*
+描述：返回iter_cur_index指向配置行=号左边的字符串
+*/ 
+{
+	size_t pos = (*iter_cur_index).find('=');
+	if (pos!=string::npos)
+		return (*iter_cur_index).substr(0, pos);
+	else
+		return (*iter_cur_index);
+}
+
+
+const std::string CFileConfig::iterator::GetCurValue()
+/*
+描述：返回iter_cur_index指向配置行=号右边的字符串
+*/
+{
+	size_t pos = (*iter_cur_index).find('=');
+	if (string::npos != pos)
+		return (*iter_cur_index).substr(pos + 1);
+	else
+		return "";
+}
+
+
+void CFileConfig::iterator::ReplaceCurValue(const string& value)
+/*
+描述：将value跟新到当前iter_cur_index指向的配置行
+*/
+{
+	size_t pos = iter_cur_index->find('=');
+	*iter_cur_index = iter_cur_index->substr(0, pos + 1);
+	iter_cur_index->append(value);
+}
+
+
+CFileConfig::iterator& CFileConfig::iterator::operator=(const CFileConfig::iterator& rhs)
+/*
+描述：重载操作符operator= 
+      完成两个 CFileConfig::iterator的复制，形参为=的左操作数，返回给*this 的引用      
+*/
+{
+	section = rhs.section;
+	pStr = rhs.pStr;
+	iter_cur_index = rhs.iter_cur_index;
+	return *this;
+}
+
+bool operator==(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs)
+/*
+描述：重载操作符operator==
+返回：若左右两个操作数的 pStr, section 及 iter_cur_index均相同则返回 true    
+*/
+{
+	return (lhs.pStr==rhs.pStr)&&(lhs.iter_cur_index==rhs.iter_cur_index)&&(lhs.section==rhs.section);
+
+}
+bool operator!=(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs)
+/*
+描述：重载操作符operator!=
+返回：若左右两个操作数的 pStr, section 及 iter_cur_index任意一个不相同则返回 true    
+*/      
+{
+	return !(lhs==rhs);
+
+}
+
+
+CFileConfig::iterator& CFileConfig::iterator::operator++()
+/*
+描述：重载操作符operator++ 
+      完成一个 CFileConfig::iterator的自增操作。内部移动iter_cur_index，使之指向pStr容器内一个合法的configuration line
+备注：这是前缀操作符++的实现
+*/
+{
+	if (iter_cur_index !=pStr ->end() )
+	{
+		do
+		{
+			iter_cur_index++;
+
+		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE);
+	}
+
+	return *this;
+}
+
+CFileConfig::iterator& CFileConfig::iterator::operator--()
+/*
+描述：重载操作符operator-- 
+完成一个 CFileConfig::iterator的自减操作。内部移动iter_cur_index，使之指向pStr容器内一个合法的configuration line
+备注：这是前缀操作符++的实现
+*/
+{
+	if (iter_cur_index !=pStr ->begin() )
+	{
+		do
+		{
+			iter_cur_index--;
+
+		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE);
+	}
+
+	return *this;
+}
 
 int CFileConfig::iterator::IsValidConfigurationLine()
 /*
@@ -182,7 +289,7 @@ int CFileConfig::iterator::IsValidConfigurationLine()
 	
 	}else if (CHAR_SECTION_BEGIN == (*iter_cur_index).at(start)){
 
-		size_t end = (*iter_cur_index).find(']');
+		size_t end = (*iter_cur_index).find(CHAR_SECTION_END);
 		section = (*iter_cur_index).substr(start + 1, end - 1);
 		return SECTION_LINE; // Section line.
 
