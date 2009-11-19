@@ -15,6 +15,7 @@ namespace WhuTNetSimConfigClass{
 
 //Error Code
 #define ERROR_FILE_NOT_EXSITING	 0x00000000
+#define SUCCESS_NO_ERROR         0x00000001
 #define ERROR_FILE_WRITE_FAIL    0x00000002
 
 //Config file's marker
@@ -26,7 +27,7 @@ namespace WhuTNetSimConfigClass{
 #define REMARK_END        "*//"
 
 #define CHAR_BLANK        ' '
-#define CHAR_TAB          '\t'
+#define CHAR_TAB          "\t"
 
 #define CHAR_DASH         '-'
 #define CHAR_EQUALS       '='
@@ -65,7 +66,8 @@ public:
 	int LoadFile(int& SectionNum,int& ConfigurationItemNum);
 	int UpdateFile();
 
-	const char* GetFileName() { return fileName.c_str(); }
+	//const char* GetFileName() { return fileName.c_str(); }
+	const string& GetFileName() {return fileName;}
 
 
 public:
@@ -81,7 +83,7 @@ public:
 		bool end();
 
 
-		const string& GetCurSection() { return section; } 
+		const string& GetCurSection() { return section; } //返回secion的引用，即其本身
 		const string GetCurKey();// //返回某一个配置行=号左边的字符串
 		const string GetCurValue();  //返回某一个配置行=号右边的字符串
 		void ReplaceCurValue(const string& value);
@@ -92,10 +94,10 @@ public:
 		friend bool operator!=(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs);
 		
 		iterator& operator++();
-		iterator& operator--();//prefix operator
+		iterator& operator--();//prefix operators
 		
 		iterator& operator++(int) { return operator++(); }
-		iterator& operator--(int) { return operator--(); }//postfix operator
+		iterator& operator--(int) { return operator--(); }//postfix operators
 	
 		//operator list<string>::iterator() { return iter_cur_index; }
 
@@ -110,12 +112,17 @@ public:
 	};
 
 
+public:
+
+	//iterator begin(){iterator iter(fileData); return iter;}
+
+
 protected:
 
-	string fileName;
+	int BackupFile();
 
-	int _SectionNum, _ItemNum;
-    
+	string fileName;
+	int _SectionNum, _ItemNum;    
 	list<string> fileData;
 
 };

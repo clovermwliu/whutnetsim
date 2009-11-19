@@ -40,9 +40,10 @@ int  CFileConfig::LoadFile()
 			
 			fileData.push_back(line);
 
-			size_t start = line.find_first_not_of(CHAR_TAB);
+			if (line.empty())	continue;
 
-			if (string::npos != start && line.at(start)!=CHAR_REMARK_LINE && line.at(start)!=CHAR_REM){
+			string::size_type start = line.find_first_not_of(CHAR_TAB);
+			if (line.at(start)!=CHAR_REMARK_LINE && line.at(start)!=CHAR_REM && line.at(start)!=CHAR_SECTION_BEGIN){
 
 				++_ItemNum;
 
@@ -59,10 +60,7 @@ int  CFileConfig::LoadFile()
 		return ERROR_FILE_NOT_EXSITING;
 	}
 
-	// Now parse everything into the attatched objects.
-	//parse();
-
-	return 1;
+	return SUCCESS_NO_ERROR;
 }
 
 
@@ -87,8 +85,22 @@ int CFileConfig::LoadFile(int& SectionNum,int& ConfigurationItemNum)
 
 
 int CFileConfig::UpdateFile()
+/*
+描述：打开并重新生成一个配置文件，文件路径存在于CFileConfig::fileName中
+
+返回：打开成功则返回1
+      否则返回错误码
+开发时间：2009/11/11
+*/
 {
-	std::ofstream fileStream(fileName.c_str(), std::ofstream::trunc);
+
+	int tmp=BackupFile();
+	if (tmp != SUCCESS_NO_ERROR){
+
+		return tmp;
+	}
+	
+	ofstream fileStream(fileName.c_str(), std::ofstream::trunc);
 	if (fileStream) {
 		list<string>::iterator iter;
 		for (iter = fileData.begin();iter != fileData.end();iter++)
@@ -104,6 +116,29 @@ int CFileConfig::UpdateFile()
 }
 
 
+int CFileConfig::BackupFile()
+/*
+描述：对当前配置文件进行备份。在UpdateFile()中被调用，以保证更新配置文件时不会丢失原有配置信息。
+
+*/
+{
+    string bakfile=fileName+".bak";
+  	ifstream infileStream(fileName.c_str(),ios::binary);
+	ofstream outfileStream(bakfile.c_str(),ios::binary);
+
+	if(!infileStream) 
+		return ERROR_FILE_NOT_EXSITING;
+	if(!outfileStream) 
+		return ERROR_FILE_WRITE_FAIL;
+
+	outfileStream  <<   infileStream.rdbuf(); 
+	
+	infileStream.close();
+	outfileStream.close();
+	return SUCCESS_NO_ERROR;
+
+}
+
 //------------------------------------------------------------------------
 //以下是FileConfig中迭代器的实现
 //------------------------------------------------------------------------
@@ -116,7 +151,7 @@ Constructor
 {
 	pStr = & vStrData;
 	iter_cur_index = pStr->begin();
-	while(IsValidConfigurationLine()){             
+	while(IsValidConfigurationLine()!=CONFIGURATION_LINE){             
 		iter_cur_index++;
 	}
 }
