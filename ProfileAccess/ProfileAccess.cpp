@@ -6,24 +6,24 @@
 #include "configfile.h"
 #include "configitem.h"
 #include "configitem_base.h"
+#include "FileConfig.h"
 
 using namespace configlib;
+using namespace WhuTNetSimConfigClass;
 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
-	configfile f("1.ini.txt");
+	CFileConfig f("1.ini.txt");
 
-	f.read();
 
-	configitem<int> item(f,"section4","keyxxx","param_me",66);
+	f.LoadFile();
 
-//	item++;
+	CFileConfig::iterator it=f.begin();
 
 	
-	f.write();
-
+	f.UpdateFile();
 
 
 
