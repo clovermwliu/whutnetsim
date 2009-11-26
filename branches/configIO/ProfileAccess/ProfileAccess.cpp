@@ -15,14 +15,39 @@ using namespace WhuTNetSimConfigClass;
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
-	CFileConfig f("1.ini.txt");
+	CFileConfig f("2.ini.txt");
 
 
 	f.LoadFile();
 
-	CFileConfig::iterator it=f.begin();
+	string section,key,value;
+
+	CFileConfig::iterator it,first,last;
 
 	
+    int i=0;
+	string str;
+
+	first=f.begin();
+	
+	str=first.GetCurSection();
+
+	str=*first;
+
+
+
+	for (it=f.begin();it!=f.end();++it)
+	{
+
+		section=it.GetCurSection();
+		key=it.GetCurKey();
+		value=it.GetCurValue();
+
+		str=*it;
+
+		i++;
+	}
+
 	f.UpdateFile();
 
 
@@ -31,8 +56,6 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	
 	return 0;
-
-	
 
 
 }
