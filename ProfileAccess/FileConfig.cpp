@@ -40,7 +40,10 @@ int  CFileConfig::LoadFile()
 			
 			fileData.push_back(line);
 
-			if (line.empty())	continue;
+#define  TEST
+#ifdef TEST
+
+			if (line.empty())	continue;//这里有问题！！！！！
 
 			string::size_type start = line.find_first_not_of(CHAR_TAB);
 			if (line.at(start)!=CHAR_REMARK_LINE && line.at(start)!=CHAR_REM && line.at(start)!=CHAR_SECTION_BEGIN){
@@ -51,8 +54,17 @@ int  CFileConfig::LoadFile()
 
 				++_SectionNum; 
 			}
-		}
 
+		}
+#else
+
+
+		CFileConfig::iterator iter;
+
+		for (iter=begin();iter!=end();++iter){
+			++_ItemNum;
+		}
+#endif
 		infileStream.close();
 	
 	}else{
@@ -116,6 +128,31 @@ int CFileConfig::UpdateFile()
 }
 
 
+CFileConfig::iterator& CFileConfig::begin()
+/*
+描述：调用嵌套迭代器类的RebindingIterator函数，将iter_beg指向第一个配置项，返回iter_beg的引用
+*/
+{
+	iter_beg.RebindingIterator(fileData);
+	return iter_beg;
+}
+
+CFileConfig::iterator&  CFileConfig::end()
+/*
+//调用嵌套迭代器类的RebindingIterator函数，并将iter_end指向最后一个（无效的）配置项，并返回iter_end的引用
+
+*/
+{
+	iter_end.RebindingIterator(fileData);
+
+	while (!iter_end.end())
+	{
+		++iter_end;
+	}
+	return iter_end;
+}
+
+
 int CFileConfig::BackupFile()
 /*
 描述：对当前配置文件进行备份。在UpdateFile()中被调用，以保证更新配置文件时不会丢失原有配置信息。
@@ -149,9 +186,10 @@ CFileConfig::iterator::iterator(list<string>& vStrData)
 Constructor
 */
 {
+	section="";
 	pStr = & vStrData;
 	iter_cur_index = pStr->begin();
-	while(IsValidConfigurationLine()!=CONFIGURATION_LINE){             
+	while(IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE){             
 		iter_cur_index++;
 	}
 }
@@ -165,7 +203,7 @@ void CFileConfig::iterator:: begin()
 { 
   iter_cur_index = pStr->begin(); 
   section.erase();
-  if (IsValidConfigurationLine()!=CONFIGURATION_LINE)
+  if (IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE)
 	  operator++();
 }
 
@@ -186,11 +224,18 @@ const string CFileConfig::iterator::GetCurKey()
 描述：返回iter_cur_index指向配置行=号左边的字符串
 */ 
 {
-	size_t pos = (*iter_cur_index).find('=');
-	if (pos!=string::npos)
-		return (*iter_cur_index).substr(0, pos);
-	else
-		return (*iter_cur_index);
+	if (iter_cur_index!=pStr->end())
+	{
+		size_t pos = (*iter_cur_index).find('=');
+		if (pos!=string::npos)
+			return (*iter_cur_index).substr(0, pos);
+		else
+			return (*iter_cur_index);
+
+	}else{
+		return "";
+	}
+
 }
 
 
@@ -199,11 +244,18 @@ const std::string CFileConfig::iterator::GetCurValue()
 描述：返回iter_cur_index指向配置行=号右边的字符串
 */
 {
-	size_t pos = (*iter_cur_index).find('=');
-	if (string::npos != pos)
-		return (*iter_cur_index).substr(pos + 1);
-	else
+	if (iter_cur_index!=pStr->end()){
+
+		size_t pos = (*iter_cur_index).find('=');
+		if (string::npos != pos)
+			return (*iter_cur_index).substr(pos + 1);
+		else
+			return "";
+	}else{
 		return "";
+	}
+
+	
 }
 
 
@@ -263,7 +315,7 @@ CFileConfig::iterator& CFileConfig::iterator::operator++()
 		{
 			iter_cur_index++;
 
-		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE);
+		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
 	}
 
 	return *this;
@@ -287,6 +339,40 @@ CFileConfig::iterator& CFileConfig::iterator::operator--()
 
 	return *this;
 }
+
+
+string CFileConfig::iterator::operator* ()
+/*
+
+*/
+
+{
+	string strtmp=GetCurSection();
+
+	if (iter_cur_index!=pStr->end())
+	{
+		strtmp=strtmp+CHAR_TAB;
+		strtmp=strtmp+(*iter_cur_index);
+	}
+	return strtmp;
+}
+
+void CFileConfig::iterator::RebindingIterator(list<string>& vStrData)
+/*
+描述：重新将本迭代器对象与一个list<string>的容器绑定
+
+*/
+
+{
+	section="";
+	pStr = & vStrData;
+	iter_cur_index = pStr->begin();
+	while(IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE){             
+		iter_cur_index++;
+	}
+
+}
+
 
 int CFileConfig::iterator::IsValidConfigurationLine()
 /*

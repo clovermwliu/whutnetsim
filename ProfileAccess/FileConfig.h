@@ -77,6 +77,7 @@ public:
 	{
 	public:
 		
+		iterator() {section="",pStr=NULL,iter_cur_index=NULL;};
 		iterator(list<string>& vStrData); 
 
 		void begin();
@@ -98,11 +99,20 @@ public:
 		
 		iterator& operator++(int) { return operator++(); }
 		iterator& operator--(int) { return operator--(); }//postfix operators
+
+
+		string operator* ();
+
+
+
 	
 		//operator list<string>::iterator() { return iter_cur_index; }
 
+    	void RebindingIterator(list<string>& vStrData);//重新将本迭代器对象与一个list<string>的容器绑定  （这个函数设计还不合理，还要修改）
+
 	private:
 		int IsValidConfigurationLine( ); //看当前iter_cur_index是否指向一个Configuration Line
+
 	private:
 		string section ;    //与当前iter_cur_index指向的文本行对应的section内容。iter_cur_index只会指向具体的配置行，不会指向空行，注释行及节标记行
 		
@@ -114,8 +124,8 @@ public:
 
 public:
 
-	//iterator begin(){iterator iter(fileData); return iter;}
-
+	CFileConfig::iterator& begin(); //调用嵌套迭代器类的RebindingIterator函数，将iter_beg指向第一个配置项，返回iter_beg的引用
+	CFileConfig::iterator& end();   //调用嵌套迭代器类的RebindingIterator函数，并将iter_end指向最后一个（无效的）配置项，并返回iter_end的引用
 
 protected:
 
@@ -124,6 +134,8 @@ protected:
 	string fileName;
 	int _SectionNum, _ItemNum;    
 	list<string> fileData;
+
+	iterator iter_beg,iter_end;// CFileConfig内默认的两个迭代器对象，由CFileConfig::begin和CFileConfig::end维护
 
 };
 
