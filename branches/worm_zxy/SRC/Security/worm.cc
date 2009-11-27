@@ -310,7 +310,8 @@ IPAddr_t Worm::GenerateNextIPAddress()
     targetV->Initialize(node->GetIPAddr());
   }
 
-  IP = baseIP + targetV->Generate();
+  //IP = baseIP + targetV->Generate();
+  IP = targetV->Generate();//091127：将扫描策略生成的IP直接当作下一拍扫描IP
 
   return IP;
 }
