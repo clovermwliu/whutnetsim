@@ -15,10 +15,10 @@ using namespace WhuTNetSimConfigClass;
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
-	CFileConfig f("2.ini.txt");
+	CFileConfig f("1.ini.txt");
 
-
-	f.LoadFile();
+    int a,b;
+	f.LoadFile(a,b);
 
 	string section,key,value;
 
@@ -28,25 +28,49 @@ int _tmain(int argc, _TCHAR* argv[])
     int i=0;
 	string str;
 
-	first=f.begin();
-	
-	str=first.GetCurSection();
-
-	str=*first;
-
-
-
-	for (it=f.begin();it!=f.end();++it)
-	{
-
-		section=it.GetCurSection();
-		key=it.GetCurKey();
-		value=it.GetCurValue();
+	for (it=f.begin();it!=f.end();++it){
 
 		str=*it;
 
+		cout<<"current item:"<<str<<endl;
+
 		i++;
 	}
+
+	cout<<"i="<<i<<std::endl;
+
+	i=0;
+
+    first=f.begin();
+
+	last=f.end();
+
+
+	for (it=f.end();it!=f.begin();--it)
+	{
+
+		str=*it;
+
+		cout<<"current item:"<<str<<endl;
+
+		i++;
+	}
+
+	cout<<"i="<<i<<std::endl;
+
+	i=0;
+
+	for (it=f.begin();it!=f.end();it=it.GotoNextSection()){
+
+
+		str=*it;
+
+		cout<<"current item:"<<str<<endl;
+
+		i++;
+	}
+	cout<<"i="<<i<<std::endl;
+
 
 	f.UpdateFile();
 

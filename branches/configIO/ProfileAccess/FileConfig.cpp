@@ -7,6 +7,32 @@ using namespace std;
 namespace WhuTNetSimConfigClass{
 
 
+
+//----------------------------------------------------------------------------------
+// Sym：ConfigItem
+// ConfigItem 类的实现
+//----------------------------------------------------------------------------------
+CItemLine::CItemLine(CFileConfig& file, 
+						 const std::string& section,
+						 const std::string& key)
+{
+
+}
+
+CItemLine::~CItemLine(void)
+{
+
+}
+
+
+
+
+
+//----------------------------------------------------------------------------------
+// Sym：FileConfig
+// FileConfig 类的实现
+//----------------------------------------------------------------------------------	
+	
 CFileConfig::CFileConfig(const string& strFilePath)//在初始化列表中对成员fileName赋值
 : fileName(strFilePath),
   _SectionNum(0),
@@ -37,35 +63,22 @@ int  CFileConfig::LoadFile()
 		_ItemNum=0;
 
 		while(getline(infileStream, line)){
-			
 			fileData.push_back(line);
-
-#define  TEST
-#ifdef TEST
-
-			if (line.empty())	continue;//这里有问题！！！！！
-
-			string::size_type start = line.find_first_not_of(CHAR_TAB);
-			if (line.at(start)!=CHAR_REMARK_LINE && line.at(start)!=CHAR_REM && line.at(start)!=CHAR_SECTION_BEGIN){
-
-				++_ItemNum;
-
-			}else if (line.at(start)==CHAR_SECTION_BEGIN){
-
-				++_SectionNum; 
-			}
-
 		}
-#else
-
 
 		CFileConfig::iterator iter;
 
 		for (iter=begin();iter!=end();++iter){
 			++_ItemNum;
 		}
-#endif
-		infileStream.close();
+
+		for (iter=begin();iter!=end();iter=iter.GotoNextSection())
+		{
+			SecionList.push_back(iter.GetCurSectionIter());
+			++_SectionNum;
+		}
+		
+	infileStream.close();
 	
 	}else{
 
@@ -137,14 +150,13 @@ CFileConfig::iterator& CFileConfig::begin()
 	return iter_beg;
 }
 
+
 CFileConfig::iterator&  CFileConfig::end()
 /*
-//调用嵌套迭代器类的RebindingIterator函数，并将iter_end指向最后一个（无效的）配置项，并返回iter_end的引用
-
+//调用嵌套迭代器类的RebindingIterator函数，并将iter_end指向最后一个有效配置项的后一个（实际上的文件尾，section为最后一个有效section），并返回iter_end的引用
 */
 {
 	iter_end.RebindingIterator(fileData);
-
 	while (!iter_end.end())
 	{
 		++iter_end;
@@ -177,6 +189,7 @@ int CFileConfig::BackupFile()
 }
 
 //------------------------------------------------------------------------
+//Sym：Iterator
 //以下是FileConfig中迭代器的实现
 //------------------------------------------------------------------------
 
@@ -189,6 +202,7 @@ Constructor
 	section="";
 	pStr = & vStrData;
 	iter_cur_index = pStr->begin();
+	iter_cur_section=pStr->end();
 	while(IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE){             
 		iter_cur_index++;
 	}
@@ -202,6 +216,7 @@ void CFileConfig::iterator:: begin()
 */
 { 
   iter_cur_index = pStr->begin(); 
+  iter_cur_section=pStr->end();;
   section.erase();
   if (IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE)
 	  operator++();
@@ -279,6 +294,7 @@ CFileConfig::iterator& CFileConfig::iterator::operator=(const CFileConfig::itera
 	section = rhs.section;
 	pStr = rhs.pStr;
 	iter_cur_index = rhs.iter_cur_index;
+	iter_cur_section = rhs.iter_cur_section;
 	return *this;
 }
 
@@ -288,7 +304,7 @@ bool operator==(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rh
 返回：若左右两个操作数的 pStr, section 及 iter_cur_index均相同则返回 true    
 */
 {
-	return (lhs.pStr==rhs.pStr)&&(lhs.iter_cur_index==rhs.iter_cur_index)&&(lhs.section==rhs.section);
+	return (lhs.pStr==rhs.pStr)&&(lhs.iter_cur_index==rhs.iter_cur_index)&&(lhs.section==rhs.section)&&(lhs.iter_cur_section == rhs.iter_cur_section);
 
 }
 bool operator!=(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs)
@@ -325,18 +341,37 @@ CFileConfig::iterator& CFileConfig::iterator::operator--()
 /*
 描述：重载操作符operator-- 
 完成一个 CFileConfig::iterator的自减操作。内部移动iter_cur_index，使之指向pStr容器内一个合法的configuration line
-备注：这是前缀操作符++的实现
+备注：这是前缀操作符--的实现
 */
 {
+	list<string>::iterator ittmp;
+
 	if (iter_cur_index !=pStr ->begin() )
 	{
 		do
 		{
 			iter_cur_index--;
 
-		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE);
-	}
+		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE && iter_cur_index !=pStr ->begin() );
 
+		if(iter_cur_index != pStr->begin()){
+
+			ittmp=iter_cur_index;
+			while (IsValidConfigurationLine()!=SECTION_LINE){
+
+				if (iter_cur_index !=pStr ->begin()){
+					
+					iter_cur_index--;
+				}else{
+					section="";
+					iter_cur_section=pStr->end();
+					break;
+				}
+
+			}
+		}
+		iter_cur_index=ittmp;
+	}
 	return *this;
 }
 
@@ -357,6 +392,28 @@ string CFileConfig::iterator::operator* ()
 	return strtmp;
 }
 
+CFileConfig::iterator& CFileConfig::iterator::GotoNextSection()
+/*
+描述：返回一个迭代器，指向下一个section中第一个配置项
+*/
+{
+	if (iter_cur_index !=pStr ->end() )
+	{
+		do
+		{
+			iter_cur_index++;
+
+		} while (IsValidConfigurationLine()!=SECTION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
+		if (iter_cur_index !=pStr ->end())
+		{
+			iter_cur_index++;
+		}
+		
+	}
+	return *this;
+}
+
+
 void CFileConfig::iterator::RebindingIterator(list<string>& vStrData)
 /*
 描述：重新将本迭代器对象与一个list<string>的容器绑定
@@ -367,11 +424,44 @@ void CFileConfig::iterator::RebindingIterator(list<string>& vStrData)
 	section="";
 	pStr = & vStrData;
 	iter_cur_index = pStr->begin();
+	iter_cur_section=pStr->end();
 	while(IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE){             
 		iter_cur_index++;
 	}
 
 }
+
+
+bool CFileConfig::iterator::IsBlankLine(string str)
+/*
+描述：判断str是否为一个空行，包括那些仅有空格和TAB符号的字符串均认为是空行
+*/
+{
+
+	for(string::size_type pos(0);pos!=string::npos;pos+=0){
+
+		if ((pos=str.find(CHAR_TAB,pos))!=string::npos){
+
+			str.replace(pos,1,"");
+		}else{
+			break;
+		}
+	}
+
+	for(string::size_type   pos(0);pos!=string::npos;pos+=0){
+
+		if ((pos=str.find(CHAR_BLANK,pos))!=string::npos){
+
+			str.replace(pos,1,"");
+		}else{
+			break;
+		}
+	}
+
+	return str.empty();
+
+}
+
 
 
 int CFileConfig::iterator::IsValidConfigurationLine()
@@ -386,21 +476,18 @@ int CFileConfig::iterator::IsValidConfigurationLine()
 	  #define REMAK_LINE             0x00000100
 	  #define CANCEL_LINE            0x00001000
 	  #define FILE_END_LINE          0x00010000
-	  #define BLANK_LINE             0x00100000
+	  #define BLANK_LINE             0x01000000
 
 */
 
 {
-	if (iter_cur_index==pStr->end()) //当前iter_cur_index已指向文件尾
-		return FILE_END_LINE; 
-
+	if (iter_cur_index ==pStr->end()) return FILE_END_LINE; //当前iter_cur_index已指向文件尾
+		
+	if (IsBlankLine(*iter_cur_index)) return BLANK_LINE;
+		
 	size_t start = (*iter_cur_index).find_first_not_of(CHAR_TAB);
 
-	if (string::npos == start){
-
-		return BLANK_LINE; // Blank line;
-	
-	}else if ((*iter_cur_index).at(start)==CHAR_REMARK_LINE ){
+	if ((*iter_cur_index).at(start)==CHAR_REMARK_LINE ){
 
 		return REMAK_LINE;  // remark line;
 
@@ -412,6 +499,8 @@ int CFileConfig::iterator::IsValidConfigurationLine()
 
 		size_t end = (*iter_cur_index).find(CHAR_SECTION_END);
 		section = (*iter_cur_index).substr(start + 1, end - 1);
+		iter_cur_section=iter_cur_index;
+
 		return SECTION_LINE; // Section line.
 
 	}else{
