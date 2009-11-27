@@ -154,6 +154,8 @@
 #include "debug.h"
 #include "wormtargetvector.h"
 
+#include <math.h>
+
 using namespace std;
 
 WormTargetVector::WormTargetVector(Count_t range) 
@@ -364,5 +366,140 @@ IPAddr_t WTVSequentialWithLocalPref::Generate()
 
   return a;
 }
+
+////////////////////////////////////////////////////////////////////////
+///////新增类
+//////////////////////////////////////////////////////////////////////////
+
+WTVVulDistributePref::WTVVulDistributePref(Count_t range,
+										   const vector<double> *&InDistribute,
+										   bool IsStatic): WormTargetVector(range)
+{
+	IsStaticPref = IsStatic;
+	if (IsStaticPref)//静态扫描
+	{	
+		ProDistribute = InDistribute;
+	}
+	else
+	{
+		VulDistribute = InDistribute;
+	}
+
+}
+WTVVulDistributePref::WTVVulDistributePref(Mask m,
+										   const vector<double> *&InDistribute,
+										   bool IsStatic): WormTargetVector(m)
+{
+	IsStaticPref = IsStatic;
+	if (IsStaticPref)//静态扫描
+	{	
+		ProDistribute = InDistribute;
+	}
+	else
+	{
+		VulDistribute = InDistribute;
+	}
+
+}
+
+
+WormTargetVector* WTVVulDistributePref::Copy() const
+{
+	return new WTVVulDistributePref(*this);
+}
+
+void WTVVulDistributePref::Initialize(IPAddr_t IP)
+{
+	WormTargetVector::Initialize(IP);
+	
+	//检查数据合法性
+	if (IsStaticPref)
+	{
+		GroupNum = ProDistribute->size();
+		int sum = 0;
+		for (int i = 0; i < (int)GroupNum; ++i)
+		{
+			sum += ProDistribute->at(i);
+		}
+		if (sum != 1)
+		{
+			DEBUG0((cout << "扫描各组的概率之和不为1" << endl));
+		}
+	}
+	else
+	{
+		GroupNum = VulDistribute->size();
+		int sum = 0;
+		for (int i = 0; i < (int)GroupNum; ++i)
+		{
+			sum += VulDistribute->at(i);
+		}
+		if (sum != 1)
+		{
+			DEBUG0((cout << "脆弱主机分布之和不为1" << endl));
+		}
+	}
+	GroupSize = scanrange/GroupNum;
+
+}
+
+IPAddr_t WTVVulDistributePref::Generate()
+{
+	int GroupIndex;//所选中的组号
+	IPAddr SelectIP;//所选择的IP
+
+	if(!IsStaticPref)//动态扫描
+	{
+		Count_t timeSeq;
+		Count_t scanrate;
+		////ConfigCache c;
+		////timeSeq = (获取当前时间 - 获取开始时间)/时间粒度; //获取已经经过的时间拍
+		////sancrate = c.GetScanRate();
+		vector<double> tmpProDistribute;
+		int PrefFactor;
+		////根据timeSeq、scanrate和解析出来的公式，计算PrefFactor
+		int sum = 0;
+		for (int i = 0; i < (int)GroupNum; ++i)
+		{
+			sum += pow(VulDistribute->at(i), PrefFactor);
+		}
+		for (int i = 0; i < (int)GroupNum; ++i)
+		{
+			tmpProDistribute.push_back(pow(VulDistribute->at(i), PrefFactor)/sum);
+		}
+		GroupIndex = SpecProRandom(&tmpProDistribute);
+	}
+	else//静态扫描
+	{
+		GroupIndex = SpecProRandom(ProDistribute);
+	}
+	//在被选择的组里随机选择某一IP，作为返回值，即下一拍扫描的主机的IP
+	Random * rngT = new Uniform(GroupIndex*GroupSize, (GroupIndex+1)*GroupSize);
+	SelectIP = rngT->IntValue();
+	delete rngT;
+
+	return SelectIP;
+}
+
+int 
+WTVVulDistributePref::SpecProRandom(const vector<double> * pro)
+//按制定概率随机选择各概率所在的下标，返回下标
+{
+	Random * rngT = new Uniform();
+	int tmp_ran = rngT->IntValue();
+	delete rngT;
+	double tmp_sum = 0;
+	for (int i = 0; i < (int)pro->size(); ++i)
+	{
+		tmp_sum += pro->at(i);
+		if (tmp_ran < tmp_sum)
+		{
+			return i;
+		}
+	}
+
+}
+
+
 
 
