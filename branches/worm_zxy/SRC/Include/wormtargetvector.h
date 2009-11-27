@@ -154,6 +154,9 @@
 #include "rng.h"
 #include "application.h"
 
+using namespace std;
+
+
 
 // Base class of target vectors
 // All classes are to be descendents of this one.
@@ -161,7 +164,8 @@
 class WormTargetVector : public Object {
 public:
   WormTargetVector(Count_t range);
-  WormTargetVector(Mask m);
+  WormTargetVector(Mask m);//根据子网掩码位数来确定扫描范围
+
   
   // The following methods are to be overriden for changing the 
   // functionality
@@ -181,8 +185,8 @@ public:
 // scanrange
 class WTVUniform : public WormTargetVector {
  public:
-  WTVUniform(Count_t range);
-  WTVUniform(Mask m);
+  WTVUniform(Count_t range);//直接继承基类
+  WTVUniform(Mask m);//未实现
 
   virtual WormTargetVector* Copy() const;
   virtual IPAddr_t Generate();
@@ -199,8 +203,8 @@ class WTVUniform : public WormTargetVector {
 
 class WTVLocalPref : public WormTargetVector {
  public:
-  WTVLocalPref(Mask, double, Mask);
-  WTVLocalPref(Count_t, double, Mask);
+  WTVLocalPref(Mask, double, Mask);//根据子网掩码确定扫描范围，偏好本地的概率，根据子网掩码来确定偏好本地的范围
+  WTVLocalPref(Count_t, double, Mask);//扫描范围，偏好本地的概率，根据子网掩码来确定偏好本地的范围
   // selects local preference 
   //  when prob<=p
 
@@ -224,8 +228,8 @@ class WTVLocalPref : public WormTargetVector {
 
 class WTVSequential : public WormTargetVector {
  public:
-  WTVSequential(Mask);
-  WTVSequential(Count_t);
+  WTVSequential(Mask);//直接继承基类
+  WTVSequential(Count_t);//直接继承基类
 
   virtual WormTargetVector* Copy() const;
   virtual IPAddr_t Generate();
@@ -243,8 +247,8 @@ class WTVSequential : public WormTargetVector {
 
 class WTVSequentialWithLocalPref : public WormTargetVector {
  public:
-  WTVSequentialWithLocalPref(Mask, double, Mask);
-  WTVSequentialWithLocalPref(Count_t, double, Mask);
+  WTVSequentialWithLocalPref(Mask, double, Mask);//根据子网掩码确定扫描范围，偏好本地的概率，根据子网掩码来确定偏好本地的范围
+  WTVSequentialWithLocalPref(Count_t, double, Mask);//扫描范围，偏好本地的概率，根据子网掩码来确定偏好本地的范围
 
   virtual WormTargetVector* Copy() const;
   virtual IPAddr_t Generate();
@@ -254,6 +258,38 @@ class WTVSequentialWithLocalPref : public WormTargetVector {
   IPAddr_t currentIP;
   double prob;
   Count_t localscanrange;
+};
+
+//////////////////////////////////////////////////////////////////////////
+////新增类
+//////////////////////////////////////////////////////////////////////////
+class WTVVulDistributePref : public WormTargetVector 
+{
+public:
+//	//构造函数
+	WTVVulDistributePref(Count_t range,
+		                 const vector<double> *&InDistribute,
+						 bool IsStatic);
+	
+	WTVVulDistributePref(Mask m,
+					     const vector<double> *&InDistribute,
+					     bool IsStatic);
+
+
+	virtual WormTargetVector* Copy() const;
+	virtual IPAddr_t Generate();
+	virtual void Initialize(IPAddr_t);
+
+private:
+	bool IsStaticPref;
+	Count_t scanrange;//扫描范围
+	const vector<double> * ProDistribute;
+	const vector<double> * VulDistribute;
+	size_t GroupNum;//组数
+	size_t GroupSize;//每组的大小，各组大小相同
+
+	int SpecProRandom(const vector<double> * pro);
+
 };
 
 
