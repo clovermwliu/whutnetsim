@@ -9,26 +9,6 @@ namespace WhuTNetSimConfigClass{
 
 
 //----------------------------------------------------------------------------------
-// Sym：ConfigItem
-// ConfigItem 类的实现
-//----------------------------------------------------------------------------------
-CItemLine::CItemLine(CFileConfig& file, 
-						 const std::string& section,
-						 const std::string& key)
-{
-
-}
-
-CItemLine::~CItemLine(void)
-{
-
-}
-
-
-
-
-
-//----------------------------------------------------------------------------------
 // Sym：FileConfig
 // FileConfig 类的实现
 //----------------------------------------------------------------------------------	
@@ -72,9 +52,8 @@ int  CFileConfig::LoadFile()
 			++_ItemNum;
 		}
 
-		for (iter=begin();iter!=end();iter=iter.GotoNextSection())
-		{
-			SecionList.push_back(iter.GetCurSectionIter());
+		for (iter=begin();iter!=end();iter=iter.GotoNextSection()){
+			SectionList.push_back(iter.GetCurSectionIter());
 			++_SectionNum;
 		}
 		
@@ -188,6 +167,280 @@ int CFileConfig::BackupFile()
 
 }
 
+bool CFileConfig::match(const char* pLstr, const char* pRstr)
+/*
+描述：字符串匹配
+*/
+{
+	if (0 == strcmp(pLstr, pRstr))	return true;
+	return false;
+
+}
+bool CFileConfig::match(string lstr,string rstr)
+/*
+描述：字符串匹配
+*/
+{
+	return lstr==rstr;
+
+}
+
+bool CFileConfig::CancelConfigLine(const string& section, const string& key)
+/*
+描述：在fileData中section，key这一项前面加"@"符号
+返回：如果遍历完fileData均未发现满足section,key的项，则返回false;
+*/
+{
+	
+	//先在sectionList中匹配section，如果该section不存在直接返回失败
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
+
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		if (sectionG==section)  break;
+	}
+ 
+	if (quickiter==SectionList.end()) return false;
+			
+	//迅速构造一个CFileConfig::iterator，指向该section的第一个有效配置项，再匹配key
+	CFileConfig::iterator iter(fileData,*quickiter);
+	
+	while (!iter.end()){
+
+		if (match(section, iter.GetCurSection()) && match(key, iter.GetCurKey()))	{//match(section, iter.GetCurSection())不可少，当section当前没有有效配置项时，iter直接指向后面的section中的有效配置项去了
+			
+			iter.InsertSubstr(0,STR_REM);
+			_ItemNum--;
+			
+			return true;
+		}
+    	iter++;
+	}
+
+	return false;
+}
+
+list<string>::iterator  CFileConfig::SetValueWithoutRemark(const string& section, 
+						                                   const string& key,
+							                               const string& value)
+/*
+描述：给section的key项设置value值，返回该配置项在fileData中的迭代器
+*/
+
+{
+	
+	bool itemExisting=true;
+	//先在sectionList中匹配section，如果该section不存在直接返回失败
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
+
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		if (sectionG==section)  break;
+	}
+
+	if (quickiter==SectionList.end()) itemExisting=false;
+
+    if (itemExisting){
+
+		//迅速构造一个CFileConfig::iterator，指向该section的第一个有效配置项，再匹配key
+		CFileConfig::iterator iter(fileData,*quickiter);
+
+		while (!iter.end())
+		{
+			if (match(section, iter.GetCurSection()) &&	match(key,iter.GetCurKey()))
+			{
+				iter.ReplaceCurValue(value);
+				return iter.GetCurIndexIter();
+			}
+			iter++;
+		}
+    }
+
+	//如果没有这个section,key的项，则整体添加之
+    
+	if (!CFileConfig::iterator::IsBlankLine(key)){
+
+		string item = key;
+		item.append("=");
+		item.append(value);
+		return AddConfigLine(section, item);
+	
+	}else{
+
+		return fileData.end();
+	}
+	
+}
+
+
+
+void CFileConfig::SetValue(const string& section, 
+			               const string& key, 
+			               const string& value,
+			               const string& remark)
+/*
+描述:设置新配置项
+*/
+{
+	list<string>::iterator iter=SetValueWithoutRemark(section,key,value);
+
+	if (iter==fileData.end()) return;
+	
+
+	string str=REMARK_SYM;
+	str.append("{");
+	str.append(key);
+	str.append(STR_EQUALS);
+	str.append(value);
+	str.append("}");
+	str.append(STR_TAB);
+
+	if (!CFileConfig::iterator::IsBlankLine(remark)){
+		str.append(remark);
+	}else{
+		str.append("(NONE	）");
+
+	}
+
+	if ((++iter)!=fileData.end()){
+
+		size_t start = (*iter).find_first_not_of(STR_TAB);
+
+		if ((*iter).at(start)==CHAR_REMARK_LINE){
+			list<string>::iterator iter2=fileData.erase(iter); //更新原来该项的注释，注释位于该配置项的下一行
+			fileData.insert(iter2,str);
+		}else{
+			fileData.insert(iter,str);//给新项添加注释，注释位于该配置项的下一行
+		}
+		return;
+	}
+
+	fileData.insert(iter,str); //新项存在于文件尾，直接在文件尾添加注释
+	return;
+	
+}
+
+list<string>::iterator  CFileConfig::AddConfigLine(const string& section, const string& item)
+/*
+描述：添加section的新配置项目（item:key=value）,返回该配置项在fileData中的迭代器
+*/
+{
+	
+	bool SectionExisting=true;
+
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
+
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		if (sectionG==section)  break;
+	}
+
+	if (quickiter==SectionList.end()) SectionExisting=false;
+	
+	if (SectionExisting){
+
+		CFileConfig::iterator iter(fileData,*quickiter);
+
+		_ItemNum++;
+		if (iter.end()){
+			fileData.push_back(item);
+			return --fileData.end();
+			
+		}else	{
+			
+			fileData.insert(iter.GetCurIndexIter(), item);//前插入
+			return --(iter.GetCurIndexIter());
+		
+		}
+	
+	}
+
+	// 新建整个配置项
+	string newsection = STR_SECTION_BEGIN;
+	newsection.append(section);
+	newsection.append(STR_SECTION_END);
+	fileData.push_back(newsection);
+
+	list<string>::iterator iiter=(--fileData.end());
+ 	SectionList.push_back(iiter);
+	_SectionNum++;
+
+	fileData.push_back(item);
+	_ItemNum++;
+	return --fileData.end();
+}
+
+
+bool CFileConfig::GetValue(const string& section,
+			               const string& key,
+			               string& value,
+						   string& remark)
+/*
+描述：根据section和key在fileData上查找该配置项，将该项的注释返回给remark,该项目的值（一个string）返回给value
+参数：[out]remark,value
+返回：如果该项不存在，则函数返回false,remark和value均设为空串
+*/
+{
+	//先在sectionList中匹配section，如果该section不存在直接返回失败
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
+
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		if (sectionG==section)  break;
+	}
+
+	if (quickiter==SectionList.end()) { //没有匹配的section
+
+		remark="";
+		value="";
+		return false;
+	}
+
+	//迅速构造一个CFileConfig::iterator，指向该section的第一个有效配置项，再匹配key
+	CFileConfig::iterator iter(fileData,*quickiter);
+
+	while (!iter.end())
+	{
+		if (match(section, iter.GetCurSection()) &&	match(key,iter.GetCurKey()))
+		{
+			value=iter.GetCurValue();//获得value
+
+			//以下去获得该项的注释
+			string remark= *(iter.GetNextIndexIter()); //默认情况下，注释应该紧跟着配置项
+			if(!CFileConfig::iterator::IsBlankLine(remark)){
+				
+				size_t start = remark.find_first_not_of(STR_TAB);
+				if (remark.at(start)!=CHAR_REMARK_LINE) remark="";
+			}
+			return true;
+		}
+		iter++;
+	}
+
+	//如果没有这个section,key的项
+	remark="";
+	value="";
+	return false;
+
+}
+
+
+
+
+
+
 //------------------------------------------------------------------------
 //Sym：Iterator
 //以下是FileConfig中迭代器的实现
@@ -196,7 +449,7 @@ int CFileConfig::BackupFile()
 
 CFileConfig::iterator::iterator(list<string>& vStrData)
 /*
-Constructor
+Constructor:初始化一个CFileConfig::iterator，CFileConfig::iterator生成完后指向配置文件第一个有效配置项
 */
 {
 	section="";
@@ -206,6 +459,27 @@ Constructor
 	while(IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE){             
 		iter_cur_index++;
 	}
+}
+
+CFileConfig::iterator::iterator(list<string>& vStrData,const list<string>::iterator& SectionIter)
+/*
+Constructor:迅速初始化一个CFileConfig::iterator，传入形参是一个指向vStrData容器中某个section节标记行的迭代器
+            CFileConfig::iterator生成完后指向该节第一个有效配置项,
+			如该节当前没有有效配置项则指向后面第一个有有效配置项的节的该有效配置项，或指向文件尾
+*/
+{
+	size_t start = (*SectionIter).find_first_not_of(CHAR_SECTION_BEGIN);
+	size_t end = (*SectionIter).find(CHAR_SECTION_END);
+	section =(*SectionIter).substr(start, end - 1);
+
+	pStr = & vStrData;
+	iter_cur_index = SectionIter;
+	iter_cur_section = SectionIter;
+	do{
+		iter_cur_index++;
+
+	}while(IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);            
+
 }
 
 
@@ -386,7 +660,7 @@ string CFileConfig::iterator::operator* ()
 
 	if (iter_cur_index!=pStr->end())
 	{
-		strtmp=strtmp+CHAR_TAB;
+		strtmp=strtmp+STR_TAB;
 		strtmp=strtmp+(*iter_cur_index);
 	}
 	return strtmp;
@@ -404,9 +678,14 @@ CFileConfig::iterator& CFileConfig::iterator::GotoNextSection()
 			iter_cur_index++;
 
 		} while (IsValidConfigurationLine()!=SECTION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
-		if (iter_cur_index !=pStr ->end())
-		{
-			iter_cur_index++;
+		if (iter_cur_index !=pStr ->end()){
+
+			do
+			{
+				iter_cur_index++;
+
+			} while (IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
+
 		}
 		
 	}
@@ -440,7 +719,7 @@ bool CFileConfig::iterator::IsBlankLine(string str)
 
 	for(string::size_type pos(0);pos!=string::npos;pos+=0){
 
-		if ((pos=str.find(CHAR_TAB,pos))!=string::npos){
+		if ((pos=str.find(STR_TAB,pos))!=string::npos){
 
 			str.replace(pos,1,"");
 		}else{
@@ -485,7 +764,7 @@ int CFileConfig::iterator::IsValidConfigurationLine()
 		
 	if (IsBlankLine(*iter_cur_index)) return BLANK_LINE;
 		
-	size_t start = (*iter_cur_index).find_first_not_of(CHAR_TAB);
+	size_t start = (*iter_cur_index).find_first_not_of(STR_TAB);
 
 	if ((*iter_cur_index).at(start)==CHAR_REMARK_LINE ){
 
@@ -510,8 +789,37 @@ int CFileConfig::iterator::IsValidConfigurationLine()
 
 }
 
+//end of CFileConfig
+
+//----------------------------------------------------------------------------------
+// Sym：ConfigItem
+// ConfigItem 类的实现
+//----------------------------------------------------------------------------------
+CItemLine::CItemLine(CFileConfig& file, 
+					 const string& section,
+					 const string& key,
+					 const string& remark)
+					 : section(section) , key(key) , remark(remark),pFileCach(&file)
+{
+	file.AddItemLine(this);
+
+}
 
 
+CItemLine::CItemLine(CFileConfig& file, 
+					 const string& section,
+					 const string& key)
+					 : section(section) , key(key) , remark(""),pFileCach(&file)
+{
+	file.AddItemLine(this);
+
+}
+
+
+CItemLine::~CItemLine(void)
+{
+
+}
 
 
 
