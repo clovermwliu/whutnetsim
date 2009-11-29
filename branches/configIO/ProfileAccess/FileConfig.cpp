@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "FileConfig.h"
+#include <assert.h>
 
 
 using namespace std;
@@ -88,32 +89,84 @@ int CFileConfig::LoadFile(int& SectionNum,int& ConfigurationItemNum)
 
 
 
-int CFileConfig::UpdateFile()
+int CFileConfig::UpdateFile(bool bIngronCancelLine)
 /*
 描述：打开并重新生成一个配置文件，文件路径存在于CFileConfig::fileName中
-
+参数：bIngronCancelLine为true则将带有@的配置行不回写入文件
 返回：打开成功则返回1
       否则返回错误码
-开发时间：2009/11/11
 */
 {
 
 	int tmp=BackupFile();
+	
 	if (tmp != SUCCESS_NO_ERROR){
 
 		return tmp;
 	}
 	
 	ofstream fileStream(fileName.c_str(), std::ofstream::trunc);
+
+	size_t start;
+
 	if (fileStream) {
 		list<string>::iterator iter;
-		for (iter = fileData.begin();iter != fileData.end();iter++)
-		{
-			fileStream << (*iter) << endl;
+
+		bool bIngronNext=false;
+		
+		for (iter = fileData.begin();iter != fileData.end();++iter){
+
+			if (bIngronCancelLine){
+
+				if (CFileConfig::iterator::IsBlankLine(*iter)){
+					continue;
+				}
+
+				start=(*iter).find_first_not_of(STR_TAB);
+				if ((*iter).at(start)==CHAR_REM){
+					bIngronNext=true;
+					continue;
+				}
+				if ((*iter).at(start)==CHAR_REMARK_LINE && bIngronNext==true){
+					continue;
+				}
+
+				fileStream << (*iter) << endl;
+				bIngronNext=false;
+
+			}else{
+
+				fileStream << (*iter) << endl;
+			}
+		}
+		fileStream.close();
+		return SUCCESS_NO_ERROR;
+
+		/*
+		start=(*iter).find_first_not_of(STR_TAB);
+		if ( bIngronCancelLine &&((*iter).at(start)==CHAR_REM)){
+
+		++iter;
+		if (iter==fileData.end()){
+		break;
+		}else{
+
+		if (!CFileConfig::iterator::IsBlankLine(*iter)){
+
+		start = (*iter).find_first_not_of(STR_TAB);
+		if ((*iter).at(start)==CHAR_REMARK_LINE || (*iter).at(start)==CHAR_REM){
+		continue;
 		}
 
-		fileStream.close();
-		return 1;
+		}else{
+		continue;
+		}
+
+		}
+
+		}
+		*/		
+
 	}else{
 		return ERROR_FILE_WRITE_FAIL ;
 	}
@@ -144,28 +197,93 @@ CFileConfig::iterator&  CFileConfig::end()
 }
 
 
-int CFileConfig::BackupFile()
+int CFileConfig::GetKeyNamesBySectionName(const string& section, list<string>& lnames)
 /*
-描述：对当前配置文件进行备份。在UpdateFile()中被调用，以保证更新配置文件时不会丢失原有配置信息。
-
+描述：取section节的所有有效key,放在lnames中，返回key的数量
+参数：[out]lnames
 */
 {
-    string bakfile=fileName+".bak";
-  	ifstream infileStream(fileName.c_str(),ios::binary);
-	ofstream outfileStream(bakfile.c_str(),ios::binary);
+	int i=0;
 
-	if(!infileStream) 
-		return ERROR_FILE_NOT_EXSITING;
-	if(!outfileStream) 
-		return ERROR_FILE_WRITE_FAIL;
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
 
-	outfileStream  <<   infileStream.rdbuf(); 
-	
-	infileStream.close();
-	outfileStream.close();
-	return SUCCESS_NO_ERROR;
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		if (sectionG==section)  break;
+	}
+
+	if (quickiter==SectionList.end()) return 0;
+
+	//迅速构造一个CFileConfig::iterator，指向该section的第一个有效配置项，再匹配key
+	CFileConfig::iterator iter(fileData,*quickiter);
+
+	while (match(section, iter.GetCurSection())){
+		++i;
+		lnames.push_back(iter.GetCurKey());
+		++iter;
+	}
+
+	return i;
+}
+
+int CFileConfig::GetConfigItemBySectionName(const string& section,list<string>& litems)
+/*
+描述：取section节的所有有效配置项,放在lnames中，返回key的数量
+参数：[out]litems
+*/
+
+{
+	int i=0;
+
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
+
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		if (sectionG==section)  break;
+	}
+
+	if (quickiter==SectionList.end()) return 0;
+
+	//迅速构造一个CFileConfig::iterator，指向该section的第一个有效配置项，再匹配key
+	CFileConfig::iterator iter(fileData,*quickiter);
+
+	while (match(section, iter.GetCurSection())){
+		++i;
+		litems.push_back(*(iter.GetCurIndexIter()));
+		++iter;
+	}
+
+	return i;
 
 }
+
+int CFileConfig::GetSectionNames(list<string>& lnames)
+/*
+描述：取文件当前全部section名字，放在lnames中，返回_sectionNum
+*/
+{
+	int i=0;
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
+
+		++i;
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		lnames.push_back(sectionG);
+	}
+	assert(i==GetSectionNum());
+	return i;
+
+}
+
 
 bool CFileConfig::match(const char* pLstr, const char* pRstr)
 /*
@@ -436,10 +554,28 @@ bool CFileConfig::GetValue(const string& section,
 
 }
 
+int CFileConfig::BackupFile()
+/*
+描述：对当前配置文件进行备份。在UpdateFile()中被调用，以保证更新配置文件时不会丢失原有配置信息。
 
+*/
+{
+	string bakfile=fileName+".bak";
+	ifstream infileStream(fileName.c_str(),ios::binary);
+	ofstream outfileStream(bakfile.c_str(),ios::binary);
 
+	if(!infileStream) 
+		return ERROR_FILE_NOT_EXSITING;
+	if(!outfileStream) 
+		return ERROR_FILE_WRITE_FAIL;
 
+	outfileStream  <<   infileStream.rdbuf(); 
 
+	infileStream.close();
+	outfileStream.close();
+	return SUCCESS_NO_ERROR;
+
+}
 
 //------------------------------------------------------------------------
 //Sym：Iterator
@@ -489,6 +625,8 @@ void CFileConfig::iterator:: begin()
 
 */
 { 
+  if (pStr==NULL) return;
+
   iter_cur_index = pStr->begin(); 
   iter_cur_section=pStr->end();;
   section.erase();
@@ -599,6 +737,8 @@ CFileConfig::iterator& CFileConfig::iterator::operator++()
 备注：这是前缀操作符++的实现
 */
 {
+	if (pStr==NULL) return *this;
+	
 	if (iter_cur_index !=pStr ->end() )
 	{
 		do
@@ -618,6 +758,8 @@ CFileConfig::iterator& CFileConfig::iterator::operator--()
 备注：这是前缀操作符--的实现
 */
 {
+	if (pStr==NULL) return *this;
+	
 	list<string>::iterator ittmp;
 
 	if (iter_cur_index !=pStr ->begin() )
@@ -649,21 +791,10 @@ CFileConfig::iterator& CFileConfig::iterator::operator--()
 	return *this;
 }
 
-
-string CFileConfig::iterator::operator* ()
-/*
-
-*/
-
+string CFileConfig::iterator::operator *()
 {
-	string strtmp=GetCurSection();
-
-	if (iter_cur_index!=pStr->end())
-	{
-		strtmp=strtmp+STR_TAB;
-		strtmp=strtmp+(*iter_cur_index);
-	}
-	return strtmp;
+	if (pStr==NULL) return "";
+	return *iter_cur_index;
 }
 
 CFileConfig::iterator& CFileConfig::iterator::GotoNextSection()
@@ -671,6 +802,8 @@ CFileConfig::iterator& CFileConfig::iterator::GotoNextSection()
 描述：返回一个迭代器，指向下一个section中第一个配置项
 */
 {
+	if (pStr==NULL) return *this;
+	
 	if (iter_cur_index !=pStr ->end() )
 	{
 		do
@@ -801,7 +934,7 @@ CItemLine::CItemLine(CFileConfig& file,
 					 const string& remark)
 					 : section(section) , key(key) , remark(remark),pFileCach(&file)
 {
-	file.AddItemLine(this);
+	//file.AddItemLine(this);
 
 }
 
@@ -811,7 +944,7 @@ CItemLine::CItemLine(CFileConfig& file,
 					 const string& key)
 					 : section(section) , key(key) , remark(""),pFileCach(&file)
 {
-	file.AddItemLine(this);
+	//file.AddItemLine(this);
 
 }
 

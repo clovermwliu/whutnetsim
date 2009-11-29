@@ -18,8 +18,8 @@ public:
 		              const string& key,
 		              const string& remark,
 		              const ValueType& valuedef)
-		: CItemLine(file, section, key, remark)
-		, cur_value(valuedef)
+	: CItemLine(file, section, key, remark)
+	, cur_value(valuedef)
 	{
 		SetValueToFile(GetItemValueToString(cur_value),remark);
 	}
@@ -27,7 +27,7 @@ public:
 	CGenericConfigItem(CFileConfig& file,
 		               const string& section,
 		               const string& key)
-		: CItemLine(file, section, key)
+	: CItemLine(file, section, key)
 	{
 		if (!GetValue()) Initcur_value(cur_value);
 	
@@ -41,7 +41,7 @@ public:
 	//method 2
 	void SaveItToFile(){SetValueToFile(GetItemValueToString(cur_value),remark);}
 
-	//method 2
+	//method 3
 	virtual void ChangeRemarkToFile(const string& newremark) {SetValueToFile(GetItemValueToString(cur_value),newremark);}
 
 
@@ -80,30 +80,40 @@ private:
 
 public:
 	//赋值操作符
-	ValueType& operator=(const ValueType& rhs) { SetValue(rhs); return MyValue(); } //赋值,e.g.  CGenericConfigItem<double> a=0.02
+	ValueType& operator=(const ValueType& rhs) { SetValue(rhs); return MyValue(); } //赋值,e.g.  CGenericConfigItem<double> a(...),a=0.02
 	
 	//定义自增操作符，如果ValueType是数值，则结果+1；如果ValueType是string则什么都不做；如果ValueType是bool则取反
-	ValueType & operator++() { ItemIncrease(cur_value); SetValue(cur_value); return  MyValue(); }
+	ValueType operator++() { ItemIncrease(cur_value); SetValue(cur_value); return  MyValue(); }
 	ValueType operator++(int) { return operator++(); }
 	//同理定义自减操作符
-	ValueType & operator--() { ItemDecrease(cur_value); SetValue(cur_value); return  MyValue(); }
+	ValueType operator--() { ItemDecrease(cur_value); SetValue(cur_value); return  MyValue(); }
 	ValueType operator--(int) { return operator--(); }
-	//等于，不等于操作符
+	//等于，不等于操作符及比较操作符
 	bool operator==(const ValueType& rhs) const { return rhs == cur_value; }
-	bool operator!=(const ValueType& rhs) const { return !(rhs == cur_value); }
-	//调用操作符
-	operator const ValueType() { return MyValue(); }
+	bool operator!=(const ValueType& rhs) const { return !(*this ==rhs); }
+	bool operator==(const CGenericConfigItem& rhs) const {return (section==rhs.section)&&(key==rhs.key)&&(remark==rhs.remark)&&(cur_value==rhs.cur_value);}
+	bool operator!=(const CGenericConfigItem& rhs) const {return !(*this==rhs);}
 
+	bool operator>(const ValueType& rhs) const {return cur_value>rhs;}
+	bool operator>=(const ValueType& rhs) const {return cur_value>=rhs;}
+	bool operator<(const ValueType& rhs) const {return cur_value<rhs;}
+	bool operator<=(const ValueType& rhs) const {return cur_value<=rhs;}
+	//调用操作符
+	operator const ValueType() { return MyValue(); }//use like:  CGenericConfigItem<int> item(...); int i=(item);/*i=item.MyValue()*/
+	//算数运算操作符
+	ValueType operator+(const ValueType& rhs) { return ItemAdd(cur_value,rhs);}
+	ValueType operator-(const ValueType& rhs) { return ItemMinus(cur_value,rhs);}
+	ValueType operator*(const ValueType& rhs) { return ItemMul(cur_value,rhs);}
+	ValueType operator/(const ValueType& rhs) { return ItemDiv(cur_value,rhs);}
+	//
 private:
 	
 	ValueType cur_value;
-};
 
-//end of CGenericConfigItem
+};//end of CGenericConfigItem
+
 
 //以下是一些模板函数，以支持CGenericConfigItem
-
-
 
 template <class T>
 void Initcur_value( T& value)
@@ -216,7 +226,110 @@ void ItemDecrease(bool& item)
 	item = !item;
 }
 
+template <class T>
+T ItemAdd(const T& lhs,const T& rhs)
+/*
+描述：完成两个数相加
+*/
+{
+	return lhs+rhs;
+}
+
+bool ItemAdd(const bool& lhs,const bool& rhs)
+/*
+描述：两个bool类型的数相加等同于这两个数异或加
+*/
+{
+	return (bool)lhs^rhs;
+}
+
+template <class T>
+T ItemMinus(const T& lhs,const T& rhs)
+/*
+描述：完成两个数相减
+*/
+{
+	return lhs-rhs;
+}
+
+string ItemMinus(const string & lhs, const string& rhs)
+/*
+描述：完成两个string的减法，即从lhs中去除 rhs
+*/
+{
+	string str=lhs;
+	for(string::size_type pos(0);pos!=string::npos;pos+=rhs.size()){
+
+		if ((pos=lhs.find(rhs,pos))!=string::npos){
+			str.replace(pos,rhs.size(),"");
+		}else{
+			break;
+		}
+	}
+	return str;
 
 }
 
+bool ItemMinus(const bool& lhs,const bool& rhs)
+/*
+描述：两个bool类型的数相加等同于这两个数异或后取反
+*/
+{
+	return !(lhs^rhs);
+}
+
+template <class T>
+T ItemMul(const T& lhs,const T& rhs)
+/*
+描述：完成两个数相乘
+*/
+{
+	return lhs*rhs;
+}
+
+string ItemMul(const string & lhs, const string& rhs)
+/*
+描述：完成两个string的乘法，什么都不做
+*/
+{
+	return lhs;
+}
+
+bool ItemMul(bool& lhs,const bool& rhs)
+/*
+描述：两个bool类型的数的乘法，什么都不做
+*/
+{
+	return lhs;
+}
+
+template <class T>
+T ItemDiv(const T& lhs,const T& rhs)
+/*
+描述：完成两个数相除
+*/
+{
+	return lhs/rhs;
+}
+
+string ItemDiv(const string & lhs, const string& rhs)
+/*
+描述：完成两个string的除法，什么都不做
+*/
+{
+	return lhs;
+}
+
+bool ItemDiv(const bool& lhs,const bool& rhs)
+/*
+描述：两个bool类型的数的除法，什么都不做
+*/
+{
+	return lhs;
+}
+
+
+
+
+}//end namespace
 #endif /*GENERICCONFIGITEMLINE_H_*/
