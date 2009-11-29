@@ -3,7 +3,6 @@
 #define FILECONFIG_H_
 
 #include <string>
-//#include <vector>
 #include <list>
 #include <fstream>
 #include <iostream>
@@ -77,7 +76,7 @@ public://公开方法I
 	//以下函数用以对外存配置文件进行存取
 	int LoadFile();
 	int LoadFile(int& SectionNum,int& ConfigurationItemNum);
-	int UpdateFile();
+	int UpdateFile(bool bIngronCancelLine=true);
 
 public:
 
@@ -89,12 +88,16 @@ public:
 		friend class CFileConfig;
 
 		iterator() {section="",pStr=NULL,iter_cur_index=NULL,iter_cur_section=NULL;}
+	private:
 		iterator(list<string>& vStrData); 
 		iterator(list<string>& vStrData,const list<string>::iterator& SectionIter);
         //
+	public:
 		void begin();
+		const string& GetCurSection() { return section; } //返回secion的引用，即其本身
+		const string GetCurKey();// //返回某一个配置行=号左边的字符串
 
-       //重载一批操作符，以支持FileConfig::iterator
+        //重载一批操作符，以支持FileConfig::iterator
 		iterator& operator=(const iterator& rhs);
 		friend bool operator==(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs);
 		friend bool operator!=(const CFileConfig::iterator& lhs,const CFileConfig::iterator& rhs);
@@ -104,18 +107,13 @@ public:
 		
 		iterator& operator++(int) { return operator++(); }
 		iterator& operator--(int) { return operator--(); }//postfix operators
-
-		string operator* ();
 		//
 		iterator& GotoNextSection();//与++操作符类似，返回当前迭代器的引用，指向下一个section中第一个配置项
-	    //operator list<string>::iterator() { return iter_cur_index; }
+	 	string operator *();
 	
 	private:
 		
-		bool end();	
-
-		const string& GetCurSection() { return section; } //返回secion的引用，即其本身
-		const string GetCurKey();// //返回某一个配置行=号左边的字符串
+		bool end();//判断该迭代器是否指向文件尾	
 		const string GetCurValue();  //返回某一个配置行=号右边的字符串
 
 		list<string>::iterator GetCurSectionIter() {return iter_cur_section;}
@@ -124,8 +122,6 @@ public:
 		
 		void InsertSubstr(size_t pos, const string& substr) { (*iter_cur_index).insert(pos, substr); }
 		void ReplaceCurValue(const string& value);
-
-	private:
 		void RebindingIterator(list<string>& vStrData);//重新将本迭代器对象与一个list<string>的容器绑定  （这个函数设计还不合理，还要修改）
 		int IsValidConfigurationLine( ); //看当前iter_cur_index是否指向一个Configuration Line
 		static bool IsBlankLine(string str);
@@ -142,10 +138,13 @@ public://公开方法II
 
     CFileConfig::iterator& begin(); //调用嵌套迭代器类的RebindingIterator函数，将iter_beg指向第一个配置项，返回iter_beg的引用
 	CFileConfig::iterator& end();   //调用嵌套迭代器类的RebindingIterator函数，并将iter_end指向最后一个有效配置项的后一个（实际上的文件尾，section为最后一个有效section），并返回iter_end的引用
-	//const char* GetFileName() { return fileName.c_str(); }
+	//
 	const string& GetFileName() {return fileName;}
 	int GetConfigItemNum() {return _ItemNum;}
 	int GetSectionNum() {return _SectionNum;}
+	int GetKeyNamesBySectionName(const string& section, list<string>& lnames);//取section节的所有有效key,放在lnames中，返回key的数量
+	int GetConfigItemBySectionName(const string& section,list<string>& litems);//取section节的所有有效配置项,放在lnames中，返回key的数量
+	int GetSectionNames(list<string>& lnames);//取文件当前全部section名字，放在lnames中，返回_sectionNum
 
 	static bool match(const char* pLstr, const char* pRstr);
 	static bool match(string lstr,string rstr);
@@ -171,15 +170,15 @@ protected: //保护方法
 
 
 	//以下函数用以维护itemline_list
-	void AddItemLine(CItemLine* item) { itemline_list.push_back(item); }
+	
+	//void AddItemLine(CItemLine* item) { itemline_list.push_back(item); }
+	//void DeleteItemLine(CItemLine* item);
 
 
 	//以下函数仅用于维护SectionList
 
-
 	//
 	int BackupFile();//将原有配置文件备份，在updatefile（）中被自动调用
-
 
 protected://成员变量
 
@@ -188,10 +187,8 @@ protected://成员变量
 
 	list<string> fileData;
 	list<list<string>::iterator>  SectionList;// 记录fileData中各个section行字符串的地址
-	list<CItemLine *> itemline_list;
-
+	//list<CItemLine *> itemline_list;
 	iterator iter_beg,iter_end;// CFileConfig内默认的两个迭代器对象，由CFileConfig::begin和CFileConfig::end维护
-
 };
 
 
@@ -223,14 +220,15 @@ public:
 	//读取value的方法在其派生类中定义，名为MyValue();
 	
 	bool Cancel() {remark="";return pFileCach->CancelConfigLine(section,key);}
-
-	virtual bool ChangeValueInThisItem(const string& value) {return false;}//虚函数接口，实际定义在派生类
 	
 	virtual void ChangeRemarkToFile(const string& newremark) { return; }
 	void ChangeRemarkInThisItem(const string& newremark) {remark=newremark;}
 	
 protected:
 	
+	virtual bool ChangeValueInThisItem(const string& value) {return false;}//虚函数接口，实际定义在派生类
+
+
 	void SetValueToFile(const string& newvalue,const string& newremark="") {pFileCach->SetValue(section,key,newvalue,newremark);}
 	bool GetValueFromFile(string& newvalue) { return pFileCach->GetValue(section,key,newvalue,remark);}
 	
