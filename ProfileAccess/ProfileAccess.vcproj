@@ -46,6 +46,7 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
+				WarnAsError="true"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 			/>
@@ -230,6 +231,10 @@
 			</File>
 			<File
 				RelativePath=".\FileConfig.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GenericConfigItem.h"
 				>
 			</File>
 			<File
