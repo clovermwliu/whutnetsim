@@ -78,9 +78,7 @@ public://公开方法I
 	int LoadFile(int& SectionNum,int& ConfigurationItemNum);
 	int UpdateFile(bool bIngronCancelLine=true);
 
-public:
-
-	//定义了FileConfig里面的一个迭代器类型，类似其他标准C++中的容器的迭代器一样
+public:	//定义了FileConfig里面的一个迭代器类型，类似其他标准C++中的容器的迭代器一样
 	class iterator  
 	{
 	public: //有限方法及操作对外公开，可以用来在程序外部使用本迭代器访问一个list<string>容器
@@ -88,12 +86,13 @@ public:
 		friend class CFileConfig;
 
 		iterator() {section="",pStr=NULL,iter_cur_index=NULL,iter_cur_section=NULL;}
-	private:
+	
+	private: //这两种构造方法仅供CFileConfig使用，不对外
 		iterator(list<string>& vStrData); 
 		iterator(list<string>& vStrData,const list<string>::iterator& SectionIter);
         //
 	public:
-		void begin();
+		void begin();//迭代器复位，指第一个有效配置项
 		const string& GetCurSection() { return section; } //返回secion的引用，即其本身
 		const string GetCurKey();// //返回某一个配置行=号左边的字符串
 
@@ -104,12 +103,13 @@ public:
 		
     	iterator& operator++();
 		iterator& operator--();//prefix operators
-		
-		iterator& operator++(int) { return operator++(); }
+	    iterator& operator++(int) { return operator++(); }
 		iterator& operator--(int) { return operator--(); }//postfix operators
 		//
 		iterator& GotoNextSection();//与++操作符类似，返回当前迭代器的引用，指向下一个section中第一个配置项
-	 	string operator *();
+	 	
+		string operator *();//取内容操作符
+		operator list<string>::iterator () {return iter_cur_index;} //调用操作符
 	
 	private:
 		
@@ -143,7 +143,8 @@ public://公开方法II
 	int GetConfigItemNum() {return _ItemNum;}
 	int GetSectionNum() {return _SectionNum;}
 	int GetKeyNamesBySectionName(const string& section, list<string>& lnames);//取section节的所有有效key,放在lnames中，返回key的数量
-	int GetConfigItemBySectionName(const string& section,list<string>& litems);//取section节的所有有效配置项,放在lnames中，返回key的数量
+	int GetConfigItemBySectionName(const string& section,list<string>& litems);//取section节的所有有效配置项,放在litems中，返回item的数量
+	int GetConfigItemBySectionName(const string& section);//返回该section节有效配置项的数量
 	int GetSectionNames(list<string>& lnames);//取文件当前全部section名字，放在lnames中，返回_sectionNum
 
 	static bool match(const char* pLstr, const char* pRstr);
@@ -186,6 +187,39 @@ protected://成员变量
 	int _SectionNum, _ItemNum;
 
 	list<string> fileData;
+
+//#define  TEST
+#ifdef  TEST
+
+	class CSectionIndex
+	{
+
+		//friend class CFileConfig;
+
+	public:
+		CSectionIndex();
+		~CSectionIndex();
+
+		//
+		int GetItemNum() {return ItemNum;}
+		void ItemNumIncrease() {ItemNum++;}
+		void ItemNumDecrease() {ItemNum--;}
+
+		//
+		void SetMyName();
+		string& GetMyName() {return SectionName;}
+
+		//
+		CSectionIndex& operator= (const list<string>::iterator& rhs) {toIter=rhs; return *this;}
+		operator  list<string>::iterator() {return toIter;}
+
+	private:
+		int ItemNum;
+		string SectionName;
+		list<string>::iterator toIter;
+	};
+#endif
+
 	list<list<string>::iterator>  SectionList;// 记录fileData中各个section行字符串的地址
 	//list<CItemLine *> itemline_list;
 	iterator iter_beg,iter_end;// CFileConfig内默认的两个迭代器对象，由CFileConfig::begin和CFileConfig::end维护
@@ -219,7 +253,6 @@ public:
 	const string& GetRemark() const {return remark;}
 	//读取value的方法在其派生类中定义，名为MyValue();
 	
-	bool Cancel() {remark="";return pFileCach->CancelConfigLine(section,key);}
 	
 	virtual void ChangeRemarkToFile(const string& newremark) { return; }
 	void ChangeRemarkInThisItem(const string& newremark) {remark=newremark;}
@@ -228,7 +261,8 @@ protected:
 	
 	virtual bool ChangeValueInThisItem(const string& value) {return false;}//虚函数接口，实际定义在派生类
 
-
+    bool _Cancel() {remark="";return pFileCach->CancelConfigLine(section,key);}
+	
 	void SetValueToFile(const string& newvalue,const string& newremark="") {pFileCach->SetValue(section,key,newvalue,newremark);}
 	bool GetValueFromFile(string& newvalue) { return pFileCach->GetValue(section,key,newvalue,remark);}
 	

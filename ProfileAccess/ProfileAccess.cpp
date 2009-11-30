@@ -19,14 +19,35 @@ int _tmain(int argc, _TCHAR* argv[])
 	CGenericConfigItem<string> item1(f,"section1","key1","remark on this item","This is a dog");
 	
 	CGenericConfigItem<int> item2(f,"section2","key2","remark on this item",234);
+	item2.Cancel();
+
+	item2++;
+
+	item2.Cancel();
+
+	CGenericConfigItem<int> item4(f,"section2","key3","remark on this item",11111111);
+
+	item2++;
+
+	item2.Cancel();
+
+
 
 	CGenericConfigItem<bool> item3(f,"section1","key3","remark on this item",true);
 
-	CGenericConfigItem<double> item4(f,"sectionX","keyX");
+	for (CFileConfig::iterator it=f.begin();it!=f.end();it=it.GotoNextSection())
+	{
+		cout<<*it<<endl;
+	}
 
-	CGenericConfigItem<double> item5(f,"section1","key3");
 
-	item4++;
+    CFileConfig::iterator it2=f.begin();
+	for (int i=0;i<f.GetSectionNum();i++)
+	{
+		cout<<*it2<<endl;
+		it2=it2.GotoNextSection();
+	}
+
 
 	f.UpdateFile(true);
 
