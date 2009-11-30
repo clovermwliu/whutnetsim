@@ -44,6 +44,9 @@ public:
 	//method 3
 	virtual void ChangeRemarkToFile(const string& newremark) {SetValueToFile(GetItemValueToString(cur_value),newremark);}
 
+	//method 4
+	bool Cancel() {Initcur_value(cur_value);return _Cancel();}
+
 
 private:
 

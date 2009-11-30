@@ -231,7 +231,7 @@ int CFileConfig::GetKeyNamesBySectionName(const string& section, list<string>& l
 
 int CFileConfig::GetConfigItemBySectionName(const string& section,list<string>& litems)
 /*
-描述：取section节的所有有效配置项,放在lnames中，返回key的数量
+描述：取section节的所有有效配置项,放在litems中，返回item的数量
 参数：[out]litems
 */
 
@@ -253,13 +253,53 @@ int CFileConfig::GetConfigItemBySectionName(const string& section,list<string>& 
 	//迅速构造一个CFileConfig::iterator，指向该section的第一个有效配置项，再匹配key
 	CFileConfig::iterator iter(fileData,*quickiter);
 
-	while (match(section, iter.GetCurSection())){
-		++i;
-		litems.push_back(*(iter.GetCurIndexIter()));
-		++iter;
+	if (iter.GetCurIndexIter()!=fileData.end())
+	{
+		while (match(section, iter.GetCurSection())){
+			++i;
+			litems.push_back(*(iter.GetCurIndexIter()));
+			++iter;
+		}
+
+		return i;
 	}
 
-	return i;
+	return 0;
+}
+
+int CFileConfig::GetConfigItemBySectionName(const string& section)
+/*
+描述：返回该section节有效配置项的数量
+*/
+
+{
+	int i=0;
+
+	list<list<string>::iterator> ::iterator quickiter;
+	string sectionG;
+	for(quickiter=SectionList.begin();quickiter!=SectionList.end();quickiter++){
+
+		size_t start = (*(*quickiter)).find_first_not_of(CHAR_SECTION_BEGIN);
+		size_t end = (*(*quickiter)).find(CHAR_SECTION_END);
+		sectionG = (*(*quickiter)).substr(start, end - 1);
+		if (sectionG==section)  break;
+	}
+
+	if (quickiter==SectionList.end()) return 0;
+
+	//迅速构造一个CFileConfig::iterator，指向该section的第一个有效配置项，再匹配key
+	CFileConfig::iterator iter(fileData,*quickiter);
+
+	if (iter.GetCurIndexIter()!=fileData.end())
+	{
+		while (match(section, iter.GetCurSection())){
+			++i;
+			++iter;
+		}
+		return i;
+	}
+	
+	return 0;
 
 }
 
@@ -332,7 +372,7 @@ bool CFileConfig::CancelConfigLine(const string& section, const string& key)
 			
 			iter.InsertSubstr(0,STR_REM);
 			_ItemNum--;
-			
+			if (GetConfigItemBySectionName(section)==0) _SectionNum--;
 			return true;
 		}
     	iter++;
@@ -468,7 +508,10 @@ list<string>::iterator  CFileConfig::AddConfigLine(const string& section, const 
 
 		CFileConfig::iterator iter(fileData,*quickiter);
 
+		if (GetConfigItemBySectionName(section)==0) _SectionNum++;
+
 		_ItemNum++;
+		
 		if (iter.end()){
 			fileData.push_back(item);
 			return --fileData.end();
@@ -738,14 +781,18 @@ CFileConfig::iterator& CFileConfig::iterator::operator++()
 */
 {
 	if (pStr==NULL) return *this;
-	
-	if (iter_cur_index !=pStr ->end() )
+
+    if (iter_cur_index !=pStr ->end() )
 	{
 		do
 		{
 			iter_cur_index++;
 
 		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
+	}else{
+
+		section="";
+		iter_cur_section=pStr->end();
 	}
 
 	return *this;
@@ -794,7 +841,12 @@ CFileConfig::iterator& CFileConfig::iterator::operator--()
 string CFileConfig::iterator::operator *()
 {
 	if (pStr==NULL) return "";
-	return *iter_cur_index;
+
+	if (!(iter_cur_index==pStr->end())){
+		return *iter_cur_index;
+	}else{
+		return "";
+	}
 }
 
 CFileConfig::iterator& CFileConfig::iterator::GotoNextSection()
