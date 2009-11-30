@@ -1,50 +1,22 @@
-	 
 [section_beg]
- 	
 ky=vv	
-   
-   
-
-
-	 
- 	
-			
-   
- 		 	
-		 	
-   		
-
 [section1]
-key1=value1
+key3=1
+#REMARK ON:{key3=1}	remark on this item
+key1=This is a dog
+#REMARK ON:{key1=This is a dog}	remark on this item
 key2=value2
-@key3=value3
-
-	
-      
- 
-	 	 
- 	 	
-      abc
-	efg
 [section2]
-key2=value2
 [section3]
+key2=1
+#REMARK ON:{key2=1}	(NONE	£©
+key3=11111111
+#REMARK ON:{key3=11111111}	remark on this item
+key2=1
+#REMARK ON:{key2=1}	(NONE	£©
 key3=256
 [section4]
 key4=128
-
 #this is a remark line
-
 [section5]
 key5=
-             
-		
-  	 	
-	 	 
- 	
-
-
-  
-		
-
-
