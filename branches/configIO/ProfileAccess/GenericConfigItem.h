@@ -36,7 +36,7 @@ public:
 	virtual ~CGenericConfigItem() {}
 
    	//method 1
-	const ValueType& MyValue() { return cur_value; } //
+	ValueType& MyValue() { return cur_value; } //返回值切不能是const
 
 	//method 2
 	void SaveItToFile(){SetValueToFile(GetItemValueToString(cur_value),remark);}
@@ -152,6 +152,12 @@ void ItemValueLoad(T& item, const string& value)
 描述：将value依照item的类型T转化设置item
 */
 {
+	if (value.empty()){
+
+		Initcur_value(item);
+		return;
+	}
+	
 	stringstream stream_value(value, stringstream::in);
 	stream_value >> item;	
 }

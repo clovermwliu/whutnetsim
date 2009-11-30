@@ -12,41 +12,13 @@ using namespace WhuTNetSimConfigClass;
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
-	CFileConfig f("testini.txt");
+	CFileConfig f("567.ini.txt");
 
-	//f.LoadFile();
+	f.LoadFile();
 
-	CGenericConfigItem<string> item1(f,"section1","key1","remark on this item","This is a dog");
-	
-	CGenericConfigItem<int> item2(f,"section2","key2","remark on this item",234);
-	item2.Cancel();
+	CGenericConfigItem<int> item(f,"section5","key5");
 
-	item2++;
-
-	item2.Cancel();
-
-	CGenericConfigItem<int> item4(f,"section2","key3","remark on this item",11111111);
-
-	item2++;
-
-	item2.Cancel();
-
-
-
-	CGenericConfigItem<bool> item3(f,"section1","key3","remark on this item",true);
-
-	for (CFileConfig::iterator it=f.begin();it!=f.end();it=it.GotoNextSection())
-	{
-		cout<<*it<<endl;
-	}
-
-
-    CFileConfig::iterator it2=f.begin();
-	for (int i=0;i<f.GetSectionNum();i++)
-	{
-		cout<<*it2<<endl;
-		it2=it2.GotoNextSection();
-	}
+	item=567;
 
 
 	f.UpdateFile(true);

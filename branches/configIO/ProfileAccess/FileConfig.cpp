@@ -100,7 +100,7 @@ int CFileConfig::UpdateFile(bool bIngronCancelLine)
 
 	int tmp=BackupFile();
 	
-	if (tmp != SUCCESS_NO_ERROR){
+	if (tmp == ERROR_FILE_WRITE_FAIL){
 
 		return tmp;
 	}
