@@ -14,17 +14,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	CFileConfig f("testini.txt");
 
-	f.LoadFile();
+	//f.LoadFile();
 
-	CGenericConfigItem<int> item1(f,"section1","key1","remark on this item",256);
+	CGenericConfigItem<string> item1(f,"section1","key1","remark on this item","This is a dog");
+	
+	CGenericConfigItem<int> item2(f,"section2","key2","remark on this item",234);
 
-	string str=item1.GetSection();//str="section1"
-	str=item1.GetKey();           //str="key1"
-	str=item1.GetRemark();        //str="remark on this item"
-	int i=item1.MyValue();        //i=256
+	CGenericConfigItem<bool> item3(f,"section1","key3","remark on this item",true);
 
+	CGenericConfigItem<double> item4(f,"sectionX","keyX");
 
-	f.UpdateFile(false);
+	CGenericConfigItem<double> item5(f,"section1","key3");
+
+	item4++;
+
+	f.UpdateFile(true);
 
 	getchar();
 

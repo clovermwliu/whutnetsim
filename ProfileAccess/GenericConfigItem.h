@@ -36,7 +36,7 @@ public:
 	virtual ~CGenericConfigItem() {}
 
    	//method 1
-	ValueType& MyValue() { return cur_value; } //
+	const ValueType& MyValue() { return cur_value; } //
 
 	//method 2
 	void SaveItToFile(){SetValueToFile(GetItemValueToString(cur_value),remark);}
@@ -99,10 +99,12 @@ public:
 	bool operator<(const ValueType& rhs) const {return cur_value<rhs;}
 	bool operator<=(const ValueType& rhs) const {return cur_value<=rhs;}
 	//调用操作符
-	operator const ValueType() { return MyValue(); }//use like:  CGenericConfigItem<int> item(...); int i=(item);/*i=item.MyValue()*/
+	operator const ValueType() { return MyValue(); }//use like:  CGenericConfigItem<int> item(...); int i=item;/*i=item.MyValue()*/
 	//算数运算操作符
 	ValueType operator+(const ValueType& rhs) { return ItemAdd(cur_value,rhs);}
+	friend ValueType operator+ (const ValueType& lhs, CGenericConfigItem& item) {return ItemAdd(lhs,item.MyValue());}
 	ValueType operator-(const ValueType& rhs) { return ItemMinus(cur_value,rhs);}
+	friend ValueType operator- (const ValueType& lhs, CGenericConfigItem& item) {return ItemMinus(lhs,item.MyValue());}
 	ValueType operator*(const ValueType& rhs) { return ItemMul(cur_value,rhs);}
 	ValueType operator/(const ValueType& rhs) { return ItemDiv(cur_value,rhs);}
 	//
@@ -327,6 +329,7 @@ bool ItemDiv(const bool& lhs,const bool& rhs)
 {
 	return lhs;
 }
+
 
 
 
