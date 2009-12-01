@@ -6,22 +6,25 @@
 
 #include "FileConfig.h"
 #include "GenericConfigItem.h"
+#include "ExpressionParse.h"
+
 using namespace WhuTNetSimConfigClass;
 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
-	CFileConfig f("567.ini.txt");
+	map<string,double> v;
 
-	f.LoadFile();
+	v["a"]=100;
+	v["b"]=200;
 
-	CGenericConfigItem<int> item(f,"section5","key5");
+	string str="a+b*a^2";
+	
+	CExpressionParse expa(str,v);
 
-	item=567;
-
-
-	f.UpdateFile(true);
+	cout<<expa.GetExpValue()<<endl;
+	
 
 	getchar();
 

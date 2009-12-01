@@ -141,32 +141,7 @@ int CFileConfig::UpdateFile(bool bIngronCancelLine)
 		}
 		fileStream.close();
 		return SUCCESS_NO_ERROR;
-
-		/*
-		start=(*iter).find_first_not_of(STR_TAB);
-		if ( bIngronCancelLine &&((*iter).at(start)==CHAR_REM)){
-
-		++iter;
-		if (iter==fileData.end()){
-		break;
-		}else{
-
-		if (!CFileConfig::iterator::IsBlankLine(*iter)){
-
-		start = (*iter).find_first_not_of(STR_TAB);
-		if ((*iter).at(start)==CHAR_REMARK_LINE || (*iter).at(start)==CHAR_REM){
-		continue;
-		}
-
-		}else{
-		continue;
-		}
-
-		}
-
-		}
-		*/		
-
+		
 	}else{
 		return ERROR_FILE_WRITE_FAIL ;
 	}
@@ -300,7 +275,6 @@ int CFileConfig::GetConfigItemBySectionName(const string& section)
 	}
 	
 	return 0;
-
 }
 
 int CFileConfig::GetSectionNames(list<string>& lnames)
@@ -462,7 +436,7 @@ void CFileConfig::SetValue(const string& section,
 	if (!CFileConfig::iterator::IsBlankLine(remark)){
 		str.append(remark);
 	}else{
-		str.append("(NONE	£©");
+		str.append("(NONE	)");
 
 	}
 
@@ -787,14 +761,16 @@ CFileConfig::iterator& CFileConfig::iterator::operator++()
 		do
 		{
 			iter_cur_index++;
+			
+			if (iter_cur_index==pStr->end()){
+				
+				section="";
+				iter_cur_section=pStr->end();
+			}
+			
 
 		} while (IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
-	}else{
-
-		section="";
-		iter_cur_section=pStr->end();
 	}
-
 	return *this;
 }
 
@@ -861,13 +837,22 @@ CFileConfig::iterator& CFileConfig::iterator::GotoNextSection()
 		do
 		{
 			iter_cur_index++;
+			if (iter_cur_index==pStr->end()){
 
+				section="";
+				iter_cur_section=pStr->end();
+			}
 		} while (IsValidConfigurationLine()!=SECTION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
 		if (iter_cur_index !=pStr ->end()){
 
 			do
 			{
 				iter_cur_index++;
+				if (iter_cur_index==pStr->end()){
+
+					section="";
+					iter_cur_section=pStr->end();
+				}
 
 			} while (IsValidConfigurationLine()!=CONFIGURATION_LINE && IsValidConfigurationLine()!=FILE_END_LINE);
 

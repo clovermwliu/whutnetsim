@@ -188,38 +188,6 @@ protected://成员变量
 
 	list<string> fileData;
 
-//#define  TEST
-#ifdef  TEST
-
-	class CSectionIndex
-	{
-
-		//friend class CFileConfig;
-
-	public:
-		CSectionIndex();
-		~CSectionIndex();
-
-		//
-		int GetItemNum() {return ItemNum;}
-		void ItemNumIncrease() {ItemNum++;}
-		void ItemNumDecrease() {ItemNum--;}
-
-		//
-		void SetMyName();
-		string& GetMyName() {return SectionName;}
-
-		//
-		CSectionIndex& operator= (const list<string>::iterator& rhs) {toIter=rhs; return *this;}
-		operator  list<string>::iterator() {return toIter;}
-
-	private:
-		int ItemNum;
-		string SectionName;
-		list<string>::iterator toIter;
-	};
-#endif
-
 	list<list<string>::iterator>  SectionList;// 记录fileData中各个section行字符串的地址
 	//list<CItemLine *> itemline_list;
 	iterator iter_beg,iter_end;// CFileConfig内默认的两个迭代器对象，由CFileConfig::begin和CFileConfig::end维护
@@ -274,9 +242,9 @@ protected:
 
 	CFileConfig* pFileCach;
 
-};
+};//End of CItemLine
 
-//End of CItemLine
+
 
 
 }
