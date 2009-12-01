@@ -20,3 +20,4 @@ key4=128
 #this is a remark line
 [section5]
 key5=
+keychar=A
