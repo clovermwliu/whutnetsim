@@ -27,6 +27,8 @@ namespace WhuTNetSimConfigClass{
 #define REMARK_SYM             "#REMARK ON:"
 #define CHAR_REM               '@'
 #define STR_REM                "@"
+#define CHAR_PARAM             '$'
+#define STR_PARAM              "$"
 
 #define CHAR_BLANK        ' '
 #define STR_TAB           "\t"

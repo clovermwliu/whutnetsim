@@ -13,12 +13,15 @@ using namespace WhuTNetSimConfigClass;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	
+
     CFileConfig f("1.ini.txt");
 
 	f.LoadFile();
    
 	CGenericConfigItem<CExpressionParse> item(f,"model","formulation");
+
+	double i=(item.MyValue()).GetExpValue();
+
 
 /*
 	
@@ -27,9 +30,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	v["a"]=100;
 	v["b"]=200;
 
-	string str="a/b+sum(a,b,45)+exp(0,5)";
-	
-	CExpressionParse expa(str,v);
+	CExpressionParse expa("a+2*a+exp(a)-(2+a+(2b-1200)+3+*a+1)-a^2",v);
 
 	double i=expa.GetExpValue();
 

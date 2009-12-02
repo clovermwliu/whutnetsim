@@ -25,6 +25,9 @@ namespace WhuTNetSimConfigClass{
 #define  ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS     0x00000006
 #define  ERROR_EXP_USE_NONSUPPORT_FUNCS              0x00000007
 #define  ERROR_EXP_CALL_SUBFUNCS_FAIL                0x00000008
+#define  ERROR_EXP_NO_EXP                            0x00000009
+#define  ERROR_EXP_MISSING_OPERATOR                  0x0000000a
+#define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0000000b
 
 
 class CExpressionParse
@@ -42,6 +45,7 @@ public:
 
 	double GetExpValue(); //取一个表达式的值，是一个递归函数的入口
 
+	void Initial();
 	void Initial(const std::string&  _expression ,
 		         const map< string, double>& _parameter_table);
 
@@ -54,6 +58,7 @@ public:
 private:
 
 	void SetFirstError(const unsigned long err) {Error_code=err;}
+	void SetErrorStr (const char* p) {str_error_exp.clear();istringstream iss(p);iss >>str_error_exp;}
 
 	void ParseElementThenGotoNext(); //分析当前元素的属性，设置Cur_Element_Species，Str_Cur_Identifier和dwCur_Value，同时使pCurrent_Char指向下一个元素的首字符
 
@@ -81,10 +86,11 @@ private:
 private:
 	map<string,double> parameter_table; //参数表，关联容器
 	string str_expression;   //完整的表达式
-	
+
 private://以下成员供解析表达式用
 
 	const char* pCurrent_Char;//取当前解析到的表达式的字符
+	//char* pErr_Char;
 	
 	string Str_Cur_Identifier;//如果在解析表达式过程中遇到元素为参数标识符或函数名，则放在这里
 
@@ -109,6 +115,7 @@ private://以下成员供解析表达式用
 	ElementSpecies Cur_Element_Species; //记录当前解析到的表达式元素的种类
 
 	unsigned long Error_code;
+	string str_error_exp;
 
 
 };

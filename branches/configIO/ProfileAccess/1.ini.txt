@@ -24,4 +24,4 @@ keychar=A
 
 [model]
 
-formulation=a+b+c/d ^b
+formulation=a+b+c/d ^b	 	
