@@ -21,3 +21,7 @@ key4=128
 [section5]
 key5=
 keychar=A
+
+[model]
+
+formulation=a+b+c/d ^b

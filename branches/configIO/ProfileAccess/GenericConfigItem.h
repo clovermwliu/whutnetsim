@@ -2,6 +2,7 @@
 #define GENERICCONFIGITEMLINE_H_
 
 #include "FileConfig.h"
+#include "ExpressionParse.h"
 #include <sstream>
 
 using namespace std;
@@ -145,6 +146,10 @@ void Initcur_value(bool& value)
 	value=false;
 }
 
+void Initcur_value(CExpressionParse& value)
+{
+	return;
+}
 
 template <class T>
 void ItemValueLoad(T& item, const string& value)
@@ -170,6 +175,13 @@ void ItemValueLoad(string& item, const string& value)
 	item = value;
 }
 
+void ItemValueLoad(CExpressionParse& item, const string& value)
+{
+	map<string,double> v;
+	item.Initial(value,v);
+}
+
+
 template <class T>
 string GetItemValueToString(const T& item)
 /*
@@ -180,6 +192,12 @@ string GetItemValueToString(const T& item)
 	stream_value << item;
 	return stream_value.str();
 }
+
+string GetItemValueToString(CExpressionParse& item)
+{
+	return item.GetExpStr();
+}
+
 template <class T>
 void ItemIncrease(T& item)
 /*
@@ -208,6 +226,15 @@ void ItemIncrease(bool& item)
 	item = !item;
 }
 
+void ItemIncrease(CExpressionParse& item)
+/*
+* 描述
+*/
+{
+	return;
+
+}
+
 
 template <class T>
 void ItemDecrease(T& item)
@@ -217,6 +244,7 @@ void ItemDecrease(T& item)
 {
 	--item;
 }
+
 
 
 void ItemDecrease(std::string& item)
@@ -237,6 +265,17 @@ void ItemDecrease(bool& item)
 	item = !item;
 }
 
+void ItemDecrease(CExpressionParse& item)
+/*
+* 描述：；如果item是string类型则什么都不做
+*/
+{
+	return;
+
+}
+
+
+
 template <class T>
 T ItemAdd(const T& lhs,const T& rhs)
 /*
@@ -253,6 +292,15 @@ bool ItemAdd(const bool& lhs,const bool& rhs)
 {
 	return (bool)lhs^rhs;
 }
+
+CExpressionParse ItemAdd(const CExpressionParse& lhs,const CExpressionParse& rhs)
+/*
+描述：两个bool类型的数相加等同于这两个数异或加
+*/
+{
+	return lhs;
+}
+
 
 template <class T>
 T ItemMinus(const T& lhs,const T& rhs)
@@ -289,6 +337,15 @@ bool ItemMinus(const bool& lhs,const bool& rhs)
 	return !(lhs^rhs);
 }
 
+CExpressionParse ItemMinus(const CExpressionParse& lhs,const CExpressionParse& rhs)
+/*
+描述：
+*/
+{
+	return lhs;
+}
+
+
 template <class T>
 T ItemMul(const T& lhs,const T& rhs)
 /*
@@ -314,6 +371,14 @@ bool ItemMul(bool& lhs,const bool& rhs)
 	return lhs;
 }
 
+CExpressionParse ItemMul(const CExpressionParse& lhs,const CExpressionParse& rhs)
+/*
+描述：
+*/
+{
+	return lhs;
+}
+
 template <class T>
 T ItemDiv(const T& lhs,const T& rhs)
 /*
@@ -334,6 +399,14 @@ string ItemDiv(const string & lhs, const string& rhs)
 bool ItemDiv(const bool& lhs,const bool& rhs)
 /*
 描述：两个bool类型的数的除法，什么都不做
+*/
+{
+	return lhs;
+}
+
+CExpressionParse ItemDiv(const CExpressionParse& lhs,const CExpressionParse& rhs)
+/*
+描述：
 */
 {
 	return lhs;

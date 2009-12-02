@@ -3,10 +3,24 @@
 
 namespace WhuTNetSimConfigClass{
 
+
+//-----------------------------------------------------------------------------------------
+// CExpressionParse的实现
+//-----------------------------------------------------------------------------------------
+
+CExpressionParse::CExpressionParse()
+/*
+构造函数
+*/
+{
+
+}
+
+	
 CExpressionParse::CExpressionParse(const std::string&  _expression,
 								   const map< string, double>& _parameter_table)
 : parameter_table( _parameter_table ), str_expression( _expression ),pCurrent_Char(str_expression.c_str()),
-  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI)
+  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS)
 /*
 构造函数
 */
@@ -16,6 +30,24 @@ CExpressionParse::CExpressionParse(const std::string&  _expression,
 
 CExpressionParse::~CExpressionParse(void)
 {
+}
+
+void CExpressionParse::Initial(const std::string&  _expression ,
+			                   const map< string, double>& _parameter_table)
+/*
+描述：初始化函数
+*/
+{
+	parameter_table= _parameter_table;
+	str_expression= _expression;
+	pCurrent_Char=str_expression.c_str();
+	dwCur_Value=0;
+	Str_Cur_Identifier="";
+	Cur_Element_Species=BEGININI;
+	Error_code=ERROR_EXP_SUCCESS;
+	
+	ParseElementThenGotoNext();
+
 }
 
 
@@ -53,7 +85,7 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 		
 		}else{                             
 	
-			Cur_Element_Species = NUMBER;   //遇到数字，将数字转为数值形式存放到mValue
+			Cur_Element_Species = NUMBER;   //遇到数字，将数字转为数值形式存放到mValue，包括了诸如 .3这样的小数
 			istringstream iss( pCurrent_Char );
 			iss >>dwCur_Value;                   
 			
@@ -68,6 +100,50 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 	}
 
 }
+
+string CExpressionParse::GetFirstErrorEx()
+/*
+描述：取表达式计算错误的第一个触发原因，返回其原因文本解释
+
+#define  ERROR_EXP_SUCCESS			                 0x00000000
+#define  ERROR_EXP_DIVISOR_IS_ZERO                   0x00000001
+#define  ERROR_EXP_SIGN_UNKNOWN                      0x00000002
+#define  ERROR_EXP_INVAILD_PAPAMETER                 0x00000003
+#define  ERROR_EXP_MISSING_RIGHT_BRACKET             0x00000004
+#define  ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS   0x00000005
+#define  ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS     0x00000006
+#define  ERROR_EXP_USE_NONSUPPORT_FUNCS              0x00000007
+#define  ERROR_EXP_CALL_SUBFUNCS_FAIL                0x00000008
+
+*/
+{
+	switch (Error_code)
+	{
+	case ERROR_EXP_SUCCESS:
+		return "ERROR_EXP_SUCCESS";
+	case ERROR_EXP_DIVISOR_IS_ZERO:
+		return "ERROR_EXP_DIVISOR_IS_ZERO";
+	case ERROR_EXP_SIGN_UNKNOWN:
+		return "ERROR_EXP_SIGN_UNKNOWN";
+	case ERROR_EXP_INVAILD_PAPAMETER:
+		return "ERROR_EXP_INVAILD_PAPAMETER";
+	case ERROR_EXP_MISSING_RIGHT_BRACKET:
+		return "ERROR_EXP_MISSING_RIGHT_BRACKET";
+	case ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS:
+		return "ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS";
+	case ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS:
+		return "ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS";
+	case ERROR_EXP_USE_NONSUPPORT_FUNCS:
+		return "ERROR_EXP_USE_NONSUPPORT_FUNCS";
+	case ERROR_EXP_CALL_SUBFUNCS_FAIL:
+		return "ERROR_EXP_CALL_SUBFUNCS_FAIL";
+	default:
+		return "UNKNOWN_ERROR";
+	}
+
+
+}
+
 
 double CExpressionParse::GetExpValue()
 /*
@@ -113,6 +189,7 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 描述：优先级次低的计算函数:计算乘除法。传入*,/号的左值，调用GetSingedValueFromSubRight()函数获得*,/号的右值，计算积或商
 参数：left： *,/号的左值
 备注：*,/的右表达式可能带有+/-号，表明其极性，因此在乘或除运算前因先确定右值的极性
+      如果除数为0则返回计算结果为1.#INF
 */
 {
 
@@ -123,7 +200,19 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 	
 	}else if( Cur_Element_Species == DIVIDE ){
 		ParseElementThenGotoNext(); 
+
+#define DIVZERO 
+
+#ifdef DIVZERO
+
+		double dwDiv=GetSingedValueFromSubRight();
+		if(dwDiv ==0 && Error_code==ERROR_EXP_SUCCESS)
+			SetFirstError(ERROR_EXP_DIVISOR_IS_ZERO);
+		result = GetExpValueByMulOrDivExp( left / dwDiv );
+#else
 		result = GetExpValueByMulOrDivExp( left / GetSingedValueFromSubRight() );
+#endif
+		
 	}
 	return result;
 }
@@ -139,8 +228,13 @@ double CExpressionParse::GetSingedValueFromSubRight()
 	}else if( Cur_Element_Species == SUBTRACT_OR_NEGATIVE ){
 		ParseElementThenGotoNext(); 
 		result = - GetSingedValueFromSubRight();
-	}else if (Cur_Element_Species ==MULTIPLY || Cur_Element_Species ==MULTIPLY || Cur_Element_Species==POWER){ //这些既非极性符号，又非参数标识符或子函数的合法字符，如果分支转到这里说明原表达式有误，如 5+*3
-		assert(0);		
+	}else if (Cur_Element_Species ==MULTIPLY || Cur_Element_Species ==DIVIDE || Cur_Element_Species==POWER){ //这些既非极性符号，又非参数标识符或子函数的合法字符，如果分支转到这里说明原表达式有误，如 5+*3
+		
+		if (Error_code==ERROR_EXP_SUCCESS)
+			SetFirstError(ERROR_EXP_SIGN_UNKNOWN);
+
+		ParseElementThenGotoNext(); 
+		result = GetSingedValueFromSubRight();	//当作+号处理，同时记录异常值	
 	}else{
 		result = GetExpValueByPowerExp();
 	}
@@ -174,7 +268,8 @@ double CExpressionParse::GetElementValue()
 	}else if( Cur_Element_Species == LEFT_BRACKET ){ //如遇到(则优先计算整个()内表达式的值
 		ParseElementThenGotoNext();	
 		result = GetExpValue();                      //当作一个新的表达式，从头计算
-		assert(Cur_Element_Species == RIGHT_BRACKET ); //计算结束后一定落在右括号上，否则原表达式括号不匹配
+		if (Cur_Element_Species != RIGHT_BRACKET && Error_code==ERROR_EXP_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
+			SetFirstError(ERROR_EXP_MISSING_RIGHT_BRACKET);
 		ParseElementThenGotoNext();	
 	}else{
 		result = ParseCurIdentifier();
@@ -187,7 +282,8 @@ double CExpressionParse::ParseCurIdentifier()
 描述：解析参数标识符或子函数名
 */
 {
-	assert(Cur_Element_Species ==IDENTIFIER );
+	if(Cur_Element_Species !=IDENTIFIER && Error_code==ERROR_EXP_SUCCESS )
+		SetFirstError(ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS); 
 	string str = Str_Cur_Identifier;
 	ParseElementThenGotoNext();	
 	return GetValueFromCurIdentifier( str);
@@ -207,17 +303,17 @@ double CExpressionParse::GetValueFromCurIdentifier( const string& identifier )
 		vector<double> param = GetParameterValueForSupportFuncs();   
        
 		//GUOCHI
-//		result = funcs.GetValue( identifier,param );        //调用支持函数库对象f处理这个子函数
+		result = GetValueFromCurSubFunc( identifier,param );        //调用支持函数库处理这个子函数
 	
 	}else{                                                   //没有紧跟（则说明这是一个参数标识符
 		
 		if( parameter_table.find( identifier ) == parameter_table.end() ) {    //去参数列表里去参数值
 			
-			//GUOCHI 
-			result=1;                                                          //说明参数列表里找不到该参数，返回默认值
+			if (Error_code==ERROR_EXP_SUCCESS)
+				SetFirstError(ERROR_EXP_INVAILD_PAPAMETER);
+			result=DEFAULT_VALUE;                                              //说明参数列表里找不到该参数，返回默认值
 		
 		}else{
-
 			result = parameter_table.find( identifier )->second;
 		}
 		
@@ -243,15 +339,68 @@ vector<double> CExpressionParse::GetParameterValueForSupportFuncs()
 		if( Cur_Element_Species == PARAMETER_SEPERATOR ){
 
 			ParseElementThenGotoNext();
-            
-			//GUOCHI
-			assert(Cur_Element_Species!=MULTIPLY && Cur_Element_Species!=DIVIDE && Cur_Element_Species!=POWER &&
-				   Cur_Element_Species!=RIGHT_BRACKET && Cur_Element_Species!=PARAMETER_SEPERATOR && Cur_Element_Species!=FINISHED);
+ 			if(Cur_Element_Species ==MULTIPLY || Cur_Element_Species ==DIVIDE || Cur_Element_Species ==POWER ||
+		       Cur_Element_Species==RIGHT_BRACKET || Cur_Element_Species==PARAMETER_SEPERATOR || Cur_Element_Species==FINISHED){
+					if (Error_code==ERROR_EXP_SUCCESS)
+						SetFirstError(ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS );
+			}
 		}
 		result.push_back( GetExpValue() );//每个参数都可以被看作是一个子表达式
 	}
 	return result;
 }
+
+
+double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vector< double >& params)
+/*
+
+*/
+{
+	if (name== "sum" || name== "SUM"){
+
+		return accumulate( params.begin(), params.end(), 0 );
+	
+	}else if (name=="exp" || name=="EXP"){
+
+		if (params.size()>1 || params.size()==0){
+			if(Error_code==ERROR_EXP_SUCCESS){
+
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			}
+		}
+		return exp(params[0]);
+	}
+
+	if(Error_code==ERROR_EXP_SUCCESS)
+		SetFirstError(ERROR_EXP_USE_NONSUPPORT_FUNCS);
+
+	return DEFAULT_VALUE; //默认值返回
+}
+
+
+/*
+
+double CSupportFunctionsLib::GetValue( const char* name, const ::std::vector< double >& params )
+{
+if( stricmp( name, "return1" ) == 0 )
+{
+if( params.size() != 0 )
+throw 1;
+return 1;
+}
+else if( stricmp( name, "negative" ) == 0 )
+{
+if( params.size() != 1 )
+throw 1;
+return - params[ 0 ];
+}
+else if( stricmp( name, "sum" ) == 0 )
+{
+return accumulate( params.begin(), params.end(), 0 );
+}
+}
+
+*/
 
 
 }//end of ExpressionParse.cpp

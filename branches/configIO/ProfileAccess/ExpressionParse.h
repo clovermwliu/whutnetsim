@@ -15,38 +15,24 @@ using namespace std;
 
 namespace WhuTNetSimConfigClass{
 
-
-class CSupportFunctionsLib
-{
-public:
-	double GetValue( const string, const vector< double >& );
-	
-	double GetValue( const char* name, const ::std::vector< double >& params )
-	{
-		if( stricmp( name, "return1" ) == 0 )
-		{
-			if( params.size() != 0 )
-				throw 1;
-			return 1;
-		}
-		else if( stricmp( name, "negative" ) == 0 )
-		{
-			if( params.size() != 1 )
-				throw 1;
-			return - params[ 0 ];
-		}
-		else if( stricmp( name, "sum" ) == 0 )
-		{
-			return accumulate( params.begin(), params.end(), 0 );
-		}
-	}
-};
-
+#define  DEFAULT_VALUE                               1
+#define  ERROR_EXP_SUCCESS			                 0x00000000
+#define  ERROR_EXP_DIVISOR_IS_ZERO                   0x00000001
+#define  ERROR_EXP_SIGN_UNKNOWN                      0x00000002
+#define  ERROR_EXP_INVAILD_PAPAMETER                 0x00000003
+#define  ERROR_EXP_MISSING_RIGHT_BRACKET             0x00000004
+#define  ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS   0x00000005
+#define  ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS     0x00000006
+#define  ERROR_EXP_USE_NONSUPPORT_FUNCS              0x00000007
+#define  ERROR_EXP_CALL_SUBFUNCS_FAIL                0x00000008
 
 
 class CExpressionParse
 {
 public:
+	
+	CExpressionParse();
+	
 	CExpressionParse( const std::string&  _expression ,
 		              const map< string, double>& _parameter_table);
 	
@@ -56,7 +42,18 @@ public:
 
 	double GetExpValue(); //取一个表达式的值，是一个递归函数的入口
 
+	void Initial(const std::string&  _expression ,
+		         const map< string, double>& _parameter_table);
+
+	unsigned long GetFirstError() {return Error_code;}
+	string GetFirstErrorEx();
+
+	const string& GetExpStr() {return str_expression;}
+
+
 private:
+
+	void SetFirstError(const unsigned long err) {Error_code=err;}
 
 	void ParseElementThenGotoNext(); //分析当前元素的属性，设置Cur_Element_Species，Str_Cur_Identifier和dwCur_Value，同时使pCurrent_Char指向下一个元素的首字符
 
@@ -75,14 +72,16 @@ private:
 	double ParseCurIdentifier(); //解析参数标识符或子函数名
 	
 	double GetValueFromCurIdentifier( const string& identifier ); //从参数列表parameter_table中获得参数标识符的值
-	
-	vector<double> GetParameterValueForSupportFuncs(); //获得子函数需要的各个参数的值
-		
-private:
-	const map<string,double>& parameter_table; //参数表，关联容器
-	const string& str_expression;   //完整的表达式
-	CSupportFunctionsLib funcs; //这个支持函数库的对象作为CExpressionParse的成员，似有不妥
 
+	vector<double> GetParameterValueForSupportFuncs(); //获得子函数需要的各个参数的值
+	
+	double GetValueFromCurSubFunc(const string& name, const vector< double >& params); //获得子函数返回的值
+
+
+private:
+	map<string,double> parameter_table; //参数表，关联容器
+	string str_expression;   //完整的表达式
+	
 private://以下成员供解析表达式用
 
 	const char* pCurrent_Char;//取当前解析到的表达式的字符
@@ -108,6 +107,8 @@ private://以下成员供解析表达式用
 	};
 	
 	ElementSpecies Cur_Element_Species; //记录当前解析到的表达式元素的种类
+
+	unsigned long Error_code;
 
 
 };
