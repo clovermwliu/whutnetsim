@@ -14,17 +14,27 @@ using namespace WhuTNetSimConfigClass;
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
+    CFileConfig f("1.ini.txt");
+
+	f.LoadFile();
+   
+	CGenericConfigItem<CExpressionParse> item(f,"model","formulation");
+
+/*
+	
 	map<string,double> v;
 
 	v["a"]=100;
 	v["b"]=200;
 
-	string str="a+b*a^2";
+	string str="a/b+sum(a,b,45)+exp(0,5)";
 	
 	CExpressionParse expa(str,v);
 
-	cout<<expa.GetExpValue()<<endl;
-	
+	double i=expa.GetExpValue();
+
+	cout<<i<<expa.GetFirstErrorEx()<<endl;
+*/
 
 	getchar();
 
