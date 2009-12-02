@@ -148,7 +148,7 @@ void Initcur_value(bool& value)
 
 void Initcur_value(CExpressionParse& value)
 {
-	return;
+	value.Initial();
 }
 
 template <class T>
@@ -176,9 +176,29 @@ void ItemValueLoad(string& item, const string& value)
 }
 
 void ItemValueLoad(CExpressionParse& item, const string& value)
+/*
+描述：将value依照CExpressionParse的要求赋值，value是一个形如 "expression $a,$b,$c"的字符串
+*/
 {
+	string str_exp;
+	string tmp;
+	string str_param;
+
+	size_t pos=value.find_first_of(CHAR_PARAM);
+	
+	if (string::npos != pos){
+
+		str_exp=value.substr(0,pos);
+		tmp=value.substr(pos+1);
+
+	}else{
+
+		str_exp=value;
+
+	}
+
 	map<string,double> v;
-	item.Initial(value,v);
+	item.Initial(str_exp,v);
 }
 
 

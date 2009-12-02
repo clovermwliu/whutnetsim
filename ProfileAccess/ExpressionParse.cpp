@@ -20,7 +20,7 @@ CExpressionParse::CExpressionParse()
 CExpressionParse::CExpressionParse(const std::string&  _expression,
 								   const map< string, double>& _parameter_table)
 : parameter_table( _parameter_table ), str_expression( _expression ),pCurrent_Char(str_expression.c_str()),
-  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS)
+  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS),str_error_exp("")
 /*
 构造函数
 */
@@ -31,6 +31,24 @@ CExpressionParse::CExpressionParse(const std::string&  _expression,
 CExpressionParse::~CExpressionParse(void)
 {
 }
+
+void CExpressionParse::Initial()
+/*
+描述：初始化函数
+*/
+{
+	parameter_table.clear();
+	str_expression="";
+	pCurrent_Char=NULL;
+	dwCur_Value=0;
+	Str_Cur_Identifier="";
+	Cur_Element_Species=BEGININI;
+	Error_code=ERROR_EXP_SUCCESS;
+	str_error_exp="";
+
+	ParseElementThenGotoNext();
+}
+
 
 void CExpressionParse::Initial(const std::string&  _expression ,
 			                   const map< string, double>& _parameter_table)
@@ -45,6 +63,7 @@ void CExpressionParse::Initial(const std::string&  _expression ,
 	Str_Cur_Identifier="";
 	Cur_Element_Species=BEGININI;
 	Error_code=ERROR_EXP_SUCCESS;
+	str_error_exp="";
 	
 	ParseElementThenGotoNext();
 
@@ -56,6 +75,13 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 描述：分析当前元素的属性，设置Cur_Element_Species，Str_Cur_Identifier和dwCur_Value，同时使pCurrent_Char指向下一个元素的首字符
 */
 {
+	if (!pCurrent_Char){
+		if (Error_code==ERROR_EXP_SUCCESS)
+			SetFirstError(ERROR_EXP_NO_EXP);
+		Cur_Element_Species = FINISHED;
+		return;
+	}
+
 	while(true){
 		
 		if( isspace( *pCurrent_Char) ) {
@@ -91,7 +117,8 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 			
 			if( ! iss ){
 				
-				//throw eval_exception( "error in number format" );
+				SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
+				SetErrorStr(pCurrent_Char);
 			}
 			pCurrent_Char += iss.rdbuf()->pubseekoff( 0, ios::cur, ios::in );
 		}
@@ -114,33 +141,41 @@ string CExpressionParse::GetFirstErrorEx()
 #define  ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS     0x00000006
 #define  ERROR_EXP_USE_NONSUPPORT_FUNCS              0x00000007
 #define  ERROR_EXP_CALL_SUBFUNCS_FAIL                0x00000008
+#define  ERROR_EXP_NO_EXP                            0x00000009
+#define  ERROR_EXP_MISSING_OPERATOR                  0x0000000a
+#define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0000000b
 
 */
 {
 	switch (Error_code)
 	{
 	case ERROR_EXP_SUCCESS:
-		return "ERROR_EXP_SUCCESS";
+		return "SUCCESS";
 	case ERROR_EXP_DIVISOR_IS_ZERO:
-		return "ERROR_EXP_DIVISOR_IS_ZERO";
+		return "Divisor is zero. Near by:"+str_error_exp;
 	case ERROR_EXP_SIGN_UNKNOWN:
-		return "ERROR_EXP_SIGN_UNKNOWN";
+		return "Sign of expression is unknown.  Near by:"+str_error_exp;
 	case ERROR_EXP_INVAILD_PAPAMETER:
-		return "ERROR_EXP_INVAILD_PAPAMETER";
+		return "Including invalid parameter.  Near by"+str_error_exp;
 	case ERROR_EXP_MISSING_RIGHT_BRACKET:
-		return "ERROR_EXP_MISSING_RIGHT_BRACKET";
+		return "Missing right bracket.  Near by"+str_error_exp;
 	case ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS:
-		return "ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS";
+		return "Expression includes reserve character.  Near by"+str_error_exp;
 	case ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS:
-		return "ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS";
+		return "Sub-Functions includes invalid parameters.  Near by"+str_error_exp;
 	case ERROR_EXP_USE_NONSUPPORT_FUNCS:
-		return "ERROR_EXP_USE_NONSUPPORT_FUNCS";
+		return "Including non-support sub-functions.  Near by"+str_error_exp;
 	case ERROR_EXP_CALL_SUBFUNCS_FAIL:
-		return "ERROR_EXP_CALL_SUBFUNCS_FAIL";
+		return "Parameters dose not match on sub-functions's request @:"+str_error_exp;
+	case ERROR_EXP_NO_EXP:
+		return "No expression in this object";
+	case ERROR_EXP_MISSING_OPERATOR:
+		return "Missing operator.  Near by"+str_error_exp;
+	case ERROR_EXP_NUMBER_FORMAT_INVALID:
+		return "Number format error.  Near by"+str_error_exp;
 	default:
 		return "UNKNOWN_ERROR";
 	}
-
 
 }
 
@@ -181,6 +216,9 @@ double CExpressionParse::GetExpValueFromSubRight()
 */
 {
 
+	if (Error_code==ERROR_EXP_SUCCESS){
+		SetErrorStr(pCurrent_Char);
+	}
 	return GetExpValueByMulOrDivExp( GetSingedValueFromSubRight() );
 }
 
@@ -195,7 +233,12 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 
 	double result = left;
 	if( Cur_Element_Species == MULTIPLY ){
-		ParseElementThenGotoNext(); 
+		ParseElementThenGotoNext();
+
+		if (Error_code==ERROR_EXP_SUCCESS){
+			SetErrorStr(pCurrent_Char);
+		}
+
 		result = GetExpValueByMulOrDivExp( left * GetSingedValueFromSubRight() );
 	
 	}else if( Cur_Element_Species == DIVIDE ){
@@ -204,10 +247,15 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 #define DIVZERO 
 
 #ifdef DIVZERO
-
+	
+		if (Error_code==ERROR_EXP_SUCCESS){
+			SetErrorStr(pCurrent_Char);
+		}
+		
 		double dwDiv=GetSingedValueFromSubRight();
-		if(dwDiv ==0 && Error_code==ERROR_EXP_SUCCESS)
+		if(dwDiv ==0 && Error_code==ERROR_EXP_SUCCESS){
 			SetFirstError(ERROR_EXP_DIVISOR_IS_ZERO);
+		}
 		result = GetExpValueByMulOrDivExp( left / dwDiv );
 #else
 		result = GetExpValueByMulOrDivExp( left / GetSingedValueFromSubRight() );
@@ -230,12 +278,16 @@ double CExpressionParse::GetSingedValueFromSubRight()
 		result = - GetSingedValueFromSubRight();
 	}else if (Cur_Element_Species ==MULTIPLY || Cur_Element_Species ==DIVIDE || Cur_Element_Species==POWER){ //这些既非极性符号，又非参数标识符或子函数的合法字符，如果分支转到这里说明原表达式有误，如 5+*3
 		
-		if (Error_code==ERROR_EXP_SUCCESS)
+		if (Error_code==ERROR_EXP_SUCCESS){
 			SetFirstError(ERROR_EXP_SIGN_UNKNOWN);
+		}
 
 		ParseElementThenGotoNext(); 
 		result = GetSingedValueFromSubRight();	//当作+号处理，同时记录异常值	
 	}else{
+
+		if (Error_code==ERROR_EXP_SUCCESS)
+			SetErrorStr(pCurrent_Char);
 		result = GetExpValueByPowerExp();
 	}
 	return result;
@@ -249,9 +301,14 @@ double CExpressionParse::GetExpValueByPowerExp()
       
 */
 {
+	if (Error_code==ERROR_EXP_SUCCESS)
+		SetErrorStr(pCurrent_Char);
+
 	double result = GetElementValue();  //取底数
+	
 	if( Cur_Element_Species == POWER ){
 		ParseElementThenGotoNext(); 
+
 		result = pow( result, static_cast<int>( GetExpValueByPowerExp() ) );
 	}
 	return result;
@@ -266,12 +323,18 @@ double CExpressionParse::GetElementValue()
 		result = dwCur_Value;
 		ParseElementThenGotoNext();	
 	}else if( Cur_Element_Species == LEFT_BRACKET ){ //如遇到(则优先计算整个()内表达式的值
-		ParseElementThenGotoNext();	
+
+		ParseElementThenGotoNext();
+
+		if (Error_code==ERROR_EXP_SUCCESS)
+			SetErrorStr(pCurrent_Char);
+
 		result = GetExpValue();                      //当作一个新的表达式，从头计算
 		if (Cur_Element_Species != RIGHT_BRACKET && Error_code==ERROR_EXP_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
 			SetFirstError(ERROR_EXP_MISSING_RIGHT_BRACKET);
 		ParseElementThenGotoNext();	
 	}else{
+
 		result = ParseCurIdentifier();
 	}
 	return result;
@@ -282,8 +345,10 @@ double CExpressionParse::ParseCurIdentifier()
 描述：解析参数标识符或子函数名
 */
 {
-	if(Cur_Element_Species !=IDENTIFIER && Error_code==ERROR_EXP_SUCCESS )
+	if(Cur_Element_Species !=IDENTIFIER && Error_code==ERROR_EXP_SUCCESS ){
 		SetFirstError(ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS); 
+		SetErrorStr(pCurrent_Char);
+	}
 	string str = Str_Cur_Identifier;
 	ParseElementThenGotoNext();	
 	return GetValueFromCurIdentifier( str);
@@ -366,6 +431,7 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 			if(Error_code==ERROR_EXP_SUCCESS){
 
 				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
 			}
 		}
 		return exp(params[0]);
@@ -377,30 +443,6 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	return DEFAULT_VALUE; //默认值返回
 }
 
-
-/*
-
-double CSupportFunctionsLib::GetValue( const char* name, const ::std::vector< double >& params )
-{
-if( stricmp( name, "return1" ) == 0 )
-{
-if( params.size() != 0 )
-throw 1;
-return 1;
-}
-else if( stricmp( name, "negative" ) == 0 )
-{
-if( params.size() != 1 )
-throw 1;
-return - params[ 0 ];
-}
-else if( stricmp( name, "sum" ) == 0 )
-{
-return accumulate( params.begin(), params.end(), 0 );
-}
-}
-
-*/
 
 
 }//end of ExpressionParse.cpp
