@@ -1,0 +1,143 @@
+.SILENT:
+SHELL           := /bin/sh
+OSNAME		:= $(shell uname -s)
+ARCH            := $(shell uname -m)
+MKDIR		:= $(shell which mkdir)
+
+ifndef CXX
+CXX             := $(shell which g++)
+endif
+
+## this is needed for all 32-bit archs, if only gmake conditionals had a 
+## switch-case construct
+
+ifneq (Darwin, $(findstring Darwin, $(OSNAME)))
+CFLAGS          := -DUL_SIZE_DIFF
+endif
+
+TOPDIR = ..
+SOURCES    = $(wildcard *.cc)
+BASENAMES  = $(basename $(SOURCES)) 
+DBGOBJDIR  = $(TOPDIR)/OBJDBG
+DDPNDPRFX  = $(addsuffix \/, $(subst /,\/, $(DBGOBJDIR)))
+OPTOBJDIR  = $(TOPDIR)/OBJOPT
+ODPNDPRFX  = $(addsuffix \/, $(subst /,\/, $(OPTOBJDIR)))
+OBJECTS    = $(subst .cc,.o,$(SOURCES))
+
+INCLUDES   = $(QT_INCL) $(RTI_INCL)
+LIBS       = $(QT_LIBS) $(RTI_LIBS)
+
+DOBJECTS   = $(addprefix $(DBGOBJDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
+OOBJECTS   = $(addprefix $(OPTOBJDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
+
+ifeq (Darwin, $(findstring Darwin, $(OSNAME)))
+DYN_LIB_DBG = libGTNetS-dbg.dylib
+DYN_LIB_OPT = libGTNetS-opt.dylib
+else
+DYN_LIB_DBG = libGTNetS-dbg.so
+DYN_LIB_OPT = libGTNetS-opt.so
+endif
+
+include ../mk/qtcheck.mk
+include ../mk/rticheck.mk
+export 
+
+#all:    debug opt
+all:    debuglib
+
+#moc_qtwindow.cc: qtwindow.h
+
+moc_qtwindow.h: qtwindow.h
+ifdef HAVE_QT
+	@echo Running MOC
+	$(MOC) $< -o $@ ;
+else
+	@echo No libqt found
+ endif
+
+## For Darwin, the .so are replaced with .dylib in the actual commands
+
+debuglib: libGTNetS-debug.a $(DYN_LIB_DBG) moc_qtwindow.h
+
+optlib: libGTNetS-opt.a $(DYN_LIB_OPT) moc_qtwindow.h
+
+libGTNetS-debug.a: $(DOBJECTS)
+	ar -r $(TOPDIR)/libGTNetS-debug.a $(DOBJECTS)
+
+$(DYN_LIB_DBG): $(DOBJECTS)
+	echo Linking libGTNetS-opt.dylib
+	case $(OSNAME) in \
+	Linux ) \
+	$(CXX) -o $(TOPDIR)/libGTNetS-debug.so -shared $(DOBJECTS) $(RTI_LIBS) \
+	;; \
+	SunOS ) \
+	$(CXX) -G -o $(TOPDIR)/libGTNetS-debug.so $(DOBJECTS) $(RTI_LIBS) \
+	;; \
+	Darwin ) \
+	$(CXX) -dynamiclib -install_name $(TOPDIR)/libGTNetS-debug.dylib -o $(TOPDIR)/libGTNetS-debug.dylib $(DOBJECTS) $(QT_LIBS) \
+	;; \
+	* ) \
+	echo Unsupported machine \
+	;; \
+	esac
+
+libGTNetS-opt.a: $(OOBJECTS)
+	ar -r $(TOPDIR)/libGTNetS-opt.a $(OOBJECTS)
+
+$(DYN_LIB_OPT): $(OOBJECTS)
+	echo Linking libGTNetS-opt.dylib
+	case $(OSNAME) in \
+	Linux ) \
+	$(CXX) -o $(TOPDIR)/libGTNetS-opt.so -shared $(OOBJECTS) $(RTI_LIBS) \
+	;; \
+	SunOS ) \
+	$(CXX) -G -o $(TOPDIR)/libGTNetS-opt.so $(OOBJECTS) $(RTI_LIBS) \
+	;; \
+	Darwin ) \
+	$(CXX) -dynamiclib -install_name $(TOPDIR)/libGTNetS-opt.dylib -o $(TOPDIR)/libGTNetS-opt.dylib $(DOBJECTS) $(QT_LIBS) \
+	;; \
+	* ) \
+	echo Unsupported machine \
+	;; \
+	esac
+
+
+$(DBGOBJDIR)/%.o::%.cc
+	@echo Compiling debug $*
+	$(CXX) -g $(CFLAGS) $(INCLUDES) -o $@ -c $*.cc
+
+$(OPTOBJDIR)/%.o::%.cc
+	@echo Compiling opt $*
+	$(CXX) -O2 $(CFLAGS) $(INCLUDES) -o $@ -c $*.cc
+
+clean:
+	rm -rf $(DBGOBJDIR) $(OPTOBJDIR) \
+	rm -f moc_qtwindow.h
+
+.PHONY: clean
+
+depend: $(SOURCES) moc_qtwindow.h
+	@echo Computing Dependencies
+ifdef HAVE_QT
+	$(CXX) -g $(CFLAGS) $(INCLUDES) $(DFLAGS) $(SOURCES) 2>/dev/null | sed  -e 's/.*\.o/$(DDPNDPRFX)&/' > make.depend.dbg
+	$(CXX) $(CFLAGS) $(INCLUDES) $(DFLAGS) $(SOURCES) 2>/dev/null | sed  -e 's/.*\.o/$(ODPNDPRFX)&/' > make.depend.opt
+else
+	$(CXX) -g $(CFLAGS) $(INCLUDES) $(DFLAGS) $(SOURCES) 2>/dev/null | sed  -e 's/.*\.o/$(DDPNDPRFX)&/' > make.depend.dbg
+	$(CXX) $(CFLAGS) $(INCLUDES) $(DFLAGS) $(SOURCES) 2>/dev/null | sed  -e 's/.*\.o/$(ODPNDPRFX)&/' > make.depend.opt
+endif
+
+ifeq (make.depend.dbg, $(findstring make.depend.dbg, $(wildcard *)))
+include make.depend.dbg
+endif
+
+ifeq (make.depend.opt, $(findstring make.depend.opt, $(wildcard *)))
+include make.depend.opt
+endif
+
+testing:
+	@echo $(SOURCES)
+	@echo $(DOBJECTS) 
+	@echo $(OOBJECTS) 
+	@echo $(CFLAGS) 
+	@echo $(INCLUDES)
+	@echo $(LIBS)
