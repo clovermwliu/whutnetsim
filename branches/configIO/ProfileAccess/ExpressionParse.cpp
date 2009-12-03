@@ -117,8 +117,12 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 			
 			if( ! iss ){
 				
-				SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
-				SetErrorStr(pCurrent_Char);
+				if (Error_code==ERROR_EXP_SUCCESS){
+					SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
+					SetErrorStr(pCurrent_Char);
+				}
+				++pCurrent_Char;
+				break;
 			}
 			pCurrent_Char += iss.rdbuf()->pubseekoff( 0, ios::cur, ios::in );
 		}
@@ -225,8 +229,10 @@ double CExpressionParse::GetExpValue()
 
 double CExpressionParse::GetSubExpValue()
 {
+	if (Error_code==ERROR_EXP_SUCCESS){
+		SetErrorStr(pCurrent_Char);
+	}
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
-
 	return result;
 }
 
@@ -362,9 +368,6 @@ double CExpressionParse::GetElementValue()
 
 		ParseElementThenGotoNext();
 
-		if (Error_code==ERROR_EXP_SUCCESS)
-			SetErrorStr(pCurrent_Char);
-
 		//result = GetExpValue();                      //当作一个新的表达式，从头计算
 		result=GetSubExpValue();
 
@@ -405,7 +408,7 @@ double CExpressionParse::GetValueFromCurIdentifier( const string& identifier )
 		ParseElementThenGotoNext();	
 		vector<double> param = GetParameterValueForSupportFuncs();   
        
-		//GUOCHI
+		
 		result = GetValueFromCurSubFunc( identifier,param );        //调用支持函数库处理这个子函数
 	
 	}else{                                                   //没有紧跟（则说明这是一个参数标识符
@@ -414,6 +417,7 @@ double CExpressionParse::GetValueFromCurIdentifier( const string& identifier )
 			
 			if (Error_code==ERROR_EXP_SUCCESS)
 				SetFirstError(ERROR_EXP_INVAILD_PAPAMETER);
+			
 			result=DEFAULT_VALUE;                                              //说明参数列表里找不到该参数，返回默认值
 		
 		}else{
@@ -459,27 +463,262 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 /*
 
 */
-{
+{	
 	if (name== "sum" || name== "SUM"){
 
 		return accumulate( params.begin(), params.end(), (double)0 );
 	
-	}else if (name=="exp" || name=="EXP"){
+	}else if (name == "factorial" || name == "FACTORIAL" || name == "fa"){
 
-		if (params.size()>1 || params.size()==0){
+		if (params.size()!=1){
 			if(Error_code==ERROR_EXP_SUCCESS){
-
 				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
+		if (params.size()==0) return DEFAULT_VALUE;
+		
+		double dwresult= DEFAULT_VALUE;
+		double i= floor(params[0]);
+
+		while(  i> 1 ){
+			dwresult *= i;
+			i -= 1;
+		}
+
+		return dwresult;
+
+	}else if (name == "sqrt" || name == "SQRT"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0) return exp((double)DEFAULT_VALUE);
+
+		return sqrt(params[0]);
+
+	}else if (name=="exp" || name=="EXP"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0) return exp((double)DEFAULT_VALUE);
+		
 		return exp(params[0]);
+	
+	}else if (name == "logXY" || name == "LOGXY"){
+
+		if (params.size()!=2 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==1 )	return log(params[0]);
+		
+		if (params.size()==0 )	return DEFAULT_VALUE;
+	
+		return log(params[0])/log(params[1]);
+
+	}else if (name == "ln" || name == "Log"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+
+		if (params.size()==0)  return DEFAULT_VALUE;
+
+		return log(params[0]);
+
+	}else if (name == "lg" || name == "log10"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return log10(params[0]);
+
+	}else if (name == "sin" || name == "SIN"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return sin(params[0]);
+
+	}else if (name == "asin" || name == "ASIN"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return asin(params[0]);
+
+	}else if (name == "cos" || name == "COS"){
+
+		if (params.size()!=1 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return cos(params[0]);
+
+	}else if (name == "acos" || name == "ACOS"){
+
+		if (params.size()!=1 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return acos(params[0]);
+
+	}else if (name == "tan" || name == "tg" || name == "TAN" || name=="TG"){
+
+		if (params.size()!=1 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return tan(params[0]);
+
+	}else if (name == "atan" || name == "atg" || name == "ATAN" || name=="ATG"){
+
+		if (params.size()!=1 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return atan(params[0]);
+
+	}else if (name == "pi" || name == "PI"){
+		
+		if (params.size()!=0 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		return (double)3.1415926535897932384626433832795; 
+
+	}else if (name == "abs" || name == "ABS"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return abs(params[0]);
+	
+	}else if (name == "floor" || name == "FLOOR")	{
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return floor(params[0]);
+
+	}else if (name == "ceil" || name == "CEIL")	{
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return ceil(params[0]);
+
+	}else if (name == "mod" || name == "MOD")	{
+
+		if (params.size()!=2){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+
+		if (params.size()==1)  return params[0];
+		if (params.size()==0)  return DEFAULT_VALUE;
+
+		return fmod(params[0],params[1]);
+
+	}else if (name == "sinh" || name == "SINH"){
+
+		if (params.size()!=1){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return sinh(params[0]);
+
+	}else if (name == "cosh" || name == "COSH"){
+
+		if (params.size()!=1 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return cosh(params[0]);
+
+	}else if (name == "tanh" || name == "tgh" || name == "TANH" || name=="TGH"){
+
+		if (params.size()!=1 ){
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+		}
+		if (params.size()==0)  return DEFAULT_VALUE;
+		return tanh(params[0]);
+
+	}else{
+
+		if(Error_code==ERROR_EXP_SUCCESS)
+			SetFirstError(ERROR_EXP_USE_NONSUPPORT_FUNCS);
+
+		return DEFAULT_VALUE; //默认值返回
+
 	}
 
-	if(Error_code==ERROR_EXP_SUCCESS)
-		SetFirstError(ERROR_EXP_USE_NONSUPPORT_FUNCS);
-
-	return DEFAULT_VALUE; //默认值返回
+	
 }
 
 

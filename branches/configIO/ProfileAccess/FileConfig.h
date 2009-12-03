@@ -154,6 +154,8 @@ public://公开方法II
 
 protected: //保护方法
 
+	CFileConfig(const CFileConfig&); //因为SectionList里存放的是跟当前对象有关的地址，因此整个CFileConfig对象禁止复制！否则复制后的对象中的SectionList仍然指向原对象fileData，从而造成未知错误
+
 	//以下函数用以维护fileData和SectionList
 	bool CancelConfigLine(const string& section, 
 		                  const string& key);
