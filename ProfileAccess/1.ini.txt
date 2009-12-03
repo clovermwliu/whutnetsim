@@ -26,4 +26,4 @@ keychar=A
 
 formulation=a+b+45+*exp(c)/c/d ^b	 	$$$a  ,  ,,,,$b,	  $ $	 	c    , 	$$	 d 
 
-formulation2=8+4a*(5*b+c/4-3^(a+8b)) $a,$b,$c
+formulation2=exp(2)+fa(5)+)

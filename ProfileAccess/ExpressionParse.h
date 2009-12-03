@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <numeric>
 #include <cmath>
-#include <assert.h>
+#include <cctype>
 
 using namespace std;
 
