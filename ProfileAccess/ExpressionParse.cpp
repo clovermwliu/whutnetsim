@@ -180,6 +180,25 @@ string CExpressionParse::GetFirstErrorEx()
 }
 
 
+
+bool CExpressionParse::SetParamValue(const string& param, double value)
+/*
+描述：更新参数列表的值
+*/
+{
+	map<string,double>::iterator iter=parameter_table.find( param);
+	if( iter == parameter_table.end() )//没有这个参数
+		return false;
+
+	iter->second=value;
+
+	return true;
+
+}
+
+
+
+
 double CExpressionParse::GetExpValue()
 /*
 描述：返回一个表达式的值，是一个递归函数的入口
@@ -309,7 +328,7 @@ double CExpressionParse::GetExpValueByPowerExp()
 	if( Cur_Element_Species == POWER ){
 		ParseElementThenGotoNext(); 
 
-		result = pow( result, static_cast<int>( GetExpValueByPowerExp() ) );
+		result = pow( result, GetExpValueByPowerExp());
 	}
 	return result;
 }
@@ -423,7 +442,7 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 {
 	if (name== "sum" || name== "SUM"){
 
-		return accumulate( params.begin(), params.end(), 0 );
+		return accumulate( params.begin(), params.end(), (double)0 );
 	
 	}else if (name=="exp" || name=="EXP"){
 

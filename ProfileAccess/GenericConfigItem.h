@@ -183,21 +183,44 @@ void ItemValueLoad(CExpressionParse& item, const string& value)
 	string str_exp;
 	string tmp;
 	string str_param;
+	map<string,double> v;
 
 	size_t pos=value.find_first_of(CHAR_PARAM);
 	
 	if (string::npos != pos){
 
 		str_exp=value.substr(0,pos);
-		tmp=value.substr(pos+1);
+		tmp=value.substr(pos);
+    	
+		string::iterator pchar=tmp.begin();
 
+		while (pchar!=tmp.end())
+		{
+			if (*pchar==CHAR_PARAM||*pchar==CHAR_BLANK || *pchar==CHAR_TAB||*pchar==CHAR_SEPERATOR){
+				++pchar;
+				continue;
+			}
+			str_param.clear();
+			do 
+			{
+				if(*pchar==CHAR_BLANK || *pchar==CHAR_TAB){
+					++pchar;
+					continue;
+				}
+				
+				str_param+=*pchar;
+				++pchar;
+			} while (pchar!=tmp.end() && *pchar!=CHAR_SEPERATOR); //注意两个条件的顺序
+			
+			if (pchar!=tmp.end())	++pchar;
+			
+			v.insert(pair<string, double>(str_param,1));
+		}
+		
 	}else{
-
 		str_exp=value;
-
 	}
 
-	map<string,double> v;
 	item.Initial(str_exp,v);
 }
 

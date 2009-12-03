@@ -33,27 +33,33 @@ namespace WhuTNetSimConfigClass{
 class CExpressionParse
 {
 public:
-	
-	CExpressionParse();
+
+	template <typename ValueType> friend class CGenericConfigItem;
 	
 	CExpressionParse( const std::string&  _expression ,
 		              const map< string, double>& _parameter_table);
 	
 	virtual ~CExpressionParse(void);
 
+private:
+
+	CExpressionParse();
+
 public:
 
 	double GetExpValue(); //取一个表达式的值，是一个递归函数的入口
 
-	void Initial();
-	void Initial(const std::string&  _expression ,
-		         const map< string, double>& _parameter_table);
-
 	unsigned long GetFirstError() {return Error_code;}
 	string GetFirstErrorEx();
-
 	const string& GetExpStr() {return str_expression;}
 
+	bool SetParamValue(const string& param, double value);
+
+public:
+
+	void Initial();
+	void Initial(const std::string&  _expression ,
+                 const map< string, double>& _parameter_table);
 
 private:
 
