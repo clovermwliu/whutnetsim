@@ -28,6 +28,7 @@ namespace WhuTNetSimConfigClass{
 #define  ERROR_EXP_NO_EXP                            0x00000009
 #define  ERROR_EXP_MISSING_OPERATOR                  0x0000000a
 #define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0000000b
+#define  ERROR_EXP_OVERFLOW                          0x0000000c
 
 
 class CExpressionParse
@@ -49,6 +50,7 @@ public:
 
 	double GetExpValue(); //取一个表达式的值，是一个递归函数的入口
 
+
 	unsigned long GetFirstError() {return Error_code;}
 	string GetFirstErrorEx();
 	const string& GetExpStr() {return str_expression;}
@@ -68,6 +70,8 @@ private:
 
 	void ParseElementThenGotoNext(); //分析当前元素的属性，设置Cur_Element_Species，Str_Cur_Identifier和dwCur_Value，同时使pCurrent_Char指向下一个元素的首字符
 
+	double GetSubExpValue();
+	
 	double GetExpValueByAddOrMinusExp( const double& left );// 优先级最低的计算函数:计算加减法
 	
 	double GetExpValueFromSubRight(); //获得+/- 号右侧表达式的值

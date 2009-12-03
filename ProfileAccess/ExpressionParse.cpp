@@ -144,6 +144,7 @@ string CExpressionParse::GetFirstErrorEx()
 #define  ERROR_EXP_NO_EXP                            0x00000009
 #define  ERROR_EXP_MISSING_OPERATOR                  0x0000000a
 #define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0000000b
+#define  ERROR_EXP_OVERFLOW                          0x0000000c
 
 */
 {
@@ -154,25 +155,27 @@ string CExpressionParse::GetFirstErrorEx()
 	case ERROR_EXP_DIVISOR_IS_ZERO:
 		return "Divisor is zero. Near by:"+str_error_exp;
 	case ERROR_EXP_SIGN_UNKNOWN:
-		return "Sign of expression is unknown.  Near by:"+str_error_exp;
+		return "Sign of expression is unknown.  Near by "+str_error_exp;
 	case ERROR_EXP_INVAILD_PAPAMETER:
-		return "Including invalid parameter.  Near by"+str_error_exp;
+		return "Including invalid parameter.  Near by "+str_error_exp;
 	case ERROR_EXP_MISSING_RIGHT_BRACKET:
-		return "Missing right bracket.  Near by"+str_error_exp;
+		return "Missing right bracket.  Near by "+str_error_exp;
 	case ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS:
-		return "Expression includes reserve character.  Near by"+str_error_exp;
+		return "Expression includes reserve character.  Near by "+str_error_exp;
 	case ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS:
-		return "Sub-Functions includes invalid parameters.  Near by"+str_error_exp;
+		return "Sub-Functions includes invalid parameters.  Near by "+str_error_exp;
 	case ERROR_EXP_USE_NONSUPPORT_FUNCS:
-		return "Including non-support sub-functions.  Near by"+str_error_exp;
+		return "Including non-support sub-functions.  Near by "+str_error_exp;
 	case ERROR_EXP_CALL_SUBFUNCS_FAIL:
 		return "Parameters dose not match on sub-functions's request @:"+str_error_exp;
 	case ERROR_EXP_NO_EXP:
 		return "No expression in this object";
 	case ERROR_EXP_MISSING_OPERATOR:
-		return "Missing operator.  Near by"+str_error_exp;
+		return "Missing operator.  Near by "+str_error_exp;
 	case ERROR_EXP_NUMBER_FORMAT_INVALID:
-		return "Number format error.  Near by"+str_error_exp;
+		return "Number format error.  Near by "+str_error_exp;
+	case  ERROR_EXP_OVERFLOW:
+		return "Overflow!";
 	default:
 		return "UNKNOWN_ERROR";
 	}
@@ -210,6 +213,20 @@ double CExpressionParse::GetExpValue()
 {
 
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
+
+	if (Cur_Element_Species != FINISHED && Error_code==ERROR_EXP_SUCCESS){
+
+		SetFirstError(ERROR_EXP_MISSING_OPERATOR);
+		SetErrorStr(--pCurrent_Char);
+	}
+
+	return result;
+}
+
+double CExpressionParse::GetSubExpValue()
+{
+	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
+
 	return result;
 }
 
@@ -348,7 +365,9 @@ double CExpressionParse::GetElementValue()
 		if (Error_code==ERROR_EXP_SUCCESS)
 			SetErrorStr(pCurrent_Char);
 
-		result = GetExpValue();                      //当作一个新的表达式，从头计算
+		//result = GetExpValue();                      //当作一个新的表达式，从头计算
+		result=GetSubExpValue();
+
 		if (Cur_Element_Species != RIGHT_BRACKET && Error_code==ERROR_EXP_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
 			SetFirstError(ERROR_EXP_MISSING_RIGHT_BRACKET);
 		ParseElementThenGotoNext();	
@@ -429,7 +448,8 @@ vector<double> CExpressionParse::GetParameterValueForSupportFuncs()
 						SetFirstError(ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS );
 			}
 		}
-		result.push_back( GetExpValue() );//每个参数都可以被看作是一个子表达式
+		//result.push_back( GetExpValue() );//每个参数都可以被看作是一个子表达式
+		result.push_back(GetSubExpValue());
 	}
 	return result;
 }

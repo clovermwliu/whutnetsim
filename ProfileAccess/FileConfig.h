@@ -87,7 +87,7 @@ public:	//¶¨ÒåÁËFileConfigÀïÃæµÄÒ»¸öµü´úÆ÷ÀàĞÍ£¬ÀàËÆÆäËû±ê×¼C++ÖĞµÄÈİÆ÷µÄµü´úÆ÷Ò
 
 		friend class CFileConfig;
 
-		iterator() {section="",pStr=NULL,iter_cur_index=NULL,iter_cur_section=NULL;}
+		iterator() {section="",pStr=NULL;}
 	
 	private: //ÕâÁ½ÖÖ¹¹Ôì·½·¨½ö¹©CFileConfigÊ¹ÓÃ£¬²»¶ÔÍâ
 		iterator(list<string>& vStrData); 
@@ -160,8 +160,8 @@ protected: //±£»¤·½·¨
 
 	void SetValue(const string& section, 
 		          const string& key,
-				  const string& value,
-				  const string& remark);
+		          const string& value,
+		          const string& remark);
 	
 	bool GetValue(const string& section,
 		          const string& key,

@@ -116,32 +116,31 @@ private:
 	
 	ValueType cur_value;
 
-};//end of CGenericConfigItem
-
+private:
 
 //以下是一些模板函数，以支持CGenericConfigItem
 
 template <class T>
 void Initcur_value( T& value)
-/*
-描述：根据T的类型给value赋初值
-*/
+	/*
+	描述：根据T的类型给value赋初值
+	*/
 {
 	value=0;
 }
 
 void Initcur_value( string& value)
-/*
-描述：根据T的类型给value赋初值
-*/
+	/*
+	描述：根据T的类型给value赋初值
+	*/
 {
 	value="";
 }
 
 void Initcur_value(bool& value)
-/*
-描述：根据T的类型给value赋初值
-*/
+	/*
+	描述：根据T的类型给value赋初值
+	*/
 {
 	value=false;
 }
@@ -153,32 +152,32 @@ void Initcur_value(CExpressionParse& value)
 
 template <class T>
 void ItemValueLoad(T& item, const string& value)
-/*
-描述：将value依照item的类型T转化设置item
-*/
+	/*
+	描述：将value依照item的类型T转化设置item
+	*/
 {
 	if (value.empty()){
 
 		Initcur_value(item);
 		return;
 	}
-	
+
 	stringstream stream_value(value, stringstream::in);
 	stream_value >> item;	
 }
 
 void ItemValueLoad(string& item, const string& value)
-/*
-描述：将value依照item的类型T转化设置item,如果item本身就是string类型则直接赋值
-*/
+	/*
+	描述：将value依照item的类型T转化设置item,如果item本身就是string类型则直接赋值
+	*/
 {
 	item = value;
 }
 
 void ItemValueLoad(CExpressionParse& item, const string& value)
-/*
-描述：将value依照CExpressionParse的要求赋值，value是一个形如 "expression $a,$b,$c"的字符串
-*/
+	/*
+	描述：将value依照CExpressionParse的要求赋值，value是一个形如 "expression $a,$b,$c"的字符串
+	*/
 {
 	string str_exp;
 	string tmp;
@@ -186,12 +185,12 @@ void ItemValueLoad(CExpressionParse& item, const string& value)
 	map<string,double> v;
 
 	size_t pos=value.find_first_of(CHAR_PARAM);
-	
+
 	if (string::npos != pos){
 
 		str_exp=value.substr(0,pos);
 		tmp=value.substr(pos);
-    	
+
 		string::iterator pchar=tmp.begin();
 
 		while (pchar!=tmp.end())
@@ -207,16 +206,16 @@ void ItemValueLoad(CExpressionParse& item, const string& value)
 					++pchar;
 					continue;
 				}
-				
+
 				str_param+=*pchar;
 				++pchar;
 			} while (pchar!=tmp.end() && *pchar!=CHAR_SEPERATOR); //注意两个条件的顺序
-			
+
 			if (pchar!=tmp.end())	++pchar;
-			
+
 			v.insert(pair<string, double>(str_param,1));
 		}
-		
+
 	}else{
 		str_exp=value;
 	}
@@ -227,9 +226,9 @@ void ItemValueLoad(CExpressionParse& item, const string& value)
 
 template <class T>
 string GetItemValueToString(const T& item)
-/*
-描述：返回类型T的变量item的字符串形式（string）
-*/
+	/*
+	描述：返回类型T的变量item的字符串形式（string）
+	*/
 {
 	stringstream stream_value(std::stringstream::out);
 	stream_value << item;
@@ -243,18 +242,18 @@ string GetItemValueToString(CExpressionParse& item)
 
 template <class T>
 void ItemIncrease(T& item)
-/*
-描述：自增操作，如果T是数值类型，如int,double,float等，则item结果+1
-*/
+	/*
+	描述：自增操作，如果T是数值类型，如int,double,float等，则item结果+1
+	*/
 {
 	++item;
 }
 
 
 void ItemIncrease(std::string& item)
-/*
-* 描述：；如果item是string类型则什么都不做
-*/
+	/*
+	* 描述：；如果item是string类型则什么都不做
+	*/
 {
 	return;
 
@@ -262,17 +261,17 @@ void ItemIncrease(std::string& item)
 
 
 void ItemIncrease(bool& item)
-/*
-描述：如果item是bool类型则取反
-*/
+	/*
+	描述：如果item是bool类型则取反
+	*/
 {
 	item = !item;
 }
 
 void ItemIncrease(CExpressionParse& item)
-/*
-* 描述
-*/
+	/*
+	* 描述
+	*/
 {
 	return;
 
@@ -281,9 +280,9 @@ void ItemIncrease(CExpressionParse& item)
 
 template <class T>
 void ItemDecrease(T& item)
-/*
-描述：自减操作，如果T是数值类型，如int,double,float等，则item结果-1
-*/
+	/*
+	描述：自减操作，如果T是数值类型，如int,double,float等，则item结果-1
+	*/
 {
 	--item;
 }
@@ -291,9 +290,9 @@ void ItemDecrease(T& item)
 
 
 void ItemDecrease(std::string& item)
-/*
-* 描述：；如果item是string类型则什么都不做
-*/
+	/*
+	* 描述：；如果item是string类型则什么都不做
+	*/
 {
 	return;
 
@@ -301,17 +300,17 @@ void ItemDecrease(std::string& item)
 
 
 void ItemDecrease(bool& item)
-/*
-描述：如果item是bool类型则取反
-*/
+	/*
+	描述：如果item是bool类型则取反
+	*/
 {
 	item = !item;
 }
 
 void ItemDecrease(CExpressionParse& item)
-/*
-* 描述：；如果item是string类型则什么都不做
-*/
+	/*
+	* 描述：；如果item是string类型则什么都不做
+	*/
 {
 	return;
 
@@ -321,25 +320,25 @@ void ItemDecrease(CExpressionParse& item)
 
 template <class T>
 T ItemAdd(const T& lhs,const T& rhs)
-/*
-描述：完成两个数相加
-*/
+	/*
+	描述：完成两个数相加
+	*/
 {
 	return lhs+rhs;
 }
 
 bool ItemAdd(const bool& lhs,const bool& rhs)
-/*
-描述：两个bool类型的数相加等同于这两个数异或加
-*/
+	/*
+	描述：两个bool类型的数相加等同于这两个数异或加
+	*/
 {
 	return (bool)lhs^rhs;
 }
 
 CExpressionParse ItemAdd(const CExpressionParse& lhs,const CExpressionParse& rhs)
-/*
-描述：两个bool类型的数相加等同于这两个数异或加
-*/
+	/*
+	描述：两个bool类型的数相加等同于这两个数异或加
+	*/
 {
 	return lhs;
 }
@@ -347,17 +346,17 @@ CExpressionParse ItemAdd(const CExpressionParse& lhs,const CExpressionParse& rhs
 
 template <class T>
 T ItemMinus(const T& lhs,const T& rhs)
-/*
-描述：完成两个数相减
-*/
+	/*
+	描述：完成两个数相减
+	*/
 {
 	return lhs-rhs;
 }
 
 string ItemMinus(const string & lhs, const string& rhs)
-/*
-描述：完成两个string的减法，即从lhs中去除 rhs
-*/
+	/*
+	描述：完成两个string的减法，即从lhs中去除 rhs
+	*/
 {
 	string str=lhs;
 	for(string::size_type pos(0);pos!=string::npos;pos+=rhs.size()){
@@ -373,17 +372,17 @@ string ItemMinus(const string & lhs, const string& rhs)
 }
 
 bool ItemMinus(const bool& lhs,const bool& rhs)
-/*
-描述：两个bool类型的数相加等同于这两个数异或后取反
-*/
+	/*
+	描述：两个bool类型的数相加等同于这两个数异或后取反
+	*/
 {
 	return !(lhs^rhs);
 }
 
 CExpressionParse ItemMinus(const CExpressionParse& lhs,const CExpressionParse& rhs)
-/*
-描述：
-*/
+	/*
+	描述：
+	*/
 {
 	return lhs;
 }
@@ -391,69 +390,75 @@ CExpressionParse ItemMinus(const CExpressionParse& lhs,const CExpressionParse& r
 
 template <class T>
 T ItemMul(const T& lhs,const T& rhs)
-/*
-描述：完成两个数相乘
-*/
+	/*
+	描述：完成两个数相乘
+	*/
 {
 	return lhs*rhs;
 }
 
 string ItemMul(const string & lhs, const string& rhs)
-/*
-描述：完成两个string的乘法，什么都不做
-*/
+	/*
+	描述：完成两个string的乘法，什么都不做
+	*/
 {
 	return lhs;
 }
 
 bool ItemMul(bool& lhs,const bool& rhs)
-/*
-描述：两个bool类型的数的乘法，什么都不做
-*/
+	/*
+	描述：两个bool类型的数的乘法，什么都不做
+	*/
 {
 	return lhs;
 }
 
 CExpressionParse ItemMul(const CExpressionParse& lhs,const CExpressionParse& rhs)
-/*
-描述：
-*/
+	/*
+	描述：
+	*/
 {
 	return lhs;
 }
 
 template <class T>
 T ItemDiv(const T& lhs,const T& rhs)
-/*
-描述：完成两个数相除
-*/
+	/*
+	描述：完成两个数相除
+	*/
 {
 	return lhs/rhs;
 }
 
 string ItemDiv(const string & lhs, const string& rhs)
-/*
-描述：完成两个string的除法，什么都不做
-*/
+	/*
+	描述：完成两个string的除法，什么都不做
+	*/
 {
 	return lhs;
 }
 
 bool ItemDiv(const bool& lhs,const bool& rhs)
-/*
-描述：两个bool类型的数的除法，什么都不做
-*/
+	/*
+	描述：两个bool类型的数的除法，什么都不做
+	*/
 {
 	return lhs;
 }
 
 CExpressionParse ItemDiv(const CExpressionParse& lhs,const CExpressionParse& rhs)
-/*
-描述：
-*/
+	/*
+	描述：
+	*/
 {
 	return lhs;
 }
+
+
+
+};//end of CGenericConfigItem
+
+
 
 
 
