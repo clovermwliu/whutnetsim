@@ -18,7 +18,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	f.LoadFile();
    
-	CGenericConfigItem<CExpressionParse> item(f,"model","formulation");
+	/*CGenericConfigItem<CExpressionParse> item(f,"model","formulation");
 
 	(item.MyValue()).SetParamValue("a",1);
 
@@ -31,7 +31,14 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	double i=(item.MyValue()).GetExpValue();
 
-	cout<<"result is:"<<i<<"	"<<(item.MyValue()).GetFirstErrorEx()<<endl;
+	cout<<"result is:"<<i<<"	"<<(item.MyValue()).GetFirstErrorEx()<<endl;*/
+
+	CGenericConfigItem<CExpressionParse> item2(f,"model","formulation2");
+
+
+	double i=(item2.MyValue()).GetExpValue();
+
+	cout<<"result is:"<<i<<"	"<<(item2.MyValue()).GetFirstErrorEx()<<endl;
 
 
 	getchar();
