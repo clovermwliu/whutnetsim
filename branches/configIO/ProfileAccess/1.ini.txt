@@ -24,4 +24,4 @@ keychar=A
 
 [model]
 
-formulation=a+b+c/d ^b	 	
+formulation=a+b+45+*exp(c)/c/d ^b	 	$$$a  ,  ,,,,$b,	  $ $	 	c    , 	$$	 d   	 	

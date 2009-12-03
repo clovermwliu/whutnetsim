@@ -20,22 +20,19 @@ int _tmain(int argc, _TCHAR* argv[])
    
 	CGenericConfigItem<CExpressionParse> item(f,"model","formulation");
 
+	(item.MyValue()).SetParamValue("a",1);
+
+	(item.MyValue()).SetParamValue("b",2);
+
+	(item.MyValue()).SetParamValue("c",3);
+
+	(item.MyValue()).SetParamValue("d",4);
+
+
 	double i=(item.MyValue()).GetExpValue();
 
+	cout<<"result is:"<<i<<"	"<<(item.MyValue()).GetFirstErrorEx()<<endl;
 
-/*
-	
-	map<string,double> v;
-
-	v["a"]=100;
-	v["b"]=200;
-
-	CExpressionParse expa("a+2*a+exp(a)-(2+a+(2b-1200)+3+*a+1)-a^2",v);
-
-	double i=expa.GetExpValue();
-
-	cout<<i<<expa.GetFirstErrorEx()<<endl;
-*/
 
 	getchar();
 

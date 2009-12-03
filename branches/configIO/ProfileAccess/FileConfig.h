@@ -33,11 +33,11 @@ namespace WhuTNetSimConfigClass{
 #define CHAR_BLANK        ' '
 #define STR_TAB           "\t"
 #define CHAR_TAB          '\t'
-
-#define CHAR_DASH         '-'
-#define STR_DASH          "_"
-#define CHAR_EQUALS       '='
 #define STR_EQUALS        "="
+
+#define CHAR_SEPERATOR    ','
+#define STR_SEPERATOR     ","
+
 //+
 
 /*config file sample
