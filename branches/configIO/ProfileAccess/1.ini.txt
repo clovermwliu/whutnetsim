@@ -24,6 +24,7 @@ keychar=A
 
 [model]
 
-formulation=a+b+45+*exp(c)/c/d ^b	 	$$$a  ,  ,,,,$b,	  $ $	 	c    , 	$$	 d 
-
-formulation2=exp(2)+fa(5)+)
+formulation2=a+b+c : $a,$b, &c
+a=100
+b=200
+c=cur_time

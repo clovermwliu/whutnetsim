@@ -18,9 +18,11 @@ CExpressionParse::CExpressionParse()
 
 	
 CExpressionParse::CExpressionParse(const std::string&  _expression,
-								   const map< string, double>& _parameter_table)
+								   const map< string, double>& _parameter_table,
+								   const map< string,void*>& _remote_call_table)
 : parameter_table( _parameter_table ), str_expression( _expression ),pCurrent_Char(str_expression.c_str()),
-  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS),str_error_exp("")
+  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS),str_error_exp(""),
+  remote_call_addrs_table( _remote_call_table)
 /*
 构造函数
 */
@@ -51,12 +53,14 @@ void CExpressionParse::Initial()
 
 
 void CExpressionParse::Initial(const std::string&  _expression ,
-			                   const map< string, double>& _parameter_table)
+			                   const map< string, double>& _parameter_table,
+							   const map< string,void*>& _remote_call_table)
 /*
 描述：初始化函数
 */
 {
 	parameter_table= _parameter_table;
+	remote_call_addrs_table= _remote_call_table;
 	str_expression= _expression;
 	pCurrent_Char=str_expression.c_str();
 	dwCur_Value=0;
@@ -203,6 +207,61 @@ bool CExpressionParse::SetParamValue(const string& param, double value)
 
 }
 
+bool CExpressionParse::SetRemoteCallAddrs(const string& param, void* p)
+/*
+描述：更新远程调用函数的地址
+*/
+{
+	map<string,void*>::iterator iter=remote_call_addrs_table.find( param);
+	if( iter == remote_call_addrs_table.end() )//没有这个参数
+		return false;
+
+	iter->second=p;
+
+	return true;
+
+}
+
+int   CExpressionParse::GetCommonParamName(vector<string>& param_name)
+/*
+描述：获得当前表达式对象的普通参数个数及参数名
+参数：[OUT] param_name带出初始化好的参数名
+*/
+{
+	map<string,double>::iterator iter=parameter_table.begin();
+
+	while (iter!=parameter_table.end()){
+
+		param_name.push_back(iter->first);
+		++iter;
+		
+	}
+
+	return static_cast<int> (parameter_table.size());
+
+
+}
+
+int  CExpressionParse:: GetRemoteParamName(vector<string>& param_name)
+/*
+描述：获得当前表达式对象的远程赋值参数个数及参数名
+参数：[OUT] param_name带出初始化好的远程赋值参数名
+*/
+{
+
+	map<string,void*>::iterator iter=remote_call_addrs_table.begin();
+
+	while (iter!=remote_call_addrs_table.end()){
+
+		param_name.push_back(iter->first);
+		++iter;
+
+	}
+
+	return static_cast<int> (remote_call_addrs_table.size());
+
+
+}
 
 
 
@@ -413,15 +472,24 @@ double CExpressionParse::GetValueFromCurIdentifier( const string& identifier )
 	
 	}else{                                                   //没有紧跟（则说明这是一个参数标识符
 		
-		if( parameter_table.find( identifier ) == parameter_table.end() ) {    //去参数列表里去参数值
+		if( parameter_table.find( identifier ) == parameter_table.end() ) {    
 			
-			if (Error_code==ERROR_EXP_SUCCESS)
-				SetFirstError(ERROR_EXP_INVAILD_PAPAMETER);
-			
-			result=DEFAULT_VALUE;                                              //说明参数列表里找不到该参数，返回默认值
-		
-		}else{
-			result = parameter_table.find( identifier )->second;
+			if (remote_call_addrs_table.find(identifier) == remote_call_addrs_table.end()){  
+
+				if (Error_code==ERROR_EXP_SUCCESS)
+					SetFirstError(ERROR_EXP_INVAILD_PAPAMETER);
+
+				result=DEFAULT_VALUE;   //说明参数列表里和程函数调用表均找不到该参数，返回默认值
+ 			
+			}else{
+
+				pFunGet pRemoteFuncs =static_cast<pFunGet>(remote_call_addrs_table.find(identifier)->second);  //去远程函数调用表调用远程函数获得参数值
+     			result=pRemoteFuncs();
+
+			}
+
+		}else{ 
+			result = parameter_table.find( identifier )->second;                  //去参数列表里取参数值
 		}
 		
 	}

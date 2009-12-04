@@ -175,52 +175,84 @@ void ItemValueLoad(string& item, const string& value)
 }
 
 void ItemValueLoad(CExpressionParse& item, const string& value)
-	/*
-	描述：将value依照CExpressionParse的要求赋值，value是一个形如 "expression $a,$b,$c"的字符串
-	*/
+/*
+描述：将value依照CExpressionParse的要求赋值，value是一个形如 "expression $a,$b,$c"的字符串
+备注：引导字符以第一次出现的字符为准，比如 $&a,则a被认为是由$引导的，且&自动忽略
+*/
 {
 	string str_exp;
 	string tmp;
 	string str_param;
 	map<string,double> v;
+	map<string,void*> remote_call;
 
-	size_t pos=value.find_first_of(CHAR_PARAM);
+	size_t pos=value.find_first_of(CHAR_SEPERATOR_2);
 
 	if (string::npos != pos){
 
 		str_exp=value.substr(0,pos);
-		tmp=value.substr(pos);
+		tmp=value.substr(pos+1);
 
 		string::iterator pchar=tmp.begin();
 
 		while (pchar!=tmp.end())
 		{
-			if (*pchar==CHAR_PARAM||*pchar==CHAR_BLANK || *pchar==CHAR_TAB||*pchar==CHAR_SEPERATOR){
+			if (*pchar==CHAR_BLANK || *pchar==CHAR_TAB||*pchar==CHAR_SEPERATOR || *pchar==CHAR_SEPERATOR_2){
+				
 				++pchar;
 				continue;
 			}
+
 			str_param.clear();
-			do 
-			{
-				if(*pchar==CHAR_BLANK || *pchar==CHAR_TAB){
-					++pchar;
-					continue;
-				}
 
-				str_param+=*pchar;
+			if (*pchar==CHAR_PARAM){ // 如果是$符号引导的参数
+
 				++pchar;
-			} while (pchar!=tmp.end() && *pchar!=CHAR_SEPERATOR); //注意两个条件的顺序
+				do 
+				{
+					if(*pchar==CHAR_BLANK || *pchar==CHAR_TAB ||*pchar==CHAR_PARAM ||*pchar == CHAR_REMOTE_CALL_PARAM){
+						++pchar;
+						continue;
+					}
 
-			if (pchar!=tmp.end())	++pchar;
+					str_param+=*pchar;
+					++pchar;
+				} while (pchar!=tmp.end() && *pchar!=CHAR_SEPERATOR); //注意两个条件的顺序
 
-			v.insert(pair<string, double>(str_param,1));
+				if (pchar!=tmp.end())	++pchar;
+
+				v.insert(pair<string, double>(str_param,1));
+			
+			}else if (*pchar == CHAR_REMOTE_CALL_PARAM){ //如果是&符号引导的参数
+			
+				++pchar;
+				do 
+				{
+					if(*pchar==CHAR_BLANK || *pchar==CHAR_TAB ||*pchar == CHAR_REMOTE_CALL_PARAM || *pchar==CHAR_PARAM ){
+						++pchar;
+						continue;
+					}
+
+					str_param+=*pchar;
+					++pchar;
+				} while (pchar!=tmp.end() && *pchar!=CHAR_SEPERATOR); //注意两个条件的顺序
+
+				if (pchar!=tmp.end())	++pchar;
+
+				remote_call.insert(pair<string, void*>(str_param,NULL));
+						
+			}else{
+
+				++pchar; //无引导字符，忽略
+			}
+		
 		}
 
 	}else{
 		str_exp=value;
 	}
 
-	item.Initial(str_exp,v);
+	item.Initial(str_exp,v,remote_call);
 }
 
 

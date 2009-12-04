@@ -1,4 +1,4 @@
-#pragma once
+
 #ifndef EXPRESSIONPARSE_H_
 #define EXPRESSIONPARSE_H_
 
@@ -10,6 +10,8 @@
 #include <numeric>
 #include <cmath>
 #include <cctype>
+
+#include "Test.h"
 
 using namespace std;
 
@@ -30,6 +32,8 @@ namespace WhuTNetSimConfigClass{
 #define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0000000b
 #define  ERROR_EXP_OVERFLOW                          0x0000000c
 
+typedef double (* pFunGet)(void); //定义一个远程函数指针，这类函数的类型均为double，形参表为空
+
 
 class CExpressionParse
 {
@@ -38,7 +42,8 @@ public:
 	template <typename ValueType> friend class CGenericConfigItem;
 	
 	CExpressionParse( const std::string&  _expression ,
-		              const map< string, double>& _parameter_table);
+		              const map< string, double>& _parameter_table,
+					  const map< string,void*>& _remote_call_table);
 	
 	virtual ~CExpressionParse(void);
 
@@ -56,12 +61,17 @@ public:
 	const string& GetExpStr() {return str_expression;}
 
 	bool SetParamValue(const string& param, double value);
+	bool SetRemoteCallAddrs(const string& param, void* p);
+
+	int  GetCommonParamName(vector<string>& param_name);
+	int  GetRemoteParamName(vector<string>& param_name);
 
 public:
 
 	void Initial();
 	void Initial(const std::string&  _expression ,
-                 const map< string, double>& _parameter_table);
+                 const map< string, double>& _parameter_table,
+				 const map< string,void*>& _remote_call_table);
 
 private:
 
@@ -94,7 +104,8 @@ private:
 
 
 private:
-	map<string,double> parameter_table; //参数表，关联容器
+	map<string,double> parameter_table; //本地参数表，关联容器
+	map<string,void*> remote_call_addrs_table;//远程赋值参数表，通过参数表中的函数地址获取参数值
 	string str_expression;   //完整的表达式
 
 private://以下成员供解析表达式用
@@ -126,7 +137,6 @@ private://以下成员供解析表达式用
 
 	unsigned long Error_code;
 	string str_error_exp;
-
 
 };
 
