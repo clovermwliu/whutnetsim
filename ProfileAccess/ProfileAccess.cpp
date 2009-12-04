@@ -26,6 +26,12 @@ void fun(CFileConfig& f)
 
 		CGenericConfigItem<double> item(f,"model",v[i]);
 
+		if (item.GetLastError()!=ERROR_CONFIG_ITEM_SUCCESS){
+
+			cout<<"parameter "<<v[i]<<" does not exist"<<endl;
+
+		}
+
 		(form.MyValue()).SetParamValue(v[i],item);
 
 	}
@@ -38,6 +44,12 @@ void fun(CFileConfig& f)
 	for (int j=0;j<count_j;++j){
 
 		CGenericConfigItem<string> item(f,"model",v[j]);
+
+		if (item.GetLastError()!=ERROR_CONFIG_ITEM_SUCCESS){
+
+			cout<<"parameter "<<v[j]<<" does not exist"<<endl;
+
+		}
 		
 		if (item.MyValue() == "cur_time"){
 

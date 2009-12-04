@@ -410,7 +410,7 @@ double CExpressionParse::GetExpValueByPowerExp()
 	if( Cur_Element_Species == POWER ){
 		ParseElementThenGotoNext(); 
 
-		result = pow( result, GetExpValueByPowerExp());
+		result = pow( result, GetSingedValueFromSubRight());
 	}
 	return result;
 }
@@ -516,9 +516,21 @@ vector<double> CExpressionParse::GetParameterValueForSupportFuncs()
 			ParseElementThenGotoNext();
  			if(Cur_Element_Species ==MULTIPLY || Cur_Element_Species ==DIVIDE || Cur_Element_Species ==POWER ||
 		       Cur_Element_Species==RIGHT_BRACKET || Cur_Element_Species==PARAMETER_SEPERATOR || Cur_Element_Species==FINISHED){
-					if (Error_code==ERROR_EXP_SUCCESS)
+					
+				   if (Error_code==ERROR_EXP_SUCCESS)
 						SetFirstError(ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS );
+				   
+				   continue;
+					
 			}
+		}
+
+		if (Cur_Element_Species == FINISHED){  //函数缺少右括号
+
+			if (Error_code==ERROR_EXP_SUCCESS)
+				SetFirstError(ERROR_EXP_MISSING_RIGHT_BRACKET );
+
+			break;
 		}
 		//result.push_back( GetExpValue() );//每个参数都可以被看作是一个子表达式
 		result.push_back(GetSubExpValue());
@@ -535,6 +547,72 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	if (name== "sum" || name== "SUM"){
 
 		return accumulate( params.begin(), params.end(), (double)0 );
+	
+	}else if(name == "avg" || name == "AVG" || name == "mean" || name == "MEAN"){
+
+		
+		if (params.size()!=0){
+
+			return accumulate( params.begin(), params.end(), (double)0 )/static_cast<double>(params.size());
+		
+		}else{
+
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+
+			return DEFAULT_VALUE;
+
+		}
+		
+	}else if(name == "min"|| name=="MIN"){
+
+		
+		if (params.size()==0){
+
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+
+			return DEFAULT_VALUE;
+		}
+		
+		vector<double>::const_iterator it=params.begin();
+		double result=params[0];
+
+		while (it!=params.end()){
+
+			if (result>(*it)) result=*it;
+			++it;
+		}
+        
+		return  result;
+	
+	}else if(name == "max"|| name=="MAX"){
+
+
+		if (params.size()==0){
+
+			if(Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+				SetErrorStr(name.c_str());
+			}
+
+			return DEFAULT_VALUE;
+		}
+
+		vector<double>::const_iterator it=params.begin();
+		double result=params[0];
+
+		while (it!=params.end()){
+
+			if (result<(*it)) result=*it;
+			++it;
+		}
+
+		return  result;
 	
 	}else if (name == "factorial" || name == "FACTORIAL" || name == "fa"){
 
@@ -594,7 +672,7 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	
 		return log(params[0])/log(params[1]);
 
-	}else if (name == "ln" || name == "Log"){
+	}else if (name == "ln" || name == "log"){
 
 		if (params.size()!=1){
 			if(Error_code==ERROR_EXP_SUCCESS){

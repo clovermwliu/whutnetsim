@@ -43,7 +43,7 @@ public:
 	void SaveItToFile(){SetValueToFile(GetItemValueToString(cur_value),remark);}
 
 	//method 3
-	virtual void ChangeRemarkToFile(const string& newremark) {SetValueToFile(GetItemValueToString(cur_value),newremark);}
+	virtual void ChangeRemarkToFile(const string& newremark) {SetLastError(ERROR_CONFIG_ITEM_SUCCESS);SetValueToFile(GetItemValueToString(cur_value),newremark);}
 
 	//method 4
 	bool Cancel() {Initcur_value(cur_value);return _Cancel();}
@@ -57,6 +57,7 @@ private:
 	*/
 	{
 		ItemValueLoad(cur_value, value);
+		SetLastError(ERROR_CONFIG_ITEM_SUCCESS);
 		return true;		
 	}
 	
@@ -117,6 +118,8 @@ private:
 	ValueType cur_value;
 
 private:
+
+	virtual void SetLastError(unsigned long err) {Error_code=err;}
 
 //以下是一些模板函数，以支持CGenericConfigItem
 

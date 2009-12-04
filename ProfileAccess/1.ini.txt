@@ -1,30 +1,7 @@
-[section_beg]
-ky=vv	
-[section1]
-key3=1
-#REMARK ON:{key3=1}	remark on this item
-key1=This is a dog
-#REMARK ON:{key1=This is a dog}	remark on this item
-key2=value2
-[section2]
-[section3]
-key2=1
-#REMARK ON:{key2=1}	(NONE	£©
-key3=11111111
-#REMARK ON:{key3=11111111}	remark on this item
-key2=1
-#REMARK ON:{key2=1}	(NONE	£©
-key3=256
-[section4]
-key4=128
-#this is a remark line
-[section5]
-key5=
-keychar=A
-
 [model]
 
-formulation2=a+b+c : $a,$b, &c
+formulation2=sin(n) : $n,$b, &c
 a=100
 b=200
+n=3
 c=cur_time

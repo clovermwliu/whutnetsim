@@ -209,6 +209,10 @@ protected://成员变量
 // ConfigItem 类的定义
 //----------------------------------------------------------------------------------
 
+#define  ERROR_CONFIG_ITEM_SUCCESS       0x00000001
+#define  ERROR_CONFIG_ITEM_NOT_EXIST     0x00000002
+
+
 class CItemLine
 {
 public:
@@ -227,28 +231,34 @@ public:
 public:
 
 	const string& GetSection() const { return section; }
-	const string& GetKey()	 const { return key; }
+	const string& GetKey()	 const {return key; }
 	const string& GetRemark() const {return remark;}
 	//读取value的方法在其派生类中定义，名为MyValue();
 	
 	
 	virtual void ChangeRemarkToFile(const string& newremark) { return; }
-	void ChangeRemarkInThisItem(const string& newremark) {remark=newremark;}
+	void ChangeRemarkInThisItem(const string& newremark) {remark=newremark;SetLastError(ERROR_CONFIG_ITEM_SUCCESS);}
+
+	unsigned long GetLastError() {return Error_code;}
 	
 protected:
 	
 	virtual bool ChangeValueInThisItem(const string& value) {return false;}//虚函数接口，实际定义在派生类
 
-    bool _Cancel() {remark="";return pFileCach->CancelConfigLine(section,key);}
+    bool _Cancel() {remark="";SetLastError(ERROR_CONFIG_ITEM_SUCCESS);return pFileCach->CancelConfigLine(section,key);}
 	
-	void SetValueToFile(const string& newvalue,const string& newremark="") {pFileCach->SetValue(section,key,newvalue,newremark);}
-	bool GetValueFromFile(string& newvalue) { return pFileCach->GetValue(section,key,newvalue,remark);}
+	void SetValueToFile(const string& newvalue,const string& newremark="") {pFileCach->SetValue(section,key,newvalue,newremark);SetLastError(ERROR_CONFIG_ITEM_SUCCESS);}
+	bool GetValueFromFile(string& newvalue);
+
+	virtual void SetLastError(unsigned long err) {Error_code=err;}
 	
 protected:
 
 	string section;
 	string key;
 	string remark;
+
+	unsigned long Error_code;
 
 	CFileConfig* pFileCach;
 
