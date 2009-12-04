@@ -29,6 +29,8 @@ namespace WhuTNetSimConfigClass{
 #define STR_REM                "@"
 #define CHAR_PARAM             '$'
 #define STR_PARAM              "$"
+#define CHAR_REMOTE_CALL_PARAM '&'
+#define STR_REMOTE_CALL_PARAM  "&"
 
 #define CHAR_BLANK        ' '
 #define STR_TAB           "\t"
@@ -37,6 +39,10 @@ namespace WhuTNetSimConfigClass{
 
 #define CHAR_SEPERATOR    ','
 #define STR_SEPERATOR     ","
+#define CHAR_SEPERATOR_2  ':'
+#define STR_SEPERATOR_2   ":"
+
+
 
 //+
 
