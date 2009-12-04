@@ -969,7 +969,7 @@ CItemLine::CItemLine(CFileConfig& file,
 					 const string& section,
 					 const string& key,
 					 const string& remark)
-					 : section(section) , key(key) , remark(remark),pFileCach(&file)
+					 : section(section) , key(key) , remark(remark),pFileCach(&file),Error_code(ERROR_CONFIG_ITEM_SUCCESS)
 {
 	//file.AddItemLine(this);
 
@@ -979,7 +979,7 @@ CItemLine::CItemLine(CFileConfig& file,
 CItemLine::CItemLine(CFileConfig& file, 
 					 const string& section,
 					 const string& key)
-					 : section(section) , key(key) , remark(""),pFileCach(&file)
+					 : section(section) , key(key) , remark(""),pFileCach(&file),Error_code(ERROR_CONFIG_ITEM_SUCCESS)
 {
 	//file.AddItemLine(this);
 
@@ -989,6 +989,22 @@ CItemLine::CItemLine(CFileConfig& file,
 CItemLine::~CItemLine(void)
 {
 
+}
+
+bool CItemLine::GetValueFromFile(string& newvalue)
+/*
+描述：从配置文件中读配置项
+*/
+
+{ 
+	if(!pFileCach->GetValue(section,key,newvalue,remark)){
+
+		Error_code=ERROR_CONFIG_ITEM_NOT_EXIST;
+
+		return false;
+	}
+
+	return true;
 }
 
 

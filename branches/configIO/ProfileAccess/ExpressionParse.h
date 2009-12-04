@@ -32,6 +32,7 @@ namespace WhuTNetSimConfigClass{
 #define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0000000b
 #define  ERROR_EXP_OVERFLOW                          0x0000000c
 
+
 typedef double (* pFunGet)(void); //定义一个远程函数指针，这类函数的类型均为double，形参表为空
 
 
