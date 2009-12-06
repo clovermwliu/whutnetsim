@@ -87,8 +87,19 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 	}
 
 	while(true){
+
+		if (static_cast<int>(*pCurrent_Char)>256 || static_cast<int>(*pCurrent_Char)<0){
+
+			if (Error_code==ERROR_EXP_SUCCESS){
+				SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
+				SetErrorStr(pCurrent_Char);
+			}
+			++pCurrent_Char;
+			break;
+
+		}
 		
-		if( isspace( *pCurrent_Char) ) {
+		if( isspace( *pCurrent_Char)) {
 			++pCurrent_Char;               //当前字符是是空格、制表符或换行符，继续
 			continue;
 		
@@ -108,6 +119,17 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 			do {
 				Str_Cur_Identifier += (*pCurrent_Char);
 				++pCurrent_Char;
+
+				if (static_cast<int>(*pCurrent_Char)>256 || static_cast<int>(*pCurrent_Char)<0){
+
+					if (Error_code==ERROR_EXP_SUCCESS){
+						SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
+						SetErrorStr(pCurrent_Char);
+					}
+					++pCurrent_Char;
+					break;
+
+				}
 			} while(isalpha(  *pCurrent_Char ) || isdigit(  *pCurrent_Char )); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
 			            
 		}else if( *pCurrent_Char == 0){
@@ -165,7 +187,7 @@ string CExpressionParse::GetFirstErrorEx()
 	case ERROR_EXP_SIGN_UNKNOWN:
 		return "Sign of expression is unknown.  Near by "+str_error_exp;
 	case ERROR_EXP_INVAILD_PAPAMETER:
-		return "Including invalid parameter.  Near by "+str_error_exp;
+		return "Expression includes invalid parameter.  Near by "+str_error_exp;
 	case ERROR_EXP_MISSING_RIGHT_BRACKET:
 		return "Missing right bracket.  Near by "+str_error_exp;
 	case ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS:
@@ -173,15 +195,15 @@ string CExpressionParse::GetFirstErrorEx()
 	case ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS:
 		return "Sub-Functions includes invalid parameters.  Near by "+str_error_exp;
 	case ERROR_EXP_USE_NONSUPPORT_FUNCS:
-		return "Including non-support sub-functions.  Near by "+str_error_exp;
+		return "Expression includes  non-support sub-functions.  Near by "+str_error_exp;
 	case ERROR_EXP_CALL_SUBFUNCS_FAIL:
-		return "Parameters dose not match on sub-functions's request @:"+str_error_exp;
+		return "Parameters don't match on sub-functions's request @:"+str_error_exp;
 	case ERROR_EXP_NO_EXP:
 		return "No expression in this object";
 	case ERROR_EXP_MISSING_OPERATOR:
 		return "Missing operator.  Near by "+str_error_exp;
 	case ERROR_EXP_NUMBER_FORMAT_INVALID:
-		return "Number format error.  Near by "+str_error_exp;
+		return "Expression's format error.  Near by "+str_error_exp;
 	case  ERROR_EXP_OVERFLOW:
 		return "Overflow!";
 	default:
@@ -280,7 +302,7 @@ double CExpressionParse::GetExpValue()
 	if (Cur_Element_Species != FINISHED && Error_code==ERROR_EXP_SUCCESS){
 
 		SetFirstError(ERROR_EXP_MISSING_OPERATOR);
-		SetErrorStr(--pCurrent_Char);
+		SetErrorStr(pCurrent_Char-1);
 	}
 
 	return result;
@@ -289,7 +311,7 @@ double CExpressionParse::GetExpValue()
 double CExpressionParse::GetSubExpValue()
 {
 	if (Error_code==ERROR_EXP_SUCCESS){
-		SetErrorStr(pCurrent_Char);
+		SetErrorStr(pCurrent_Char-1);
 	}
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
 	return result;
@@ -318,7 +340,7 @@ double CExpressionParse::GetExpValueFromSubRight()
 {
 
 	if (Error_code==ERROR_EXP_SUCCESS){
-		SetErrorStr(pCurrent_Char);
+		SetErrorStr(pCurrent_Char-1);
 	}
 	return GetExpValueByMulOrDivExp( GetSingedValueFromSubRight() );
 }
@@ -337,7 +359,7 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 		ParseElementThenGotoNext();
 
 		if (Error_code==ERROR_EXP_SUCCESS){
-			SetErrorStr(pCurrent_Char);
+			SetErrorStr(pCurrent_Char-1);
 		}
 
 		result = GetExpValueByMulOrDivExp( left * GetSingedValueFromSubRight() );
@@ -350,7 +372,7 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 #ifdef DIVZERO
 	
 		if (Error_code==ERROR_EXP_SUCCESS){
-			SetErrorStr(pCurrent_Char);
+			SetErrorStr(pCurrent_Char-1);
 		}
 		
 		double dwDiv=GetSingedValueFromSubRight();
@@ -388,7 +410,7 @@ double CExpressionParse::GetSingedValueFromSubRight()
 	}else{
 
 		if (Error_code==ERROR_EXP_SUCCESS)
-			SetErrorStr(pCurrent_Char);
+			SetErrorStr(pCurrent_Char-1);
 		result = GetExpValueByPowerExp();
 	}
 	return result;
@@ -403,7 +425,7 @@ double CExpressionParse::GetExpValueByPowerExp()
 */
 {
 	if (Error_code==ERROR_EXP_SUCCESS)
-		SetErrorStr(pCurrent_Char);
+		SetErrorStr(pCurrent_Char-1);
 
 	double result = GetElementValue();  //取底数
 	
@@ -447,7 +469,7 @@ double CExpressionParse::ParseCurIdentifier()
 {
 	if(Cur_Element_Species !=IDENTIFIER && Error_code==ERROR_EXP_SUCCESS ){
 		SetFirstError(ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS); 
-		SetErrorStr(pCurrent_Char);
+		SetErrorStr(pCurrent_Char-1);
 	}
 	string str = Str_Cur_Identifier;
 	ParseElementThenGotoNext();	
