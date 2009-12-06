@@ -1,7 +1,7 @@
 [model]
 
-formulation2=sin(n) : $n,$b, &c
-a=100
+formulation2=sin(n)+sum(abcd,exp£¨b),log(b),max(abcd,b,c,n) £©: $abcd,$n,$b, &c
+abcd=100
 b=200
 n=3
 c=cur_time
