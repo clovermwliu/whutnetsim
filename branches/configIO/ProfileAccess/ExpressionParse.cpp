@@ -34,6 +34,45 @@ CExpressionParse::~CExpressionParse(void)
 {
 }
 
+
+CExpressionParse::CExpressionParse(const CExpressionParse& rhs)
+/*
+由于使用pCurrent_Char指针，表达式对象复制需要重定位该指针 
+*/
+{
+
+	parameter_table=rhs.parameter_table;
+	remote_call_addrs_table=rhs.remote_call_addrs_table;
+	dwCur_Value=rhs.dwCur_Value;
+	str_expression=rhs.str_expression;
+	Str_Cur_Identifier=rhs.Str_Cur_Identifier;
+	Cur_Element_Species=rhs.Cur_Element_Species;
+	Error_code=rhs.Error_code;
+	str_error_exp=rhs.str_error_exp;
+	pCurrent_Char=str_expression.c_str();
+	ParseElementThenGotoNext();
+}
+
+
+CExpressionParse& CExpressionParse::operator=(const CExpressionParse& rhs)
+/*
+由于使用pCurrent_Char指针，表达式对象复制需要重定位该指针 
+*/
+{
+	parameter_table=rhs.parameter_table;
+	remote_call_addrs_table=rhs.remote_call_addrs_table;
+	dwCur_Value=rhs.dwCur_Value;
+	str_expression=rhs.str_expression;
+	Str_Cur_Identifier=rhs.Str_Cur_Identifier;
+	Cur_Element_Species=rhs.Cur_Element_Species;
+	Error_code=rhs.Error_code;
+	str_error_exp=rhs.str_error_exp;
+	pCurrent_Char=str_expression.c_str();
+	ParseElementThenGotoNext();
+	return *this;
+}
+
+
 void CExpressionParse::Initial()
 /*
 描述：初始化函数
@@ -292,11 +331,12 @@ double CExpressionParse::GetExpValue()
 描述：返回一个表达式的值，是一个递归函数的入口
 备注：这个入口在以下情况被触发：
       (1) 完整的表达式被第一次解析时；
-	  (2) 一个包含在( )内的子表达式时，see to GetElementValue()
-	  (3) 一个子函数的参数是一子表达式时，see to GetParameterValueForSupportFuncs()
 */
 {
 
+	pCurrent_Char=str_expression.c_str();
+	ParseElementThenGotoNext();
+	
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
 
 	if (Cur_Element_Species != FINISHED && Error_code==ERROR_EXP_SUCCESS){
@@ -309,6 +349,13 @@ double CExpressionParse::GetExpValue()
 }
 
 double CExpressionParse::GetSubExpValue()
+/*
+描述：返回一个表达式的值，是一个递归函数的入口
+备注：这个入口在以下情况被触发：
+     (1) 一个包含在( )内的子表达式时，see to GetElementValue()
+     (2) 一个子函数的参数是一子表达式时，see to GetParameterValueForSupportFuncs()
+*/
+
 {
 	if (Error_code==ERROR_EXP_SUCCESS){
 		SetErrorStr(pCurrent_Char-1);
