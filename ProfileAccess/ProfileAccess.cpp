@@ -5,8 +5,10 @@
 
 
 #include "FileConfig.h"
+#include "FileScript.h"
 #include "GenericConfigItem.h"
 #include "ExpressionParse.h"
+#include "PredicationItem.h"
 #include "Test.h"
 
 using namespace WhuTNetSimConfigClass;
@@ -69,15 +71,55 @@ void fun(CFileConfig& f)
 
 }
 
+
+void fun2(CFileScript& f)
+{
+
+
+	CExpressionParse e;
+	f.InitExpressionBySectionName("std_expression",e);
+
+	double result=e.GetExpValue();
+
+	double result2=e.GetExpValue();
+
+	cout<<"result="<<result<<"  "<< e.GetFirstErrorEx()<<endl;
+
+	cout<<"result2="<<result2<<"  "<< e.GetFirstErrorEx()<<endl;
+
+}
+
+void fun3(CFileScript& f)
+{
+
+    CPredicationItem pred;
+    f. InitPredicationItemBySectionName("std_predication_item",pred);
+
+	bool result=pred.GetValue();
+
+	bool result2=pred.GetValue();
+
+	cout<<"result="<<result<<"  "<< pred.GetFirstErrorEx()<<endl;
+
+	cout<<"result2="<<result2<<"  "<< pred.GetFirstErrorEx()<<endl;
+
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 
-    CFileConfig f("1.ini.txt");
+ /*   CFileConfig f("1.ini.txt");
 
 	f.LoadFile();
 
 
 	fun(f);
+
+*/
+	CFileScript f("1.ini.txt");
+	f.LoadFile();
+
+	fun3(f);
 
 	getchar();
 

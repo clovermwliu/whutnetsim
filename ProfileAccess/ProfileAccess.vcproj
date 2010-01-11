@@ -176,11 +176,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\ExpCondition.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ExpressionParse.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\FileConfig.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FileScript.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PredicationItem.cpp"
 				>
 			</File>
 			<File
@@ -218,6 +230,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\ExpCondition.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ExpressionParse.h"
 				>
 			</File>
@@ -226,7 +242,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FileScript.h"
+				>
+			</File>
+			<File
 				RelativePath=".\GenericConfigItem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PredicationItem.h"
 				>
 			</File>
 			<File

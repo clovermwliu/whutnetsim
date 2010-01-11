@@ -42,15 +42,19 @@ public:
 
 	template <typename ValueType> friend class CGenericConfigItem;
 	
+	CExpressionParse();
+	
 	CExpressionParse( const std::string&  _expression ,
 		              const map< string, double>& _parameter_table,
 					  const map< string,void*>& _remote_call_table);
+
+
+
+	CExpressionParse(const CExpressionParse&);//由于使用pCurrent_Char指针，表达式对象复制需要重定位该指针 
+
+	CExpressionParse& operator=(const CExpressionParse& rhs); 
 	
 	virtual ~CExpressionParse(void);
-
-private:
-
-	CExpressionParse();
 
 public:
 
@@ -74,6 +78,7 @@ public:
                  const map< string, double>& _parameter_table,
 				 const map< string,void*>& _remote_call_table);
 
+	
 private:
 
 	void SetFirstError(const unsigned long err) {Error_code=err;}

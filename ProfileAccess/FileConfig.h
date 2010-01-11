@@ -1,4 +1,3 @@
-#pragma once
 #ifndef FILECONFIG_H_
 #define FILECONFIG_H_
 
