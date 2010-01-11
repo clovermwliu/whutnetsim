@@ -4,13 +4,27 @@
 
 #include <map>
 #include <vector>
+#include <sstream>
+#include <stdexcept>
+#include <cstdlib>
+#include <numeric>
 #include <cmath>
+#include <cctype>
+
 
 #include "PredicationItem.h"
 
 using namespace std;
 
 namespace WhuTNetSimConfigClass{
+
+
+#define  ERROR_CONDITION_SUCCESS			          0x00001000
+#define  ERROR_CONDITION_NO_EXP                       0x00001001
+#define  ERROR_CONDITION_MISSING_OPERATOR             0x00001002
+#define  ERROR_CONDITION_OPERATOR_INVALID             0x00001003
+#define  ERROR_CONDITION_PRED_FORMAT_INVALID          0x00001004
+
 
 class CExpCondition
 {
