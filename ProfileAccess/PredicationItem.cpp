@@ -58,16 +58,27 @@ bool CPredicationItem::GetValue()
 {
 	double dwl=lExp.GetExpValue();
 	Error_code=lExp.GetFirstError();
-	Error_Str=lExp.GetFirstErrorEx();
-
 	if (Error_code!=ERROR_EXP_SUCCESS){
 
+		Error_Str="LeftExp:"+lExp.GetFirstErrorEx();
 		return false;
+	}else{
+
+		Error_Str=lExp.GetFirstErrorEx();
+
 	}
 
 	double dwr=rExp.GetExpValue();
 	Error_code=rExp.GetFirstError();
-	Error_Str=rExp.GetFirstErrorEx();
+	if (Error_code!=ERROR_EXP_SUCCESS){
+
+		Error_Str="RightExp:"+rExp.GetFirstErrorEx();
+		return false;
+	}else{
+
+		Error_Str=rExp.GetFirstErrorEx();
+
+	}
 
 	if (Error_code!=ERROR_EXP_SUCCESS){
 
@@ -101,7 +112,7 @@ bool CPredicationItem::GetValue()
 	}else{
 
 		Error_code=ERROR_PRED_OPERATORINVAILD;
-		Error_Str="Predication is invalid";
+		Error_Str="Predication item's operator is invalid";
 
 		return false;
 

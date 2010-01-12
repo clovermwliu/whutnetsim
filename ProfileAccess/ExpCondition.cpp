@@ -116,7 +116,7 @@ void CExpCondition::ParseElementThenGotoNext()
 
 		}else if (*pCurrent_Char ==LEFT_BRACKET || *pCurrent_Char ==RIGHT_BRACKET){
 
-			Cur_Element_Species = ( ElementSpecies )*pCurrent_Char;  //发现运算符!
+			Cur_Element_Species = ( ElementSpecies )*pCurrent_Char;  
 			++pCurrent_Char ;
 
 
@@ -148,7 +148,7 @@ void CExpCondition::ParseElementThenGotoNext()
 
 			if (Error_code==ERROR_CONDITION_SUCCESS){
 				SetFirstError(ERROR_CONDITION_OPERATOR_INVALID);
-				SetErrorStr(pCurrent_Char-1);
+				SetErrorStr(pCurrent_Char);
 			}
 			++pCurrent_Char;
 		}
@@ -179,7 +179,7 @@ string  CExpCondition::GetFirstErrorEx()
 		return "SUCCESS";
 	case ERROR_CONDITION_NO_EXP:
 		return "No expression in this object";
-	case ERROR_EXP_MISSING_OPERATOR:
+	case ERROR_CONDITION_MISSING_OPERATOR:
 		return "Missing operator.  Near by "+str_error_exp;
 	case ERROR_CONDITION_PRED_FORMAT_INVALID:
 		return "PRED's format error.  Near by "+str_error_exp;
@@ -207,13 +207,6 @@ bool CExpCondition::GetConditionValue()
 	err_str.clear();
 
 	bool bresult = GetCondExpValueByOR( GetCondExpValueFromSubRight() );
-
-	if (Cur_Element_Species != FINISHED && Error_code==ERROR_CONDITION_SUCCESS){
-
-		SetFirstError(ERROR_CONDITION_MISSING_OPERATOR);
-		SetErrorStr(pCurrent_Char-1);
-	}
-
 	return bresult;
 
 }
@@ -223,7 +216,7 @@ bool CExpCondition::GetSubCondExpValue()
 */
 {
 	if (Error_code==ERROR_CONDITION_SUCCESS){
-		SetErrorStr(pCurrent_Char-1);
+		SetErrorStr(pCurrent_Char);
 	}
 	bool bresult = GetCondExpValueByOR( GetCondExpValueFromSubRight() );
 	return bresult;
@@ -246,7 +239,7 @@ bool  CExpCondition::GetCondExpValueFromSubRight()
 //获得||号右侧表达式的值
 {
 	if (Error_code==ERROR_CONDITION_SUCCESS){
-		SetErrorStr(pCurrent_Char-1);
+		SetErrorStr(pCurrent_Char);
 	}
 	return GetCondExpValueByAND( GetCondExpValueByNOT() );
 
@@ -258,7 +251,7 @@ bool  CExpCondition::GetCondExpValueByAND( const bool& left )
 	bool result = left;
 	if( Cur_Element_Species == AND ){
 		ParseElementThenGotoNext(); 
-		result = GetCondExpValueByOR( left && GetCondExpValueFromSubRight() );
+		result = GetCondExpValueByAND( left && GetCondExpValueByNOT() );
 	}
 	return result;
 
@@ -282,7 +275,7 @@ bool  CExpCondition::GetCondExpValueByNOT()
 	}else{
 
 		if (Error_code==ERROR_CONDITION_SUCCESS)
-			SetErrorStr(pCurrent_Char-1);
+			SetErrorStr(pCurrent_Char);
 		result = GetElementValue();
 	}
 	return result;
@@ -335,8 +328,10 @@ bool  CExpCondition::ParseCurPredItem()
 
 		if (Error_code==ERROR_CONDITION_SUCCESS && tmp.GetFirstError()!=ERROR_EXP_SUCCESS){
 
+			err_str.clear();
 			SetFirstError(tmp.GetFirstError());
-			err_str=tmp.GetFirstErrorEx();
+			err_str=PredIdentify+":";
+			err_str=err_str+tmp.GetFirstErrorEx();
 		}
 	}
 
