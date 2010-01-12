@@ -78,7 +78,7 @@ void fun2(CFileScript& f)
 
 
 	CExpressionParse e;
-	f.InitExpressionBySectionName("std_expression",e);
+	if(!f.InitExpressionBySectionName("std_expression",e)) return;
 
 	double result=e.GetExpValue();
 
@@ -94,7 +94,7 @@ void fun3(CFileScript& f)
 {
 
     CPredicationItem pred;
-    f. InitPredicationItemBySectionName("std_predication_item",pred);
+    if(!f. InitPredicationItemBySectionName("std_predication_item",pred)) return;
 
 	bool result=pred.GetValue();
 
@@ -112,7 +112,7 @@ void fun4(CFileScript& f)
 
 	CExpCondition cond; 
 	
-	f. InitConditionBySectionName("std_Condition",cond);
+	if(!f. InitConditionBySectionName("std_Condition",cond)) return;
 
 	bool result=cond.GetConditionValue();
 
@@ -120,7 +120,7 @@ void fun4(CFileScript& f)
 
 	cout<<"result="<<result<<"  "<< cond.GetFirstErrorEx()<<endl;
 
-	cout<<"result2="<<result2<<"  "<< cond.GetFirstErrorEx()<<endl;
+	cout<<"result2="<<result2<<"  "<<cond.GetFirstErrorEx()<<endl;
 
 }
 
