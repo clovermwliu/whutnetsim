@@ -6,6 +6,7 @@ namespace WhuTNetSimConfigClass{
 
 
 CPredicationItem::CPredicationItem()
+:Error_code(ERROR_EXP_SUCCESS)
 {
 
 }
@@ -21,6 +22,7 @@ CPredicationItem::CPredicationItem(CExpressionParse& l,
 }
 
 CPredicationItem::~CPredicationItem(void)
+
 {
 }
 
