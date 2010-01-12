@@ -9,6 +9,7 @@
 #include "GenericConfigItem.h"
 #include "ExpressionParse.h"
 #include "PredicationItem.h"
+#include "ExpCondition.h"
 #include "Test.h"
 
 using namespace WhuTNetSimConfigClass;
@@ -105,6 +106,24 @@ void fun3(CFileScript& f)
 
 }
 
+
+void fun4(CFileScript& f)
+{
+
+	CExpCondition cond; 
+	
+	f. InitConditionBySectionName("std_Condition",cond);
+
+	bool result=cond.GetConditionValue();
+
+	bool result2=cond.GetConditionValue();
+
+	cout<<"result="<<result<<"  "<< cond.GetFirstErrorEx()<<endl;
+
+	cout<<"result2="<<result2<<"  "<< cond.GetFirstErrorEx()<<endl;
+
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 
@@ -119,7 +138,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	CFileScript f("1.ini.txt");
 	f.LoadFile();
 
-	fun3(f);
+	fun4(f);
 
 	getchar();
 

@@ -137,5 +137,81 @@ CFileScript::InitPredicationItemBySectionName(string pred_item_section,
 }
 
 
+bool 
+CFileScript::InitConditionBySectionName(string condsection,
+						         		CExpCondition& cond,
+								        string condkey)
+/*
+描述：根据脚本节名设置一个CExpCondition的对象
+参数：[out]cond 待设置的CExpCondition对象
+*/
+{
+	CGenericConfigItem<string> stritem(*this,condsection,condkey);
+	if (stritem.GetLastError()==ERROR_CONFIG_ITEM_NOT_EXIST){
+
+		return false;
+	}
+    
+	map<string,CPredicationItem> table;
+	string str_pred_identify;
+	string str=stritem.MyValue();
+	string::iterator iter=str.begin();
+
+	while(iter!=str.end()){
+
+		if( isspace( *iter)) {           //当前字符是是空格、制表符或换行符，继续
+			++iter;               
+			continue;
+
+		}else if(*iter == '&' && *(++iter)=='&'){
+
+			++iter ;
+
+		}else if(*iter == '|' && *(++iter)=='|'){
+
+			++iter ;
+
+		}else if(*iter =='!' ){
+
+			++iter ;
+
+		}else if( isalpha( *iter) || isdigit(  *iter)){
+
+			str_pred_identify.clear();
+
+			do {
+				str_pred_identify += (*iter);
+				++iter;
+			} while(isalpha( *iter ) || isdigit(  *iter )); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
+			
+			//开始构造
+
+			CPredicationItem preditem;
+
+			bool bresult=InitPredicationItemBySectionName(str_pred_identify,preditem);
+
+			if (!bresult){
+
+				//错误处理
+				return false;
+			}
+
+			table.insert(pair<string, CPredicationItem>(str_pred_identify,preditem));
+
+
+		}else{
+
+			//可以报错
+			++iter;
+		}
+
+	}
+
+	cond.Initial(str,table);
+	return true;
+
+}
+
+
 
 }//end

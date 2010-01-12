@@ -26,44 +26,44 @@ Formula=300
 Condition=item1 && (!item2 || item3 && item4)
 
 [item1]
-LeftExp=exp1
-RightExp=exp2
+LeftExp=expA
+RightExp=expB
 Operator=>
 
 [item2]
-LeftExp=exp3
-RightExp=exp4
+LeftExp=expC
+RightExp=expD
 Operator=>
 
 [item3]
-LeftExp=exp5
-RightExp=exp6
+LeftExp=expE
+RightExp=expF
 Operator=>
 
 [item4]
-LeftExp=exp1
-RightExp=exp4
-Operator=>
+LeftExp=expA
+RightExp=expD
+Operator=>=
 
-[exp1]
+[expA]
 Formula=a+b:$a,$b
 a=100
 b=200
 
-[exp2]
-Formula=
+[expB]
+Formula=200
 
-[exp3]
-Formula=
+[expC]
+Formula=400
 
-[exp4]
-Formula=
+[expD]
+Formula=300+
 
-[exp5]
-Formula=
+[expE]
+Formula=500
 
-[exp6]
-Formula=
+[expF]
+Formula=250
 
 
 

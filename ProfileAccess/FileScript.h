@@ -1,11 +1,15 @@
 #ifndef FILESCRIPT_H_
 #define FILESCRIPT_H_
 
+#include <ctype.h>
+#include <map>
+
 #include "FileConfig.h"
 #include "ExpressionParse.h"
 #include "PredicationItem.h"
-#include "GenericConfigItem.h"
 #include "ExpCondition.h"
+#include "GenericConfigItem.h"
+
 
 using namespace std;
 

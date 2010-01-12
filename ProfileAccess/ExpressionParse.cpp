@@ -336,6 +336,8 @@ double CExpressionParse::GetExpValue()
 
 	pCurrent_Char=str_expression.c_str();
 	ParseElementThenGotoNext();
+	Error_code=ERROR_EXP_SUCCESS;
+	str_error_exp.clear();
 	
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
 
