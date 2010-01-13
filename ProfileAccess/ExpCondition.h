@@ -73,7 +73,7 @@ private:
 private:
 
 	void SetFirstError(const unsigned long err) {Error_code=err;}
-	void SetErrorStr (const char* p) {str_error_exp.clear();istringstream iss(p);iss >>str_error_exp;}
+	void SetErrorStr (const char* p);
 
 
 private:

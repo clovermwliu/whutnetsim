@@ -15,7 +15,14 @@ using namespace std;
 
 namespace WhuTNetSimConfigClass{
 
-
+#define  ERROR_SCRIPT_SUCCESS              0x00020000
+#define  ERROR_SCRIPT_INITIAL_EXP_FAIL     0x00020001
+#define  ERROR_SCRIPT_EXP_NOT_FOUND        0x00020002
+#define  ERROR_SCRIPT_INITIAL_PRED_FAIL    0x00020003
+#define  ERROR_SCRIPT_PRED_NOT_FOUND       0x00020004
+#define  ERROR_SCRIPT_INITIAL_COND_FAIL    0x00020005
+#define  ERROR_SCRIPT_COND_NOT_FOUND       0x00020006
+#define  ERROR_SCRIPT_CONDEXP_INVALID      0x00020007
 
 class CFileScript :	public CFileConfig
 {
@@ -30,31 +37,36 @@ public:
 
 public:
 
-	bool InitExpressionBySectionName(string expsection,
+	bool InitExpressionBySectionName(const string& expsection,
 		                             CExpressionParse& exp,
-		                             string expform="Formula");
+		                             const string& expform="Formula");
 
     // void WriteExpSection();
 
 
-	bool InitPredicationItemBySectionName(string pred_item_section,
+	bool InitPredicationItemBySectionName(const string& pred_item_section,
 		                                  CPredicationItem& pred,
-										  string keyleft="LeftExp",
-										  string keyright="RightExp",
-										  string keyop="Operator");
+										  const string& keyleft="LeftExp",
+										  const string& keyright="RightExp",
+										  const string& keyop="Operator");
 
 	// void WritePredItemSection();
 
-	bool InitConditionBySectionName(string condsection,
+	bool InitConditionBySectionName(const string& condsection,
 		                            CExpCondition& cond,
-									string condkey="Condition");
+									const string& condkey="Condition");
 
 	// void WriteConditionSection();
 
+	unsigned long GetLastError() {return dwErr_code;}
+	string GetLastErrorEx();
 
+private:
 
-
-
+	unsigned long dwErr_code;
+	string err_str;
+	void SetLastError(unsigned long e) {dwErr_code=e;}
+	void SetLastErrorStr(string s) {err_str=s;}
 
 };
 
