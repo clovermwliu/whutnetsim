@@ -5,7 +5,7 @@ namespace WhuTNetSimConfigClass{
 
 CExpCondition::CExpCondition(void)
 :Cur_Element_Species(BEGININI),Error_code(ERROR_CONDITION_SUCCESS),
- Str_Cur_PredicationItem(""),bCur_Value(false),str_error_exp(""),err_str("")
+ Str_Cur_PredicationItem(""),bCur_Value(false),str_error_exp(""),err_str(""),str_conditon("")
 {
 }
 
@@ -41,16 +41,20 @@ CExpCondition::CExpCondition(const CExpCondition& c)
 
 */
 {
-	str_conditon=c.str_conditon;
 	pred_table=c.pred_table;
 	Cur_Element_Species=c.Cur_Element_Species;
 	Error_code=c.Error_code;
 	Str_Cur_PredicationItem=c.Str_Cur_PredicationItem;
 	bCur_Value=c.bCur_Value;
-	str_error_exp=c.str_error_exp;
 	err_str=c.err_str;
-	pCurrent_Char=str_conditon.c_str();
-	ParseElementThenGotoNext();
+	str_error_exp=c.str_error_exp;
+	if (!c.str_conditon.empty()){
+
+		str_conditon=c.str_conditon;
+		pCurrent_Char=str_conditon.c_str();
+		ParseElementThenGotoNext();
+	}
+
 }
 
 CExpCondition& CExpCondition::operator=(const CExpCondition& rhs)
@@ -58,7 +62,7 @@ CExpCondition& CExpCondition::operator=(const CExpCondition& rhs)
 由于使用pCurrent_Char指针，表达式对象复制需要重定位该指针 
 */
 {
-	str_conditon=rhs.str_conditon;
+	
 	pred_table=rhs.pred_table;
 	Cur_Element_Species=rhs.Cur_Element_Species;
 	Error_code=rhs.Error_code;
@@ -66,20 +70,26 @@ CExpCondition& CExpCondition::operator=(const CExpCondition& rhs)
 	bCur_Value=rhs.bCur_Value;
 	str_error_exp=rhs.str_error_exp;
 	err_str=rhs.err_str;
-	pCurrent_Char=str_conditon.c_str();
-	ParseElementThenGotoNext();
+	str_error_exp=rhs.str_error_exp;
+
+	if (!rhs.str_conditon.empty()){
+
+		str_conditon=rhs.str_conditon;
+		pCurrent_Char=str_conditon.c_str();
+		ParseElementThenGotoNext();
+	}
 	return *this;
 }
 
 void CExpCondition::ParseElementThenGotoNext()
 //分析当前元素的属性,同时使pCurrent_Char指向下一个元素的首字符
 {
-	if (!pCurrent_Char){
-		if (Error_code==ERROR_CONDITION_SUCCESS)
-			SetFirstError(ERROR_CONDITION_NO_EXP);
-		Cur_Element_Species = FINISHED;
-		return;
-	}
+	//if (!pCurrent_Char){
+	//	if (Error_code==ERROR_CONDITION_SUCCESS)
+	//		SetFirstError(ERROR_CONDITION_NO_EXP);
+	//	Cur_Element_Species = FINISHED;
+	//	return;
+	//}
 
 	while(true){
 
@@ -98,15 +108,16 @@ void CExpCondition::ParseElementThenGotoNext()
 			++pCurrent_Char;               
 			continue;
 
-		}else if(*pCurrent_Char ==AND && *(++pCurrent_Char)==AND){
+		}else if(*pCurrent_Char ==AND && *(pCurrent_Char+1)==AND){
 
 			Cur_Element_Species = ( ElementSpecies )*pCurrent_Char;  //发现运算符&&
 			++pCurrent_Char ;
-
+			++pCurrent_Char ;
 		
-		}else if(*pCurrent_Char ==OR && *(++pCurrent_Char)==OR){
+		}else if(*pCurrent_Char ==OR && *(pCurrent_Char+1)==OR){
 
 			Cur_Element_Species = ( ElementSpecies )*pCurrent_Char;  //发现运算符||
+			++pCurrent_Char ;
 			++pCurrent_Char ;
 
 		}else if(*pCurrent_Char ==NOT ){
@@ -133,7 +144,7 @@ void CExpCondition::ParseElementThenGotoNext()
 
 					if (Error_code==ERROR_CONDITION_SUCCESS){
 						SetFirstError(ERROR_CONDITION_PRED_FORMAT_INVALID);
-						SetErrorStr(pCurrent_Char);
+						SetErrorStr(pCurrent_Char-1);
 					}
 					++pCurrent_Char;
 					break;
@@ -148,7 +159,7 @@ void CExpCondition::ParseElementThenGotoNext()
 
 			if (Error_code==ERROR_CONDITION_SUCCESS){
 				SetFirstError(ERROR_CONDITION_OPERATOR_INVALID);
-				SetErrorStr(pCurrent_Char);
+				SetErrorStr(pCurrent_Char-1);
 			}
 			++pCurrent_Char;
 		}
@@ -195,18 +206,54 @@ string  CExpCondition::GetFirstErrorEx()
 
 }
 
+void CExpCondition::SetErrorStr (const char* p)
+/*
+
+*/
+{
+	str_error_exp.clear();
+	
+	const char* q=p;
+
+	int i=0;
+
+	while ((q-i)!=str_conditon.c_str() && (isalpha( *(q-i)) || isdigit( *(q-i) ))){
+
+		i++;
+	}
+	
+	string s(q-i);
+	str_error_exp=s;
+}
+
 
 bool CExpCondition::GetConditionValue()
 
 //取条件表达式真值，是一个递归函数的入口
 {
+	if (str_conditon.empty()){
+
+		SetFirstError(ERROR_CONDITION_NO_EXP);
+		return false;
+	}
+	
 	pCurrent_Char=str_conditon.c_str();
 	ParseElementThenGotoNext();
-	Error_code=ERROR_CONDITION_SUCCESS;
+	SetFirstError(ERROR_CONDITION_SUCCESS);
 	str_error_exp.clear();
 	err_str.clear();
 
 	bool bresult = GetCondExpValueByOR( GetCondExpValueFromSubRight() );
+
+
+	if (Cur_Element_Species != FINISHED && Error_code==ERROR_CONDITION_SUCCESS){
+
+		SetFirstError(ERROR_CONDITION_MISSING_OPERATOR);
+		SetErrorStr(pCurrent_Char-1);
+	}
+
+
+
 	return bresult;
 
 }
@@ -216,7 +263,7 @@ bool CExpCondition::GetSubCondExpValue()
 */
 {
 	if (Error_code==ERROR_CONDITION_SUCCESS){
-		SetErrorStr(pCurrent_Char);
+		SetErrorStr(pCurrent_Char-1);
 	}
 	bool bresult = GetCondExpValueByOR( GetCondExpValueFromSubRight() );
 	return bresult;
@@ -230,7 +277,7 @@ bool  CExpCondition::GetCondExpValueByOR( const bool& left )
 	bool result = left;
 	if( Cur_Element_Species == OR ){
 		ParseElementThenGotoNext(); 
-		result = GetCondExpValueByOR( left || GetCondExpValueFromSubRight() );
+		result = GetCondExpValueByOR(  GetCondExpValueFromSubRight() || left );
 	}
 	return result;
 }
@@ -239,7 +286,7 @@ bool  CExpCondition::GetCondExpValueFromSubRight()
 //获得||号右侧表达式的值
 {
 	if (Error_code==ERROR_CONDITION_SUCCESS){
-		SetErrorStr(pCurrent_Char);
+		SetErrorStr(pCurrent_Char-1);
 	}
 	return GetCondExpValueByAND( GetCondExpValueByNOT() );
 
@@ -251,7 +298,7 @@ bool  CExpCondition::GetCondExpValueByAND( const bool& left )
 	bool result = left;
 	if( Cur_Element_Species == AND ){
 		ParseElementThenGotoNext(); 
-		result = GetCondExpValueByAND( left && GetCondExpValueByNOT() );
+		result = GetCondExpValueByAND( GetCondExpValueByNOT() && left );
 	}
 	return result;
 
@@ -275,7 +322,7 @@ bool  CExpCondition::GetCondExpValueByNOT()
 	}else{
 
 		if (Error_code==ERROR_CONDITION_SUCCESS)
-			SetErrorStr(pCurrent_Char);
+			SetErrorStr(pCurrent_Char-1);
 		result = GetElementValue();
 	}
 	return result;
@@ -297,7 +344,8 @@ bool  CExpCondition::GetElementValue()
 		result=GetSubCondExpValue();
 
 		if (Cur_Element_Species != RIGHT_BRACKET && Error_code==ERROR_CONDITION_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
-			SetFirstError(ERROR_EXP_MISSING_RIGHT_BRACKET);
+			SetFirstError(ERROR_CONDITION_MISSING_RIGHT_BRACKET);
+		
 		ParseElementThenGotoNext();	
 
 	}

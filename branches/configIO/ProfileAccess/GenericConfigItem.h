@@ -150,7 +150,7 @@ void Initcur_value(bool& value)
 
 void Initcur_value(CExpressionParse& value)
 {
-	value.Initial();
+	value.clear();
 }
 
 template <class T>

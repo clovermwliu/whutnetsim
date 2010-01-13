@@ -10,6 +10,7 @@
 #include <numeric>
 #include <cmath>
 #include <cctype>
+#include "assert.h"
 
 #include "Test.h"
 
@@ -73,7 +74,7 @@ public:
 
 public:
 
-	void Initial();
+	void clear();
 	void Initial(const std::string&  _expression ,
                  const map< string, double>& _parameter_table,
 				 const map< string,void*>& _remote_call_table);
@@ -82,7 +83,7 @@ public:
 private:
 
 	void SetFirstError(const unsigned long err) {Error_code=err;}
-	void SetErrorStr (const char* p) {str_error_exp.clear();istringstream iss(p);iss >>str_error_exp;}
+	void SetErrorStr (const char* p); 
 
 	void ParseElementThenGotoNext(); //分析当前元素的属性，设置Cur_Element_Species，Str_Cur_Identifier和dwCur_Value，同时使pCurrent_Char指向下一个元素的首字符
 

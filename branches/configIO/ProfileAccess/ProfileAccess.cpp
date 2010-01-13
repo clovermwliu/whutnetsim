@@ -112,7 +112,11 @@ void fun4(CFileScript& f)
 
 	CExpCondition cond; 
 	
-	if(!f. InitConditionBySectionName("std_Condition",cond)) return;
+	if(!f. InitConditionBySectionName("std_Condition",cond)){
+
+		cout<<f.GetLastError()<<":"<<f.GetLastErrorEx()<<"\n"<<endl;
+		//return;
+	}
 
 	bool result=cond.GetConditionValue();
 
@@ -121,6 +125,26 @@ void fun4(CFileScript& f)
 	cout<<"result="<<result<<"  "<< cond.GetFirstErrorEx()<<endl;
 
 	cout<<"result2="<<result2<<"  "<<cond.GetFirstErrorEx()<<endl;
+
+}
+
+void fun5(CFileScript& f)
+{
+
+	CExpCondition cond2; 
+
+	CExpCondition cond=cond2;
+
+	bool result=cond.GetConditionValue();
+	cout<<"result="<<result<<"  "<< cond.GetFirstErrorEx()<<endl;
+
+    CPredicationItem pred;
+    bool result2=pred.GetValue();
+    cout<<"result2="<<result2<<"  "<< pred.GetFirstErrorEx()<<endl;
+
+	CExpressionParse e;
+	double result3=e.GetExpValue();
+    cout<<"result3="<<result3<<"  "<< e.GetFirstErrorEx()<<endl;
 
 }
 
@@ -139,6 +163,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	f.LoadFile();
 
 	fun4(f);
+
 
 	getchar();
 

@@ -4,7 +4,7 @@
 namespace WhuTNetSimConfigClass{
 
 CFileScript::CFileScript(const string& strFilePath)
-:CFileConfig(strFilePath)
+:dwErr_code(ERROR_SCRIPT_SUCCESS),err_str(""),CFileConfig(strFilePath)
 {
 }
 
@@ -13,11 +13,48 @@ CFileScript::~CFileScript(void)
 }
 
 
+string CFileScript::GetLastErrorEx()
+/*
+#define  ERROR_SCRIPT_SUCCESS              0x00020000
+#define  ERROR_SCRIPT_INITIAL_EXP_FAIL     0x00020001
+#define  ERROR_SCRIPT_EXP_NOT_FOUND        0x00020002
+#define  ERROR_SCRIPT_INITIAL_PRED_FAIL    0x00020003
+#define  ERROR_SCRIPT_PRED_NOT_FOUND       0x00020004
+#define  ERROR_SCRIPT_INITIAL_COND_FAIL    0x00020005
+#define  ERROR_SCRIPT_COND_NOT_FOUND       0x00020006
+#define  ERROR_SCRIPT_CONDEXP_INVALID      0x00020007
+*/
+{
+	switch (dwErr_code)
+	{
+	case ERROR_SCRIPT_SUCCESS:
+		return "Parse script successfully";
+	case ERROR_SCRIPT_INITIAL_EXP_FAIL:
+		return "Parse expression fail:"+err_str;
+	case ERROR_SCRIPT_EXP_NOT_FOUND:
+		return "Expression is not found:"+err_str;
+	case ERROR_SCRIPT_INITIAL_PRED_FAIL:
+		return "Parse predication item fail:"+err_str;
+	case ERROR_SCRIPT_PRED_NOT_FOUND:
+		return "Predication item is not found:"+err_str;
+	case ERROR_SCRIPT_INITIAL_COND_FAIL:
+		return "Parse condition expression fail:"+err_str;
+	case ERROR_SCRIPT_COND_NOT_FOUND:
+		return "Condition expression is not found:"+err_str;
+	case ERROR_SCRIPT_CONDEXP_INVALID:
+		return "Condition expression may not be right:"+err_str;
+
+	default:
+		return "Unknown";
+	}
+
+}
+
 
 bool
-CFileScript::InitExpressionBySectionName(string expsection,
+CFileScript::InitExpressionBySectionName(const string& expsection,
 					         			 CExpressionParse& exp,
-                                         string expform)
+                                         const string& expform)
 /*
 描述：根据一个表达式节的内容，初始化一个表达式
 参数：expsection 表达式节名
@@ -28,6 +65,11 @@ CFileScript::InitExpressionBySectionName(string expsection,
 
  if (form.GetLastError()==ERROR_CONFIG_ITEM_NOT_EXIST){
 
+	 SetLastError(ERROR_SCRIPT_INITIAL_EXP_FAIL);
+	 string tmp=expsection;
+	 tmp=tmp+":";
+	 tmp=tmp+expform;
+	 SetLastErrorStr(tmp);
 	 return false;
  }
 
@@ -42,11 +84,22 @@ CFileScript::InitExpressionBySectionName(string expsection,
 
 	 if (item.GetLastError()!=ERROR_CONFIG_ITEM_SUCCESS){
 
-		 cout<<"parameter "<<v[i]<<" does not exist"<<endl;
+		 //cout<<"parameter "<<v[i]<<" does not exist"<<endl;
 
+		 SetLastError(ERROR_SCRIPT_EXP_NOT_FOUND);
+		 string tmp=expsection;
+		 tmp=tmp+":[Parameter]";
+		 tmp=tmp+v[i];
+		 SetLastErrorStr(tmp);
+     	 return false;
 	 }
 
-	 (form.MyValue()).SetParamValue(v[i],item);
+	 if (!(form.MyValue()).SetParamValue(v[i],item)){
+
+		 SetLastError(ERROR_SCRIPT_INITIAL_EXP_FAIL);
+		 SetLastErrorStr(expsection);
+	 }
+
 
  }
 
@@ -61,9 +114,18 @@ CFileScript::InitExpressionBySectionName(string expsection,
 
 	 if (item.GetLastError()!=ERROR_CONFIG_ITEM_SUCCESS){
 
-		 cout<<"parameter "<<v[j]<<" does not exist"<<endl;
+		 //cout<<"parameter "<<v[j]<<" does not exist"<<endl;
+
+		 SetLastError(ERROR_SCRIPT_INITIAL_EXP_FAIL);
+		 string tmp=expsection;
+		 tmp=tmp+":[Remote call Parameter]";
+		 tmp=tmp+v[j];
+		 SetLastErrorStr(tmp);
+		 return false;
 
 	 }
+
+	 //给远程调用函数挂钩
 
 	 if (item.MyValue() == "cur_time"){
 
@@ -82,11 +144,11 @@ CFileScript::InitExpressionBySectionName(string expsection,
 
 
 bool
-CFileScript::InitPredicationItemBySectionName(string pred_item_section,
+CFileScript::InitPredicationItemBySectionName(const string& pred_item_section,
 									          CPredicationItem& pred,
-											  string keyleft,
-											  string keyright,
-											  string keyop)
+											  const string& keyleft,
+											  const string& keyright,
+											  const string& keyop)
 /*
 
 */
@@ -95,6 +157,11 @@ CFileScript::InitPredicationItemBySectionName(string pred_item_section,
 
 	if (l.GetLastError()==ERROR_CONFIG_ITEM_NOT_EXIST){
 
+		SetLastError(ERROR_SCRIPT_PRED_NOT_FOUND);
+		string tmp=pred_item_section;
+		tmp=tmp+":";
+		tmp=tmp+keyleft;
+		SetLastErrorStr(tmp);
 		return false;
 	}
 
@@ -102,6 +169,11 @@ CFileScript::InitPredicationItemBySectionName(string pred_item_section,
 
 	if (r.GetLastError()==ERROR_CONFIG_ITEM_NOT_EXIST){
 
+		SetLastError(ERROR_SCRIPT_PRED_NOT_FOUND);
+		string tmp=pred_item_section;
+		tmp=tmp+":";
+		tmp=tmp+keyright;
+		SetLastErrorStr(tmp);
 		return false;
 	}
 
@@ -109,6 +181,11 @@ CFileScript::InitPredicationItemBySectionName(string pred_item_section,
 
 	if (op.GetLastError()==ERROR_CONFIG_ITEM_NOT_EXIST){
 
+		SetLastError(ERROR_SCRIPT_PRED_NOT_FOUND);
+		string tmp=pred_item_section;
+		tmp=tmp+":";
+		tmp=tmp+keyop;
+		SetLastErrorStr(tmp);
 		return false;
 	}
 
@@ -121,7 +198,7 @@ CFileScript::InitPredicationItemBySectionName(string pred_item_section,
 
 	pred.SetExp(true,exp_tmp);
 
-	exp_tmp.Initial();
+	exp_tmp.clear();
 
 	if (!InitExpressionBySectionName(r.MyValue(),exp_tmp)){
 
@@ -138,9 +215,9 @@ CFileScript::InitPredicationItemBySectionName(string pred_item_section,
 
 
 bool 
-CFileScript::InitConditionBySectionName(string condsection,
+CFileScript::InitConditionBySectionName(const string& condsection,
 						         		CExpCondition& cond,
-								        string condkey)
+								        const string& condkey)
 /*
 描述：根据脚本节名设置一个CExpCondition的对象
 参数：[out]cond 待设置的CExpCondition对象
@@ -149,6 +226,11 @@ CFileScript::InitConditionBySectionName(string condsection,
 	CGenericConfigItem<string> stritem(*this,condsection,condkey);
 	if (stritem.GetLastError()==ERROR_CONFIG_ITEM_NOT_EXIST){
 
+		SetLastError(ERROR_SCRIPT_COND_NOT_FOUND);
+		string tmp=condsection;
+		tmp=tmp+":";
+		tmp=tmp+condkey;
+		SetLastErrorStr(tmp);
 		return false;
 	}
     
@@ -157,24 +239,32 @@ CFileScript::InitConditionBySectionName(string condsection,
 	string str=stritem.MyValue();
 	string::iterator iter=str.begin();
 
+	bool result=true;
+
 	while(iter!=str.end()){
 
-		if( isspace( *iter)) {           //当前字符是是空格、制表符或换行符，继续
+		if( isspace( *iter)) { //当前字符是是空格、制表符或换行符，继续
 			++iter;               
 			continue;
 
-		}else if(*iter == '&' && *(++iter)=='&'){
+		}else if(*iter == '&' && *(iter+1)=='&'){
 
 			++iter ;
+			++iter ;
 
-		}else if(*iter == '|' && *(++iter)=='|'){
+		}else if(*iter == '|' && *(iter+1)=='|'){
 
+			++iter ;
 			++iter ;
 
 		}else if(*iter =='!' ){
 
 			++iter ;
 
+		}else if (*iter =='(' || *iter ==')'){
+
+			++iter;		
+		
 		}else if( isalpha( *iter) || isdigit(  *iter)){
 
 			str_pred_identify.clear();
@@ -182,33 +272,29 @@ CFileScript::InitConditionBySectionName(string condsection,
 			do {
 				str_pred_identify += (*iter);
 				++iter;
-			} while(isalpha( *iter ) || isdigit(  *iter )); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
+			} while(iter!=str.end() && (isalpha( *iter ) || isdigit(  *iter ))); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
 			
 			//开始构造
 
 			CPredicationItem preditem;
 
-			bool bresult=InitPredicationItemBySectionName(str_pred_identify,preditem);
-
-			if (!bresult){
-
-				//错误处理
-				return false;
-			}
+			result=InitPredicationItemBySectionName(str_pred_identify,preditem) && result;
 
 			table.insert(pair<string, CPredicationItem>(str_pred_identify,preditem));
 
 
 		}else{
 
-			//可以报错
+			result=false;
+			SetLastError(ERROR_SCRIPT_CONDEXP_INVALID);
+			SetLastErrorStr(condsection);
 			++iter;
 		}
 
 	}
 
 	cond.Initial(str,table);
-	return true;
+	return result;
 
 }
 

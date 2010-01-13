@@ -6,7 +6,7 @@ namespace WhuTNetSimConfigClass{
 
 
 CPredicationItem::CPredicationItem()
-:Error_code(ERROR_EXP_SUCCESS)
+:Error_code(ERROR_EXP_SUCCESS),op("=="),Error_Str("")
 {
 
 }

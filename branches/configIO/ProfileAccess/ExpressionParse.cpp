@@ -12,6 +12,7 @@ CExpressionParse::CExpressionParse()
 /*
 构造函数
 */
+:dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS),str_error_exp("")
 {
 
 }
@@ -44,13 +45,18 @@ CExpressionParse::CExpressionParse(const CExpressionParse& rhs)
 	parameter_table=rhs.parameter_table;
 	remote_call_addrs_table=rhs.remote_call_addrs_table;
 	dwCur_Value=rhs.dwCur_Value;
-	str_expression=rhs.str_expression;
 	Str_Cur_Identifier=rhs.Str_Cur_Identifier;
 	Cur_Element_Species=rhs.Cur_Element_Species;
 	Error_code=rhs.Error_code;
 	str_error_exp=rhs.str_error_exp;
-	pCurrent_Char=str_expression.c_str();
-	ParseElementThenGotoNext();
+
+	if (!rhs.str_expression.empty()){
+
+		str_expression=rhs.str_expression;
+		pCurrent_Char=str_expression.c_str();
+		ParseElementThenGotoNext();
+	}
+
 }
 
 
@@ -62,23 +68,27 @@ CExpressionParse& CExpressionParse::operator=(const CExpressionParse& rhs)
 	parameter_table=rhs.parameter_table;
 	remote_call_addrs_table=rhs.remote_call_addrs_table;
 	dwCur_Value=rhs.dwCur_Value;
-	str_expression=rhs.str_expression;
 	Str_Cur_Identifier=rhs.Str_Cur_Identifier;
 	Cur_Element_Species=rhs.Cur_Element_Species;
 	Error_code=rhs.Error_code;
 	str_error_exp=rhs.str_error_exp;
-	pCurrent_Char=str_expression.c_str();
-	ParseElementThenGotoNext();
+	if (!rhs.str_expression.empty()){
+
+		str_expression=rhs.str_expression;
+		pCurrent_Char=str_expression.c_str();
+		ParseElementThenGotoNext();
+	}
 	return *this;
 }
 
 
-void CExpressionParse::Initial()
+void CExpressionParse::clear()
 /*
 描述：初始化函数
 */
 {
 	parameter_table.clear();
+	remote_call_addrs_table.clear();
 	str_expression="";
 	pCurrent_Char=NULL;
 	dwCur_Value=0;
@@ -87,7 +97,7 @@ void CExpressionParse::Initial()
 	Error_code=ERROR_EXP_SUCCESS;
 	str_error_exp="";
 
-	ParseElementThenGotoNext();
+	//ParseElementThenGotoNext();
 }
 
 
@@ -118,12 +128,14 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 描述：分析当前元素的属性，设置Cur_Element_Species，Str_Cur_Identifier和dwCur_Value，同时使pCurrent_Char指向下一个元素的首字符
 */
 {
-	if (!pCurrent_Char){
+	/*if (!pCurrent_Char){
 		if (Error_code==ERROR_EXP_SUCCESS)
 			SetFirstError(ERROR_EXP_NO_EXP);
 		Cur_Element_Species = FINISHED;
 		return;
-	}
+	}*/
+
+	assert(pCurrent_Char);
 
 	while(true){
 
@@ -234,7 +246,7 @@ string CExpressionParse::GetFirstErrorEx()
 	case ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS:
 		return "Sub-Functions includes invalid parameters.  Near by "+str_error_exp;
 	case ERROR_EXP_USE_NONSUPPORT_FUNCS:
-		return "Expression includes  non-support sub-functions.  Near by "+str_error_exp;
+		return "Expression includes  non-support sub-function:"+str_error_exp;
 	case ERROR_EXP_CALL_SUBFUNCS_FAIL:
 		return "Parameters don't match on sub-functions's request @:"+str_error_exp;
 	case ERROR_EXP_NO_EXP:
@@ -249,6 +261,26 @@ string CExpressionParse::GetFirstErrorEx()
 		return "UNKNOWN_ERROR";
 	}
 
+}
+
+void CExpressionParse::SetErrorStr (const char* p)
+/*
+
+*/
+{
+	str_error_exp.clear();
+
+	const char* q=p;
+
+	int i=0;
+
+	while ((q-i)!=str_expression.c_str() && (isalpha( *(q-i)) || isdigit( *(q-i) ))){
+
+		i++;
+	}
+
+	string s(q-i);
+	str_error_exp=s;
 }
 
 
@@ -334,9 +366,15 @@ double CExpressionParse::GetExpValue()
 */
 {
 
+	if (str_expression.empty()){
+
+		SetFirstError(ERROR_EXP_NO_EXP);
+		return DEFAULT_VALUE;
+	}
+		
 	pCurrent_Char=str_expression.c_str();
 	ParseElementThenGotoNext();
-	Error_code=ERROR_EXP_SUCCESS;
+	SetFirstError(ERROR_EXP_SUCCESS);
 	str_error_exp.clear();
 	
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
@@ -928,8 +966,10 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 
 	}else{
 
-		if(Error_code==ERROR_EXP_SUCCESS)
+		if(Error_code==ERROR_EXP_SUCCESS){
 			SetFirstError(ERROR_EXP_USE_NONSUPPORT_FUNCS);
+			str_error_exp=name;
+		}
 
 		return DEFAULT_VALUE; //默认值返回
 
