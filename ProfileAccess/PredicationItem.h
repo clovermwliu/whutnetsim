@@ -6,7 +6,8 @@ using namespace std;
 
 namespace WhuTNetSimConfigClass{
 
-#define  ERROR_PRED_OPERATORINVAILD	0x00000100
+#define  ERROR_PRED_SUCCESS         ERROR_EXP_SUCCESS
+#define  ERROR_PRED_OPERATORINVAILD	0x00030201
 
 
 class CPredicationItem

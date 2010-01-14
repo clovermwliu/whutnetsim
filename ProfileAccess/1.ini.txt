@@ -1,7 +1,7 @@
 
 [std_expression]
 
-Formula=sin(n)+sum(abcd,exp(b),log(b),max(abcd,b,c,n) ): $abcd,$n,$b, &c
+Formula=sin(n)+sum(abcd,exp(b),log(b),max(abcd,b,c,n) ) : $abcd,$n,$b, &c
 abcd=100
 b=200
 n=3
@@ -23,7 +23,7 @@ Formula=300
 
 
 [std_Condition]
-Condition=item1 &&| (!item2 || item3 && item4)
+Condition=item1 && (!item2 || item3 && item4)
 
 [item1]
 LeftExp=expA
@@ -66,17 +66,56 @@ Formula=500
 Formula=550
 
 
+[std_custom_element]
+Option=2
+Default=250
+Option1= IF {COND_1} THEN {EXP_1}
+Option2= IF {COND_2} THEN {EXP_2}
+
+[COND_1]
+Condition=ITEM_1
+
+[COND_2]
+Condition=ITEM_2 && ITEM_3
+
+[ITEM_1]
+LeftExp=EXP_A
+RightExp=EXP_B
+Operator=>
+
+[ITEM_2]
+LeftExp=EXP_C
+RightExp=EXP_D
+Operator=>=
+
+[ITEM_3]
+LeftExp=EXP_A
+RightExp=EXP_D
+Operator=>=
+
+[EXP_A]
+Formula=100
+
+[EXP_B]
+Formula=190
+
+[EXP_C]
+Formula=100
+
+[EXP_D]
+Formula=100
+
+
+[EXP_1]
+Formula=a-b:$a,$b
+a=100
+b=200
+
+[EXP_2]
+Formula=a+b:$a,$b
+a=100
+b=200
 
 
 
-[std_model]
-
-model_location=
-#模型设置在什么位置
-
-model_trigger= _CEXP{std_expression1>std_expression2}
-#模型的触发条件
-
-model_execute= _EXP{std_expression}
-#模型的执行规则
 
