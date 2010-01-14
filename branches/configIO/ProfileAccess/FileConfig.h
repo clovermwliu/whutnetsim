@@ -12,9 +12,9 @@ namespace WhuTNetSimConfigClass{
 
 
 //Error Code
-#define ERROR_FILE_NOT_EXSITING	 0x00000000
-#define SUCCESS_NO_ERROR         0x00000001
-#define ERROR_FILE_WRITE_FAIL    0x00000002
+#define SUCCESS_NO_ERROR         0x00010000
+#define ERROR_FILE_NOT_EXSITING	 0x00010001
+#define ERROR_FILE_WRITE_FAIL    0x00010002
 
 //Config file's marker
 #define CHAR_SECTION_BEGIN     '['
@@ -208,8 +208,8 @@ protected://成员变量
 // ConfigItem 类的定义
 //----------------------------------------------------------------------------------
 
-#define  ERROR_CONFIG_ITEM_SUCCESS       0x00000001
-#define  ERROR_CONFIG_ITEM_NOT_EXIST     0x00000002
+#define  ERROR_CONFIG_ITEM_SUCCESS       0x00020001
+#define  ERROR_CONFIG_ITEM_NOT_EXIST     0x00020002
 
 
 class CItemLine

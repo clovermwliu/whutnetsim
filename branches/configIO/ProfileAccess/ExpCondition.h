@@ -3,12 +3,6 @@
 
 
 #include <map>
-#include <vector>
-#include <sstream>
-#include <stdexcept>
-#include <cstdlib>
-#include <numeric>
-#include <cmath>
 #include <cctype>
 
 
@@ -19,13 +13,15 @@ using namespace std;
 namespace WhuTNetSimConfigClass{
 
 
-#define  ERROR_CONDITION_SUCCESS			          0x00001000
-#define  ERROR_CONDITION_NO_EXP                       0x00001001
-#define  ERROR_CONDITION_MISSING_OPERATOR             0x00001002
-#define  ERROR_CONDITION_OPERATOR_INVALID             0x00001003
-#define  ERROR_CONDITION_PRED_FORMAT_INVALID          0x00001004
-#define  ERROR_CONDITION_MISSING_RIGHT_BRACKET        0x00001005
-#define  ERROR_CONDITION_PREDIDENTIFY_NOT_EXIST       0x00001006
+#define  ERROR_CONDITION_SUCCESS			          ERROR_PRED_SUCCESS
+#define  ERROR_CONDITION_NO_EXP                       0x00030201
+#define  ERROR_CONDITION_MISSING_OPERATOR             0x00030202
+#define  ERROR_CONDITION_OPERATOR_INVALID             0x00030203
+#define  ERROR_CONDITION_PRED_FORMAT_INVALID          0x00030204
+#define  ERROR_CONDITION_MISSING_RIGHT_BRACKET        0x00030205
+#define  ERROR_CONDITION_PREDIDENTIFY_NOT_EXIST       0x00030206
+#define  ERROR_CONDITION_MISSING_PREDITEM             0x00030207
+
 
 
 class CExpCondition
@@ -39,10 +35,19 @@ public:
 	CExpCondition(const CExpCondition&);
 	CExpCondition& operator=(const CExpCondition& rhs); 
 
+	friend bool operator<(const CExpCondition& lhs,const CExpCondition& rhs) {return lhs.id <rhs.id ;} 
+	friend bool operator>(const CExpCondition& lhs,const CExpCondition& rhs) {return lhs.id >rhs.id ;} 
+	friend bool operator<=(const CExpCondition& lhs,const CExpCondition& rhs) {return lhs.id <=rhs.id ;} 
+	friend bool operator>=(const CExpCondition& lhs,const CExpCondition& rhs) {return lhs.id >=rhs.id ;} 
+	friend bool operator==(const CExpCondition& lhs,const CExpCondition& rhs) {return lhs.id ==rhs.id ;} 
+	friend bool operator!=(const CExpCondition& lhs,const CExpCondition& rhs) {return lhs.id !=rhs.id ;} 
+
+
 	~CExpCondition(void);
 
 	void Initial(string condstr,
-		         const map<string,CPredicationItem>& t);
+		         const map<string,CPredicationItem>& t,
+				 int idnum=0);
 
 public:
 
@@ -50,6 +55,8 @@ public:
 
 	string GetFirstErrorEx();
 	unsigned long GetFirstError() {return Error_code;}
+
+	const string& GetConExpStr() {return str_conditon;}
 
 private:
 
@@ -101,11 +108,11 @@ private:
 
 	string Str_Cur_PredicationItem;//当前解析到的谓词项
 
-	bool bCur_Value;//记录当前谓词项的值
-
-	unsigned long Error_code;
+    unsigned long Error_code;
 	string str_error_exp;//str_conditon的子串，从可能出错的地方开始，由SetErrorStr()维护
 	string err_str;//用于接收CPredication中返回的错误信息
+
+	int id;//该条件的ID号
 
 
 };

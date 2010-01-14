@@ -10,6 +10,7 @@
 #include "ExpressionParse.h"
 #include "PredicationItem.h"
 #include "ExpCondition.h"
+#include "ElementCustom.h"
 #include "Test.h"
 
 using namespace WhuTNetSimConfigClass;
@@ -131,6 +132,13 @@ void fun4(CFileScript& f)
 void fun5(CFileScript& f)
 {
 
+	CElementCustom ce2;
+	CElementCustom ce=ce2;
+	double result0=ce.GetValue();
+	cout<<"result0="<<result0<<"  "<< ce.GetFirstErrorEx()<<endl;
+
+
+	
 	CExpCondition cond2; 
 
 	CExpCondition cond=cond2;
@@ -148,6 +156,26 @@ void fun5(CFileScript& f)
 
 }
 
+void fun6(CFileScript& f)
+{
+	CElementCustom ce;
+
+	if(!f. InitCustomElementBySectionName("std_custom_element",ce)){
+
+		cout<<f.GetLastError()<<":"<<f.GetLastErrorEx()<<"\n"<<endl;
+		//return;
+	}
+
+	double result=ce.GetValue();
+
+	double result2=ce.GetValue();
+
+	cout<<"result="<<result<<"  "<< ce.GetFirstErrorEx()<<endl;
+
+	cout<<"result2="<<result2<<"  "<< ce.GetFirstErrorEx()<<endl;
+
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 
@@ -162,7 +190,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	CFileScript f("1.ini.txt");
 	f.LoadFile();
 
-	fun4(f);
+	fun6(f);
 
 
 	getchar();

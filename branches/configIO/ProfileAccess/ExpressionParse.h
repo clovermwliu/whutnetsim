@@ -19,20 +19,19 @@ using namespace std;
 namespace WhuTNetSimConfigClass{
 
 #define  DEFAULT_VALUE                               1
-#define  ERROR_EXP_SUCCESS			                 0x00000000
-#define  ERROR_EXP_DIVISOR_IS_ZERO                   0x00000001
-#define  ERROR_EXP_SIGN_UNKNOWN                      0x00000002
-#define  ERROR_EXP_INVAILD_PAPAMETER                 0x00000003
-#define  ERROR_EXP_MISSING_RIGHT_BRACKET             0x00000004
-#define  ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS   0x00000005
-#define  ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS     0x00000006
-#define  ERROR_EXP_USE_NONSUPPORT_FUNCS              0x00000007
-#define  ERROR_EXP_CALL_SUBFUNCS_FAIL                0x00000008
-#define  ERROR_EXP_NO_EXP                            0x00000009
-#define  ERROR_EXP_MISSING_OPERATOR                  0x0000000a
-#define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0000000b
-#define  ERROR_EXP_OVERFLOW                          0x0000000c
-
+#define  ERROR_EXP_SUCCESS			                 0x00030100
+#define  ERROR_EXP_DIVISOR_IS_ZERO                   0x00030101
+#define  ERROR_EXP_SIGN_UNKNOWN                      0x00030102
+#define  ERROR_EXP_INVAILD_PAPAMETER                 0x00030103
+#define  ERROR_EXP_MISSING_RIGHT_BRACKET             0x00030104
+#define  ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS   0x00030105
+#define  ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS     0x00030106
+#define  ERROR_EXP_USE_NONSUPPORT_FUNCS              0x00030107
+#define  ERROR_EXP_CALL_SUBFUNCS_FAIL                0x00030108
+#define  ERROR_EXP_NO_EXP                            0x00030109
+#define  ERROR_EXP_MISSING_OPERATOR                  0x0003010a
+#define  ERROR_EXP_NUMBER_FORMAT_INVALID             0x0003010b
+#define  ERROR_EXP_OVERFLOW                          0x0003010c
 
 typedef double (* pFunGet)(void); //定义一个远程函数指针，这类函数的类型均为double，形参表为空
 

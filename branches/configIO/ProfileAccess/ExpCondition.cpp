@@ -1,11 +1,12 @@
 #include "StdAfx.h"
+#include "FileScript.h"
 #include "ExpCondition.h"
 
 namespace WhuTNetSimConfigClass{
 
 CExpCondition::CExpCondition(void)
 :Cur_Element_Species(BEGININI),Error_code(ERROR_CONDITION_SUCCESS),
- Str_Cur_PredicationItem(""),bCur_Value(false),str_error_exp(""),err_str(""),str_conditon("")
+ Str_Cur_PredicationItem(""),str_error_exp(""),err_str(""),str_conditon(""),id(0)
 {
 }
 
@@ -14,7 +15,7 @@ CExpCondition::CExpCondition(string condstr,
 			                 const map<string,CPredicationItem>& t)
 
 :str_conditon(condstr),pred_table(t),Cur_Element_Species(BEGININI),Error_code(ERROR_CONDITION_SUCCESS),
- pCurrent_Char(str_conditon.c_str()),Str_Cur_PredicationItem(""),bCur_Value(false),str_error_exp(""),err_str("")
+ pCurrent_Char(str_conditon.c_str()),Str_Cur_PredicationItem(""),str_error_exp(""),err_str(""),id(0)
 {
 	ParseElementThenGotoNext();
 }
@@ -25,12 +26,14 @@ CExpCondition::~CExpCondition(void)
 
 
 void CExpCondition::Initial(string condstr,
-			                const map<string,CPredicationItem>& t)
+			                const map<string,CPredicationItem>& t,
+							int idnum)
 /*
 */
 {
 	str_conditon=condstr;
 	pred_table=t;
+	id=idnum;
 	pCurrent_Char=str_conditon.c_str();
 	ParseElementThenGotoNext();
 }
@@ -45,9 +48,9 @@ CExpCondition::CExpCondition(const CExpCondition& c)
 	Cur_Element_Species=c.Cur_Element_Species;
 	Error_code=c.Error_code;
 	Str_Cur_PredicationItem=c.Str_Cur_PredicationItem;
-	bCur_Value=c.bCur_Value;
 	err_str=c.err_str;
 	str_error_exp=c.str_error_exp;
+	id=c.id;
 	if (!c.str_conditon.empty()){
 
 		str_conditon=c.str_conditon;
@@ -67,10 +70,10 @@ CExpCondition& CExpCondition::operator=(const CExpCondition& rhs)
 	Cur_Element_Species=rhs.Cur_Element_Species;
 	Error_code=rhs.Error_code;
 	Str_Cur_PredicationItem=rhs.Str_Cur_PredicationItem;
-	bCur_Value=rhs.bCur_Value;
 	str_error_exp=rhs.str_error_exp;
 	err_str=rhs.err_str;
 	str_error_exp=rhs.str_error_exp;
+	id=rhs.id;
 
 	if (!rhs.str_conditon.empty()){
 
@@ -131,7 +134,7 @@ void CExpCondition::ParseElementThenGotoNext()
 			++pCurrent_Char ;
 
 
-		}else if( isalpha( *pCurrent_Char ) || isdigit(  *pCurrent_Char )){
+		}else if( isalpha( *pCurrent_Char ) || isdigit(  *pCurrent_Char )||CFileScript::isValidSymbol(*pCurrent_Char)){
 
 			Cur_Element_Species = PREDICATION_ITEM;          
 			Str_Cur_PredicationItem.clear();
@@ -150,7 +153,7 @@ void CExpCondition::ParseElementThenGotoNext()
 					break;
 
 				}
-			} while(isalpha(  *pCurrent_Char ) || isdigit(  *pCurrent_Char )); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
+			} while(isalpha(  *pCurrent_Char ) || isdigit(  *pCurrent_Char )||CFileScript::isValidSymbol(*pCurrent_Char)); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
 
 		}else if( *pCurrent_Char == 0){
 			Cur_Element_Species = FINISHED; //遇到字符串结束符则结束
@@ -181,6 +184,7 @@ string  CExpCondition::GetFirstErrorEx()
 #define  ERROR_CONDITION_PRED_FORMAT_INVALID          0x00001004
 #define  ERROR_CONDITION_MISSING_RIGHT_BRACKET        0x00001005
 #define  ERROR_CONDITION_PREDIDENTIFY_NOT_EXIST       0x00001006
+#define  ERROR_CONDITION_MISSING_PREDITEM             0x00001007
 
 */
 {
@@ -189,7 +193,7 @@ string  CExpCondition::GetFirstErrorEx()
 	case ERROR_CONDITION_SUCCESS:
 		return "SUCCESS";
 	case ERROR_CONDITION_NO_EXP:
-		return "No expression in this object";
+		return "No condition expression in this object";
 	case ERROR_CONDITION_MISSING_OPERATOR:
 		return "Missing operator.  Near by "+str_error_exp;
 	case ERROR_CONDITION_PRED_FORMAT_INVALID:
@@ -200,6 +204,8 @@ string  CExpCondition::GetFirstErrorEx()
 		return "Missing right bracket.  Near by "+str_error_exp;
 	case ERROR_CONDITION_PREDIDENTIFY_NOT_EXIST:
 		return "Condition Expression includes invalid predication identify.  Near by "+str_error_exp;
+	case ERROR_CONDITION_MISSING_PREDITEM : 
+		return "Missing predication item.  Near by "+str_error_exp;
 	default:
 		return err_str;
 	}
@@ -334,6 +340,7 @@ bool  CExpCondition::GetElementValue()
 */
 {
 	bool result;
+
 	if( Cur_Element_Species == PREDICATION_ITEM ){
 		result = ParseCurPredItem();
 	}else if( Cur_Element_Species == LEFT_BRACKET ){ //如遇到(则优先计算整个()内表达式的值
@@ -348,6 +355,13 @@ bool  CExpCondition::GetElementValue()
 		
 		ParseElementThenGotoNext();	
 
+	}else{
+
+		if (Error_code==ERROR_CONDITION_SUCCESS){
+			SetFirstError(ERROR_CONDITION_MISSING_PREDITEM);
+			SetErrorStr(pCurrent_Char-1);
+		}
+		result=false;
 	}
 	return result;
 }

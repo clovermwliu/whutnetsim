@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "FileScript.h"
 #include "ExpressionParse.h"
 
 namespace WhuTNetSimConfigClass{
@@ -181,7 +182,7 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 					break;
 
 				}
-			} while(isalpha(  *pCurrent_Char ) || isdigit(  *pCurrent_Char )); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
+			} while(isalpha(  *pCurrent_Char ) || isdigit(  *pCurrent_Char )|| CFileScript::isValidSymbol(*pCurrent_Char)); //取字母+数字的混合表达式，直到既非字母又非数字的符号结束
 			            
 		}else if( *pCurrent_Char == 0){
 			Cur_Element_Species = FINISHED; //遇到字符串结束符则结束
