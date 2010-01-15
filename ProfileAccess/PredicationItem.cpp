@@ -6,7 +6,7 @@ namespace WhuTNetSimConfigClass{
 
 
 CPredicationItem::CPredicationItem()
-:Error_code(ERROR_EXP_SUCCESS),op("=="),Error_Str("")
+:op("=="),CErrorHandler()
 {
 
 }
@@ -14,7 +14,7 @@ CPredicationItem::CPredicationItem()
 CPredicationItem::CPredicationItem(CExpressionParse& l,
 								   CExpressionParse& r,
      							   string& opstr)
-:Error_code(ERROR_EXP_SUCCESS),Error_Str("")
+:CErrorHandler()
 {
 	lExp=l;
 	rExp=r;
@@ -57,34 +57,27 @@ bool CPredicationItem::GetValue()
 */
 {
 	double dwl=lExp.GetExpValue();
-	Error_code=lExp.GetFirstError();
-	if (Error_code!=ERROR_EXP_SUCCESS){
+	error_code=lExp.GetLastError();
+	if (error_code!=ERROR_EXP_SUCCESS){
 
-		Error_Str="LeftExp:"+lExp.GetFirstErrorEx();
+		err_str="LeftExp:"+lExp.GetLastErrorEx();
 		return false;
+	
 	}else{
-
-		Error_Str=lExp.GetFirstErrorEx();
-
+		err_str=lExp.GetLastErrorEx();
 	}
 
 	double dwr=rExp.GetExpValue();
-	Error_code=rExp.GetFirstError();
-	if (Error_code!=ERROR_EXP_SUCCESS){
+	error_code=rExp.GetLastError();
+	if (error_code!=ERROR_EXP_SUCCESS){
 
-		Error_Str="RightExp:"+rExp.GetFirstErrorEx();
+		err_str="RightExp:"+rExp.GetLastErrorEx();
 		return false;
 	}else{
 
-		Error_Str=rExp.GetFirstErrorEx();
-
+		err_str=rExp.GetLastErrorEx();
 	}
 
-	if (Error_code!=ERROR_EXP_SUCCESS){
-
-		return false;
-	}
-	
 	if (op==">"){
 
 		return (dwl > dwr);
@@ -111,8 +104,8 @@ bool CPredicationItem::GetValue()
 	
 	}else{
 
-		Error_code=ERROR_PRED_OPERATORINVAILD;
-		Error_Str="Predication item's operator is invalid";
+		error_code=ERROR_PRED_OPERATORINVAILD;
+		err_str="Predication item's operator is invalid";
 
 		return false;
 

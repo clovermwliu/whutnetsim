@@ -4,12 +4,12 @@
 namespace WhuTNetSimConfigClass{
 
 CElementCustom::CElementCustom()
-:dwDefault(1),Error_code(ERROR_CUSTOM_SUCCESS),err_str("SUCCESS")
+:dwDefault(1),CErrorHandler()
 {
 }
 
 CElementCustom::CElementCustom(map<CExpCondition,CExpressionParse>& t,double d)
-:dwDefault(d),custom_table(t),Error_code(ERROR_CUSTOM_SUCCESS),err_str("SUCCESS")
+:dwDefault(d),custom_table(t),CErrorHandler()
 {
 }
 
@@ -25,8 +25,8 @@ double CElementCustom::GetValue()
 
 	if (custom_table.empty()){
 
-		err_str="This object has not been initialized";
-		Error_code=ERROR_CUSTOM_NOT_INITAILIZED;
+		SetLastErrorStr("This object has not been initialized");
+		SetLastError(ERROR_CUSTOM_NOT_INITAILIZED);
 		return dwDefault;
 	}
 
@@ -39,12 +39,12 @@ double CElementCustom::GetValue()
 
 		bool buse=c.GetConditionValue();
 
-		if(c.GetFirstError()!=ERROR_CONDITION_SUCCESS){
+		if(c.GetLastError()!=ERROR_CONDITION_SUCCESS){
 	
-			Error_code=c.GetFirstError();
+			error_code=c.GetLastError();
 			err_str="[Condition:"+c.GetConExpStr();
 			err_str=err_str+" ERROR]:";
-			err_str=err_str+c.GetFirstErrorEx();
+			err_str=err_str+c.GetLastErrorEx();
 		}
 
 		if (buse ){
@@ -53,12 +53,12 @@ double CElementCustom::GetValue()
 
 			double result=e.GetExpValue();
 
-			if(e.GetFirstError()!=ERROR_EXP_SUCCESS){
+			if(e.GetLastError()!=ERROR_EXP_SUCCESS){
 
-				Error_code=e.GetFirstError();
+				error_code=e.GetLastError();
 				err_str="[Expression:"+e.GetExpStr();
 				err_str=err_str+" ERROR]:";
-                err_str=err_str+e.GetFirstErrorEx();
+                err_str=err_str+e.GetLastErrorEx();
 			}
 
 			return result;

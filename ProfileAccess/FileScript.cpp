@@ -27,7 +27,7 @@ string CFileScript::GetLastErrorEx()
 #define  ERROR_SCRIPT_CUNSTOM_ELEMENT_INVALID         0x00020009
 */
 {
-	switch (dwErr_code)
+	switch (error_code)
 	{
 	case ERROR_SCRIPT_SUCCESS:
 		return "Parse script successfully";

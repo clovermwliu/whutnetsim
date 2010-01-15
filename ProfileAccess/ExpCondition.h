@@ -7,6 +7,7 @@
 
 
 #include "PredicationItem.h"
+#include "ErrorHandler.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ namespace WhuTNetSimConfigClass{
 
 
 
-class CExpCondition
+class CExpCondition :public CErrorHandler
 {
 public:
 	CExpCondition(void);
@@ -53,8 +54,7 @@ public:
 
 	bool GetConditionValue(); //取条件表达式真值，是一个递归函数的入口
 
-	string GetFirstErrorEx();
-	unsigned long GetFirstError() {return Error_code;}
+	virtual Error_str GetLastErrorEx();
 
 	const string& GetConExpStr() {return str_conditon;}
 
@@ -79,9 +79,7 @@ private:
 
 private:
 
-	void SetFirstError(const unsigned long err) {Error_code=err;}
 	void SetErrorStr (const char* p);
-
 
 private:
 	string str_conditon;
@@ -108,9 +106,7 @@ private:
 
 	string Str_Cur_PredicationItem;//当前解析到的谓词项
 
-    unsigned long Error_code;
 	string str_error_exp;//str_conditon的子串，从可能出错的地方开始，由SetErrorStr()维护
-	string err_str;//用于接收CPredication中返回的错误信息
 
 	int id;//该条件的ID号
 
