@@ -4,7 +4,7 @@
 namespace WhuTNetSimConfigClass{
 
 CFileScript::CFileScript(const string& strFilePath)
-:dwErr_code(ERROR_SCRIPT_SUCCESS),err_str(""),CFileConfig(strFilePath)
+:CFileConfig(strFilePath)
 {
 }
 
@@ -51,7 +51,7 @@ string CFileScript::GetLastErrorEx()
 		return "Custom element is invalid:"+err_str;
 
 	default:
-		return "Unknown";
+		return CFileConfig::GetLastErrorEx();
 	}
 
 }
@@ -374,11 +374,11 @@ CFileScript::InitCustomElementBySectionName(const string& cust_ele_section,
 
 			if( isspace( *iter)) { //当前字符是是空格、制表符或换行符，继续
 				++iter;               
-			}else if(*iter == 'I' && *(iter+1)=='F'){
+			}else if(*iter == 'I' && iter!=str.end()-1 && *(iter+1)=='F'){
 				++iter ;
 				++iter ;
 				bIF=true;
-			}else if (*iter == 'T' && *(iter+1)=='H' && *(iter+2)=='E' && *(iter+3)=='N'){
+			}else if (*iter == 'T' && iter<str.end()-3 && *(iter+1)=='H' && *(iter+2)=='E' && *(iter+3)=='N'){
 				++iter ;
 				++iter ;
 				++iter ;
@@ -442,7 +442,6 @@ CFileScript::InitCustomElementBySectionName(const string& cust_ele_section,
 bool CFileScript::isValidSymbol(const char c)
 /*
 描述：脚本允许的符号
-#define CHAR_DASH             '-'
 #define CHAR_UNDERLINE        '_'
 #define CHAR_INVERTED_COMMA   '\''
 #define CHAR_INVERTED_COMMA2  '\"'
