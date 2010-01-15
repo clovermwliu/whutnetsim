@@ -15,9 +15,7 @@ namespace WhuTNetSimConfigClass{
 //----------------------------------------------------------------------------------	
 	
 CFileConfig::CFileConfig(const string& strFilePath)//在初始化列表中对成员fileName赋值
-: fileName(strFilePath),
-  _SectionNum(0),
-  _ItemNum(0)
+: fileName(strFilePath), _SectionNum(0), _ItemNum(0),dwErr_code(SUCCESS_NO_ERROR),err_str("")
 {
 	//nothing to do;
 }
@@ -28,7 +26,7 @@ CFileConfig::~CFileConfig(void)
 
 
 
-int  CFileConfig::LoadFile()
+bool  CFileConfig::LoadFile()
 /*
 描述：打开并读取一个配置文件，文件路径存在于CFileConfig::fileName中
 返回：打开成功则返回1
@@ -62,14 +60,16 @@ int  CFileConfig::LoadFile()
 	
 	}else{
 
-		return ERROR_FILE_NOT_EXSITING;
+		SetLastError(ERROR_FILE_NOT_EXSITING);
+		SetLastErrorStr(fileName);
+		return false;
 	}
 
-	return SUCCESS_NO_ERROR;
+	return true;
 }
 
 
-int CFileConfig::LoadFile(int& SectionNum,int& ConfigurationItemNum)
+bool CFileConfig::LoadFile(int& SectionNum,int& ConfigurationItemNum)
 /*
 描述：打开并读取一个配置文件，文件路径存在于CFileConfig::fileName中
 参数：[OUT]SectionNum:当前文件中的sections个数
@@ -80,7 +80,7 @@ int CFileConfig::LoadFile(int& SectionNum,int& ConfigurationItemNum)
 开发时间：2009/11/11
 */
 {
-	int tmp=LoadFile();
+	bool tmp=LoadFile();
 	SectionNum=_SectionNum;
 	ConfigurationItemNum=_ItemNum;
 	return tmp;
@@ -89,7 +89,7 @@ int CFileConfig::LoadFile(int& SectionNum,int& ConfigurationItemNum)
 
 
 
-int CFileConfig::UpdateFile(bool bIngronCancelLine)
+bool CFileConfig::UpdateFile(bool bIngronCancelLine)
 /*
 描述：打开并重新生成一个配置文件，文件路径存在于CFileConfig::fileName中
 参数：bIngronCancelLine为true则将带有@的配置行不回写入文件
@@ -98,13 +98,11 @@ int CFileConfig::UpdateFile(bool bIngronCancelLine)
 */
 {
 
-	int tmp=BackupFile();
-	
-	if (tmp == ERROR_FILE_WRITE_FAIL){
+	if (!BackupFile() && GetLastError()==ERROR_FILE_WRITE_FAIL){
 
-		return tmp;
+		return false;
 	}
-	
+		
 	ofstream fileStream(fileName.c_str(), std::ofstream::trunc);
 
 	size_t start;
@@ -140,10 +138,13 @@ int CFileConfig::UpdateFile(bool bIngronCancelLine)
 			}
 		}
 		fileStream.close();
-		return SUCCESS_NO_ERROR;
+		return true;
 		
 	}else{
-		return ERROR_FILE_WRITE_FAIL ;
+
+		SetLastError(ERROR_FILE_WRITE_FAIL);
+		SetLastErrorStr(fileName);
+		return false;
 	}
 }
 
@@ -571,7 +572,7 @@ bool CFileConfig::GetValue(const string& section,
 
 }
 
-int CFileConfig::BackupFile()
+bool CFileConfig::BackupFile()
 /*
 描述：对当前配置文件进行备份。在UpdateFile()中被调用，以保证更新配置文件时不会丢失原有配置信息。
 
@@ -581,18 +582,50 @@ int CFileConfig::BackupFile()
 	ifstream infileStream(fileName.c_str(),ios::binary);
 	ofstream outfileStream(bakfile.c_str(),ios::binary);
 
-	if(!infileStream) 
-		return ERROR_FILE_NOT_EXSITING;
-	if(!outfileStream) 
-		return ERROR_FILE_WRITE_FAIL;
+	if(!infileStream){ 
+
+		SetLastError(ERROR_FILE_NOT_EXSITING);
+		SetLastErrorStr(fileName);
+		return false;
+	}
+	if(!outfileStream) {
+
+		SetLastError(ERROR_FILE_WRITE_FAIL);
+		SetLastErrorStr(bakfile);
+		return false;
+	}
 
 	outfileStream  <<   infileStream.rdbuf(); 
 
 	infileStream.close();
 	outfileStream.close();
-	return SUCCESS_NO_ERROR;
+	
+	return true;
 
 }
+
+string CFileConfig::GetLastErrorEx()
+/*
+#define SUCCESS_NO_ERROR         0x00010000
+#define ERROR_FILE_NOT_EXSITING	 0x00010001
+#define ERROR_FILE_WRITE_FAIL    0x00010002
+*/
+{
+	switch (dwErr_code)
+	{
+	case SUCCESS_NO_ERROR:
+		return "Parse config file successfully";
+	case ERROR_FILE_NOT_EXSITING:
+		return "File does not exist:"+err_str;
+	case ERROR_FILE_WRITE_FAIL:
+		return "Write file fail:"+err_str;
+	default:
+		return "Unknown";
+
+	}
+}
+
+
 
 //------------------------------------------------------------------------
 //Sym：Iterator
@@ -959,6 +992,7 @@ int CFileConfig::iterator::IsValidConfigurationLine()
 
 }
 
+
 //end of CFileConfig
 
 //----------------------------------------------------------------------------------
@@ -1006,6 +1040,9 @@ bool CItemLine::GetValueFromFile(string& newvalue)
 
 	return true;
 }
+
+
+
 
 
 

@@ -74,21 +74,19 @@ public:
 
 
 
-
-	unsigned long GetLastError() {return dwErr_code;}
-	string GetLastErrorEx();
+	virtual string GetLastErrorEx();
 
 public:
 
 
 	static bool isValidSymbol(const char c);
 
-private:
+//private:
 
-	unsigned long dwErr_code;
-	string err_str;
-	void SetLastError(unsigned long e) {dwErr_code=e;}
-	void SetLastErrorStr(string s) {err_str=s;}
+	//unsigned long dwErr_code;
+	//string err_str;
+	//void SetLastError(unsigned long e) {dwErr_code=e;}
+	//void SetLastErrorStr(string s) {err_str=s;}
 
 };
 

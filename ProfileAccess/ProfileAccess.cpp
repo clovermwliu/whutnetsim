@@ -179,19 +179,17 @@ void fun6(CFileScript& f)
 int _tmain(int argc, _TCHAR* argv[])
 {
 
- /*   CFileConfig f("1.ini.txt");
-
-	f.LoadFile();
-
-
-	fun(f);
-
-*/
 	CFileScript f("1.ini.txt");
-	f.LoadFile();
 
-	fun6(f);
+	if (!f.LoadFile()){
 
+		cout<<f.GetLastError()<<":"<<f.GetLastErrorEx()<<"\n"<<endl;
+	
+	}else{
+		
+		fun6(f);
+
+	}
 
 	getchar();
 

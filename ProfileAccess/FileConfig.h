@@ -81,9 +81,9 @@ public://公开方法I
 	virtual ~CFileConfig(void);// CFileConfig有可能会被当作基类。当用一个基类的指针删除一个派生类的对象时，为保证派生类的析构函数被调用，需要将基类的析构函数设为虚函数
     
 	//以下函数用以对外存配置文件进行存取
-	int LoadFile();
-	int LoadFile(int& SectionNum,int& ConfigurationItemNum);
-	int UpdateFile(bool bIngronCancelLine=true);
+	bool LoadFile();
+	bool LoadFile(int& SectionNum,int& ConfigurationItemNum);
+	bool UpdateFile(bool bIngronCancelLine=true);
 
 public:	//定义了FileConfig里面的一个迭代器类型，类似其他标准C++中的容器的迭代器一样
 	class iterator  
@@ -157,6 +157,11 @@ public://公开方法II
 	static bool match(const char* pLstr, const char* pRstr);
 	static bool match(string lstr,string rstr);
 
+public://公开方法III（错误处理）
+
+	unsigned long GetLastError() {return dwErr_code;}
+	virtual string GetLastErrorEx();
+
 protected: //保护方法
 
 	CFileConfig(const CFileConfig&); //因为SectionList里存放的是跟当前对象有关的地址，因此整个CFileConfig对象禁止复制！否则复制后的对象中的SectionList仍然指向原对象fileData，从而造成未知错误
@@ -188,7 +193,7 @@ protected: //保护方法
 	//以下函数仅用于维护SectionList
 
 	//
-	int BackupFile();//将原有配置文件备份，在updatefile（）中被自动调用
+	bool BackupFile();//将原有配置文件备份，在updatefile（）中被自动调用
 
 protected://成员变量
 
@@ -200,6 +205,15 @@ protected://成员变量
 	list<list<string>::iterator>  SectionList;// 记录fileData中各个section行字符串的地址
 	//list<CItemLine *> itemline_list;
 	iterator iter_beg,iter_end;// CFileConfig内默认的两个迭代器对象，由CFileConfig::begin和CFileConfig::end维护
+
+protected://（错误处理相关）
+
+	unsigned long dwErr_code;
+	string err_str;
+	void SetLastError(unsigned long e) {dwErr_code=e;}
+	void SetLastErrorStr(string s) {err_str=s;}
+
+
 };
 
 
