@@ -238,6 +238,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ErrorHandler.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ExpCondition.h"
 				>
 			</File>

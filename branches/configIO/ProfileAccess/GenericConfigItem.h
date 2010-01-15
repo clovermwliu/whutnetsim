@@ -119,8 +119,6 @@ private:
 
 private:
 
-	virtual void SetLastError(unsigned long err) {Error_code=err;}
-
 //以下是一些模板函数，以支持CGenericConfigItem
 
 template <class T>

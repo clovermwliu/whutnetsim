@@ -13,13 +13,14 @@
 #include "assert.h"
 
 #include "Test.h"
+#include "ErrorHandler.h"
 
 using namespace std;
 
 namespace WhuTNetSimConfigClass{
 
 #define  DEFAULT_VALUE                               1
-#define  ERROR_EXP_SUCCESS			                 0x00030100
+#define  ERROR_EXP_SUCCESS			                 ERROR_NO_ERROR
 #define  ERROR_EXP_DIVISOR_IS_ZERO                   0x00030101
 #define  ERROR_EXP_SIGN_UNKNOWN                      0x00030102
 #define  ERROR_EXP_INVAILD_PAPAMETER                 0x00030103
@@ -36,7 +37,7 @@ namespace WhuTNetSimConfigClass{
 typedef double (* pFunGet)(void); //定义一个远程函数指针，这类函数的类型均为double，形参表为空
 
 
-class CExpressionParse
+class CExpressionParse : public CErrorHandler
 {
 public:
 
@@ -61,8 +62,8 @@ public:
 	double GetExpValue(); //取一个表达式的值，是一个递归函数的入口
 
 
-	unsigned long GetFirstError() {return Error_code;}
-	string GetFirstErrorEx();
+	virtual Error_str GetLastErrorEx();
+
 	const string& GetExpStr() {return str_expression;}
 
 	bool SetParamValue(const string& param, double value);
@@ -81,7 +82,6 @@ public:
 	
 private:
 
-	void SetFirstError(const unsigned long err) {Error_code=err;}
 	void SetErrorStr (const char* p); 
 
 	void ParseElementThenGotoNext(); //分析当前元素的属性，设置Cur_Element_Species，Str_Cur_Identifier和dwCur_Value，同时使pCurrent_Char指向下一个元素的首字符
@@ -140,10 +140,6 @@ private://以下成员供解析表达式用
 	};
 	
 	ElementSpecies Cur_Element_Species; //记录当前解析到的表达式元素的种类
-
-	unsigned long Error_code;
-	string str_error_exp;
-
 };
 
 

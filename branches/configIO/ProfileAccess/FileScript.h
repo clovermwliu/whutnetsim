@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <map>
 
+#include "ErrorHandler.h"
 #include "FileConfig.h"
 #include "ExpressionParse.h"
 #include "PredicationItem.h"
@@ -21,7 +22,7 @@ namespace WhuTNetSimConfigClass{
 #define CHAR_INVERTED_COMMA2  '\"'
 
 
-#define  ERROR_SCRIPT_SUCCESS                         SUCCESS_NO_ERROR
+#define  ERROR_SCRIPT_SUCCESS                         ERROR_NO_ERROR
 #define  ERROR_SCRIPT_INITIAL_EXP_FAIL                0x00010101
 #define  ERROR_SCRIPT_EXP_NOT_FOUND                   0x00010102
 #define  ERROR_SCRIPT_INITIAL_PRED_FAIL               0x00010103

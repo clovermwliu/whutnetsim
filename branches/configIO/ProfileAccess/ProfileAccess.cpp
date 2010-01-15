@@ -69,7 +69,7 @@ void fun(CFileConfig& f)
 			
 	double result=(form.MyValue()).GetExpValue();
 	
-	cout<<"result="<<result<<"  "<< (form.MyValue()).GetFirstErrorEx()<<endl;
+	cout<<"result="<<result<<"  "<< (form.MyValue()).GetLastErrorEx()<<endl;
 
 }
 
@@ -85,9 +85,9 @@ void fun2(CFileScript& f)
 
 	double result2=e.GetExpValue();
 
-	cout<<"result="<<result<<"  "<< e.GetFirstErrorEx()<<endl;
+	cout<<"result="<<result<<"  "<< e.GetLastErrorEx()<<endl;
 
-	cout<<"result2="<<result2<<"  "<< e.GetFirstErrorEx()<<endl;
+	cout<<"result2="<<result2<<"  "<< e.GetLastErrorEx()<<endl;
 
 }
 
@@ -101,9 +101,9 @@ void fun3(CFileScript& f)
 
 	bool result2=pred.GetValue();
 
-	cout<<"result="<<result<<"  "<< pred.GetFirstErrorEx()<<endl;
+	cout<<"result="<<result<<"  "<< pred.GetLastErrorEx()<<endl;
 
-	cout<<"result2="<<result2<<"  "<< pred.GetFirstErrorEx()<<endl;
+	cout<<"result2="<<result2<<"  "<< pred.GetLastErrorEx()<<endl;
 
 }
 
@@ -123,9 +123,9 @@ void fun4(CFileScript& f)
 
 	bool result2=cond.GetConditionValue();
 
-	cout<<"result="<<result<<"  "<< cond.GetFirstErrorEx()<<endl;
+	cout<<"result="<<result<<"  "<< cond.GetLastErrorEx()<<endl;
 
-	cout<<"result2="<<result2<<"  "<<cond.GetFirstErrorEx()<<endl;
+	cout<<"result2="<<result2<<"  "<<cond.GetLastErrorEx()<<endl;
 
 }
 
@@ -135,7 +135,7 @@ void fun5(CFileScript& f)
 	CElementCustom ce2;
 	CElementCustom ce=ce2;
 	double result0=ce.GetValue();
-	cout<<"result0="<<result0<<"  "<< ce.GetFirstErrorEx()<<endl;
+	cout<<"result0="<<result0<<"  "<< ce.GetLastErrorEx()<<endl;
 
 
 	
@@ -144,15 +144,15 @@ void fun5(CFileScript& f)
 	CExpCondition cond=cond2;
 
 	bool result=cond.GetConditionValue();
-	cout<<"result="<<result<<"  "<< cond.GetFirstErrorEx()<<endl;
+	cout<<"result="<<result<<"  "<< cond.GetLastErrorEx()<<endl;
 
     CPredicationItem pred;
     bool result2=pred.GetValue();
-    cout<<"result2="<<result2<<"  "<< pred.GetFirstErrorEx()<<endl;
+    cout<<"result2="<<result2<<"  "<< pred.GetLastErrorEx()<<endl;
 
 	CExpressionParse e;
 	double result3=e.GetExpValue();
-    cout<<"result3="<<result3<<"  "<< e.GetFirstErrorEx()<<endl;
+    cout<<"result3="<<result3<<"  "<< e.GetLastErrorEx()<<endl;
 
 }
 
@@ -162,7 +162,7 @@ void fun6(CFileScript& f)
 
 	if(!f. InitCustomElementBySectionName("std_custom_element",ce)){
 
-		cout<<f.GetLastError()<<":"<<f.GetLastErrorEx()<<"\n"<<endl;
+		cout<<f.GetLastError()<<":"<<f.GetLastErrorIdentify()<<":"<<f.GetLastErrorEx()<<"\n"<<endl;
 		//return;
 	}
 
@@ -170,9 +170,9 @@ void fun6(CFileScript& f)
 
 	double result2=ce.GetValue();
 
-	cout<<"result="<<result<<"  "<< ce.GetFirstErrorEx()<<endl;
+	cout<<"result="<<result<<"  "<< ce.GetLastErrorEx()<<endl;
 
-	cout<<"result2="<<result2<<"  "<< ce.GetFirstErrorEx()<<endl;
+	cout<<"result2="<<result2<<"  "<< ce.GetLastErrorEx()<<endl;
 
 }
 
@@ -183,7 +183,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	if (!f.LoadFile()){
 
-		cout<<f.GetLastError()<<":"<<f.GetLastErrorEx()<<"\n"<<endl;
+		cout<<f.GetLastError()<<":"<<f.GetLastErrorIdentify()<<":"<<f.GetLastErrorEx()<<"\n"<<endl;
 	
 	}else{
 		

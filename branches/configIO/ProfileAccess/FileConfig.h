@@ -1,10 +1,13 @@
 #ifndef FILECONFIG_H_
 #define FILECONFIG_H_
 
+
 #include <string>
 #include <list>
 #include <fstream>
 #include <iostream>
+
+#include "ErrorHandler.h"
 
 using namespace std;
 
@@ -12,7 +15,7 @@ namespace WhuTNetSimConfigClass{
 
 
 //Error Code
-#define SUCCESS_NO_ERROR         0x00010000
+#define SUCCESS_NO_ERROR         ERROR_NO_ERROR
 #define ERROR_FILE_NOT_EXSITING	 0x00010001
 #define ERROR_FILE_WRITE_FAIL    0x00010002
 
@@ -71,7 +74,7 @@ key=value //configuration line
 ////Sym：FileConfig
 // FileConfig 类的定义
 //----------------------------------------------------------------------------------
-class CFileConfig
+class CFileConfig :public CErrorHandler
 {
 public://公开方法I
 
@@ -159,8 +162,7 @@ public://公开方法II
 
 public://公开方法III（错误处理）
 
-	unsigned long GetLastError() {return dwErr_code;}
-	virtual string GetLastErrorEx();
+	virtual Error_str GetLastErrorEx();
 
 protected: //保护方法
 
@@ -205,15 +207,6 @@ protected://成员变量
 	list<list<string>::iterator>  SectionList;// 记录fileData中各个section行字符串的地址
 	//list<CItemLine *> itemline_list;
 	iterator iter_beg,iter_end;// CFileConfig内默认的两个迭代器对象，由CFileConfig::begin和CFileConfig::end维护
-
-protected://（错误处理相关）
-
-	unsigned long dwErr_code;
-	string err_str;
-	void SetLastError(unsigned long e) {dwErr_code=e;}
-	void SetLastErrorStr(string s) {err_str=s;}
-
-
 };
 
 
@@ -226,7 +219,7 @@ protected://（错误处理相关）
 #define  ERROR_CONFIG_ITEM_NOT_EXIST     0x00020002
 
 
-class CItemLine
+class CItemLine :public CErrorHandler
 {
 public:
 
@@ -252,8 +245,8 @@ public:
 	virtual void ChangeRemarkToFile(const string& newremark) { return; }
 	void ChangeRemarkInThisItem(const string& newremark) {remark=newremark;SetLastError(ERROR_CONFIG_ITEM_SUCCESS);}
 
-	unsigned long GetLastError() {return Error_code;}
-	
+	Error_str GetLastErrorEx();
+
 protected:
 	
 	virtual bool ChangeValueInThisItem(const string& value) {return false;}//虚函数接口，实际定义在派生类
@@ -263,15 +256,11 @@ protected:
 	void SetValueToFile(const string& newvalue,const string& newremark="") {pFileCach->SetValue(section,key,newvalue,newremark);SetLastError(ERROR_CONFIG_ITEM_SUCCESS);}
 	bool GetValueFromFile(string& newvalue);
 
-	virtual void SetLastError(unsigned long err) {Error_code=err;}
-	
 protected:
 
 	string section;
 	string key;
 	string remark;
-
-	unsigned long Error_code;
 
 	CFileConfig* pFileCach;
 

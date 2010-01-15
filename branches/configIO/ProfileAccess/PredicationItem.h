@@ -10,7 +10,7 @@ namespace WhuTNetSimConfigClass{
 #define  ERROR_PRED_OPERATORINVAILD	0x00030201
 
 
-class CPredicationItem
+class CPredicationItem : public CErrorHandler
 {
 
 public:
@@ -27,17 +27,10 @@ public:
 
 	bool GetValue();
 
+	Error_str GetLastErrorEx() {return err_str;}
+
 	void SetExp(bool isLeft, CExpressionParse& exp);
 	void SetOp(string opstr);
-
-	unsigned long GetFirstError() {return Error_code;}
-	string GetFirstErrorEx(){return Error_Str;}
-
-private:
-
-	unsigned long Error_code;
-	string Error_Str;
-
 private:
 
 	CExpressionParse lExp;

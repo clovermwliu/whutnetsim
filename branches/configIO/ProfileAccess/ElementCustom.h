@@ -5,6 +5,7 @@
 
 #include "ExpressionParse.h"
 #include "ExpCondition.h"
+#include "ErrorHandler.h"
 
 using namespace std;
 
@@ -14,7 +15,7 @@ namespace WhuTNetSimConfigClass{
 #define ERROR_CUSTOM_NOT_INITAILIZED  0x00030301
 
 
-class CElementCustom
+class CElementCustom : public CErrorHandler
 {
 public:
 
@@ -30,17 +31,12 @@ public:
 
 	void initail(map<CExpCondition,CExpressionParse>& t,double d) {custom_table.clear();dwDefault=d;custom_table=t;}
 
-	string GetFirstErrorEx() {return err_str;}
-	unsigned long GetFirstError() {return Error_code;}
+	virtual Error_str GetLastErrorEx() {return err_str;}
 
 private:
 
 	double dwDefault;
-
 	map<CExpCondition,CExpressionParse> custom_table;
-
-	unsigned long Error_code;
-	string err_str;
 
 };
 

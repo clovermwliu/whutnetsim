@@ -13,7 +13,7 @@ CExpressionParse::CExpressionParse()
 /*
 构造函数
 */
-:dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS),str_error_exp("")
+:dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),CErrorHandler()
 {
 
 }
@@ -23,7 +23,7 @@ CExpressionParse::CExpressionParse(const std::string&  _expression,
 								   const map< string, double>& _parameter_table,
 								   const map< string,void*>& _remote_call_table)
 : parameter_table( _parameter_table ), str_expression( _expression ),pCurrent_Char(str_expression.c_str()),
-  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),Error_code(ERROR_EXP_SUCCESS),str_error_exp(""),
+  dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),CErrorHandler(),
   remote_call_addrs_table( _remote_call_table)
 /*
 构造函数
@@ -48,8 +48,8 @@ CExpressionParse::CExpressionParse(const CExpressionParse& rhs)
 	dwCur_Value=rhs.dwCur_Value;
 	Str_Cur_Identifier=rhs.Str_Cur_Identifier;
 	Cur_Element_Species=rhs.Cur_Element_Species;
-	Error_code=rhs.Error_code;
-	str_error_exp=rhs.str_error_exp;
+	error_code=rhs.error_code;
+	err_str=rhs.err_str;
 
 	if (!rhs.str_expression.empty()){
 
@@ -71,8 +71,8 @@ CExpressionParse& CExpressionParse::operator=(const CExpressionParse& rhs)
 	dwCur_Value=rhs.dwCur_Value;
 	Str_Cur_Identifier=rhs.Str_Cur_Identifier;
 	Cur_Element_Species=rhs.Cur_Element_Species;
-	Error_code=rhs.Error_code;
-	str_error_exp=rhs.str_error_exp;
+	error_code=rhs.error_code;
+	err_str=rhs.err_str;
 	if (!rhs.str_expression.empty()){
 
 		str_expression=rhs.str_expression;
@@ -95,8 +95,8 @@ void CExpressionParse::clear()
 	dwCur_Value=0;
 	Str_Cur_Identifier="";
 	Cur_Element_Species=BEGININI;
-	Error_code=ERROR_EXP_SUCCESS;
-	str_error_exp="";
+	error_code=ERROR_EXP_SUCCESS;
+	err_str="";
 
 	//ParseElementThenGotoNext();
 }
@@ -116,8 +116,8 @@ void CExpressionParse::Initial(const std::string&  _expression ,
 	dwCur_Value=0;
 	Str_Cur_Identifier="";
 	Cur_Element_Species=BEGININI;
-	Error_code=ERROR_EXP_SUCCESS;
-	str_error_exp="";
+	error_code=ERROR_EXP_SUCCESS;
+	err_str="";
 	
 	ParseElementThenGotoNext();
 
@@ -130,8 +130,8 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 */
 {
 	/*if (!pCurrent_Char){
-		if (Error_code==ERROR_EXP_SUCCESS)
-			SetFirstError(ERROR_EXP_NO_EXP);
+		if (error_code==ERROR_EXP_SUCCESS)
+			SetLastError(ERROR_EXP_NO_EXP);
 		Cur_Element_Species = FINISHED;
 		return;
 	}*/
@@ -142,8 +142,8 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 
 		if (static_cast<int>(*pCurrent_Char)>256 || static_cast<int>(*pCurrent_Char)<0){
 
-			if (Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
+			if (error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_NUMBER_FORMAT_INVALID);
 				SetErrorStr(pCurrent_Char);
 			}
 			++pCurrent_Char;
@@ -174,8 +174,8 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 
 				if (static_cast<int>(*pCurrent_Char)>256 || static_cast<int>(*pCurrent_Char)<0){
 
-					if (Error_code==ERROR_EXP_SUCCESS){
-						SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
+					if (error_code==ERROR_EXP_SUCCESS){
+						SetLastError(ERROR_EXP_NUMBER_FORMAT_INVALID);
 						SetErrorStr(pCurrent_Char);
 					}
 					++pCurrent_Char;
@@ -195,8 +195,8 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 			
 			if( ! iss ){
 				
-				if (Error_code==ERROR_EXP_SUCCESS){
-					SetFirstError(ERROR_EXP_NUMBER_FORMAT_INVALID);
+				if (error_code==ERROR_EXP_SUCCESS){
+					SetLastError(ERROR_EXP_NUMBER_FORMAT_INVALID);
 					SetErrorStr(pCurrent_Char);
 				}
 				++pCurrent_Char;
@@ -210,7 +210,7 @@ void  CExpressionParse:: ParseElementThenGotoNext()
 
 }
 
-string CExpressionParse::GetFirstErrorEx()
+Error_str CExpressionParse::GetLastErrorEx()
 /*
 描述：取表达式计算错误的第一个触发原因，返回其原因文本解释
 
@@ -230,32 +230,32 @@ string CExpressionParse::GetFirstErrorEx()
 
 */
 {
-	switch (Error_code)
+	switch (error_code)
 	{
 	case ERROR_EXP_SUCCESS:
 		return "SUCCESS";
 	case ERROR_EXP_DIVISOR_IS_ZERO:
-		return "Divisor is zero. Near by:"+str_error_exp;
+		return "Divisor is zero. Near by:"+err_str;
 	case ERROR_EXP_SIGN_UNKNOWN:
-		return "Sign of expression is unknown.  Near by "+str_error_exp;
+		return "Sign of expression is unknown.  Near by "+err_str;
 	case ERROR_EXP_INVAILD_PAPAMETER:
-		return "Expression includes invalid parameter.  Near by "+str_error_exp;
+		return "Expression includes invalid parameter.  Near by "+err_str;
 	case ERROR_EXP_MISSING_RIGHT_BRACKET:
-		return "Missing right bracket.  Near by "+str_error_exp;
+		return "Missing right bracket.  Near by "+err_str;
 	case ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS:
-		return "Expression includes reserve character.  Near by "+str_error_exp;
+		return "Expression includes reserve character.  Near by "+err_str;
 	case ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS:
-		return "Sub-Functions includes invalid parameters.  Near by "+str_error_exp;
+		return "Sub-Functions includes invalid parameters.  Near by "+err_str;
 	case ERROR_EXP_USE_NONSUPPORT_FUNCS:
-		return "Expression includes  non-support sub-function:"+str_error_exp;
+		return "Expression includes  non-support sub-function:"+err_str;
 	case ERROR_EXP_CALL_SUBFUNCS_FAIL:
-		return "Parameters don't match on sub-functions's request @:"+str_error_exp;
+		return "Parameters don't match on sub-functions's request @:"+err_str;
 	case ERROR_EXP_NO_EXP:
 		return "No expression in this object";
 	case ERROR_EXP_MISSING_OPERATOR:
-		return "Missing operator.  Near by "+str_error_exp;
+		return "Missing operator.  Near by "+err_str;
 	case ERROR_EXP_NUMBER_FORMAT_INVALID:
-		return "Expression's format error.  Near by "+str_error_exp;
+		return "Expression's format error.  Near by "+err_str;
 	case  ERROR_EXP_OVERFLOW:
 		return "Overflow!";
 	default:
@@ -269,7 +269,7 @@ void CExpressionParse::SetErrorStr (const char* p)
 
 */
 {
-	str_error_exp.clear();
+	err_str.clear();
 
 	const char* q=p;
 
@@ -281,7 +281,7 @@ void CExpressionParse::SetErrorStr (const char* p)
 	}
 
 	string s(q-i);
-	str_error_exp=s;
+	err_str=s;
 }
 
 
@@ -369,20 +369,20 @@ double CExpressionParse::GetExpValue()
 
 	if (str_expression.empty()){
 
-		SetFirstError(ERROR_EXP_NO_EXP);
+		SetLastError(ERROR_EXP_NO_EXP);
 		return DEFAULT_VALUE;
 	}
 		
 	pCurrent_Char=str_expression.c_str();
 	ParseElementThenGotoNext();
-	SetFirstError(ERROR_EXP_SUCCESS);
-	str_error_exp.clear();
+	SetLastError(ERROR_EXP_SUCCESS);
+	err_str.clear();
 	
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
 
-	if (Cur_Element_Species != FINISHED && Error_code==ERROR_EXP_SUCCESS){
+	if (Cur_Element_Species != FINISHED && error_code==ERROR_EXP_SUCCESS){
 
-		SetFirstError(ERROR_EXP_MISSING_OPERATOR);
+		SetLastError(ERROR_EXP_MISSING_OPERATOR);
 		SetErrorStr(pCurrent_Char-1);
 	}
 
@@ -398,7 +398,7 @@ double CExpressionParse::GetSubExpValue()
 */
 
 {
-	if (Error_code==ERROR_EXP_SUCCESS){
+	if (error_code==ERROR_EXP_SUCCESS){
 		SetErrorStr(pCurrent_Char-1);
 	}
 	double result = GetExpValueByAddOrMinusExp( GetExpValueFromSubRight() );
@@ -427,7 +427,7 @@ double CExpressionParse::GetExpValueFromSubRight()
 */
 {
 
-	if (Error_code==ERROR_EXP_SUCCESS){
+	if (error_code==ERROR_EXP_SUCCESS){
 		SetErrorStr(pCurrent_Char-1);
 	}
 	return GetExpValueByMulOrDivExp( GetSingedValueFromSubRight() );
@@ -446,7 +446,7 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 	if( Cur_Element_Species == MULTIPLY ){
 		ParseElementThenGotoNext();
 
-		if (Error_code==ERROR_EXP_SUCCESS){
+		if (error_code==ERROR_EXP_SUCCESS){
 			SetErrorStr(pCurrent_Char-1);
 		}
 
@@ -459,13 +459,13 @@ double CExpressionParse::GetExpValueByMulOrDivExp( const double& left )
 
 #ifdef DIVZERO
 	
-		if (Error_code==ERROR_EXP_SUCCESS){
+		if (error_code==ERROR_EXP_SUCCESS){
 			SetErrorStr(pCurrent_Char-1);
 		}
 		
 		double dwDiv=GetSingedValueFromSubRight();
-		if(dwDiv ==0 && Error_code==ERROR_EXP_SUCCESS){
-			SetFirstError(ERROR_EXP_DIVISOR_IS_ZERO);
+		if(dwDiv ==0 && error_code==ERROR_EXP_SUCCESS){
+			SetLastError(ERROR_EXP_DIVISOR_IS_ZERO);
 		}
 		result = GetExpValueByMulOrDivExp( left / dwDiv );
 #else
@@ -489,15 +489,15 @@ double CExpressionParse::GetSingedValueFromSubRight()
 		result = - GetSingedValueFromSubRight();
 	}else if (Cur_Element_Species ==MULTIPLY || Cur_Element_Species ==DIVIDE || Cur_Element_Species==POWER){ //这些既非极性符号，又非参数标识符或子函数的合法字符，如果分支转到这里说明原表达式有误，如 5+*3
 		
-		if (Error_code==ERROR_EXP_SUCCESS){
-			SetFirstError(ERROR_EXP_SIGN_UNKNOWN);
+		if (error_code==ERROR_EXP_SUCCESS){
+			SetLastError(ERROR_EXP_SIGN_UNKNOWN);
 		}
 
 		ParseElementThenGotoNext(); 
 		result = GetSingedValueFromSubRight();	//当作+号处理，同时记录异常值	
 	}else{
 
-		if (Error_code==ERROR_EXP_SUCCESS)
+		if (error_code==ERROR_EXP_SUCCESS)
 			SetErrorStr(pCurrent_Char-1);
 		result = GetExpValueByPowerExp();
 	}
@@ -512,7 +512,7 @@ double CExpressionParse::GetExpValueByPowerExp()
       
 */
 {
-	if (Error_code==ERROR_EXP_SUCCESS)
+	if (error_code==ERROR_EXP_SUCCESS)
 		SetErrorStr(pCurrent_Char-1);
 
 	double result = GetElementValue();  //取底数
@@ -540,8 +540,8 @@ double CExpressionParse::GetElementValue()
 		//result = GetExpValue();                      //当作一个新的表达式，从头计算
 		result=GetSubExpValue();
 
-		if (Cur_Element_Species != RIGHT_BRACKET && Error_code==ERROR_EXP_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
-			SetFirstError(ERROR_EXP_MISSING_RIGHT_BRACKET);
+		if (Cur_Element_Species != RIGHT_BRACKET && error_code==ERROR_EXP_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
+			SetLastError(ERROR_EXP_MISSING_RIGHT_BRACKET);
 		ParseElementThenGotoNext();	
 	}else{
 
@@ -555,8 +555,8 @@ double CExpressionParse::ParseCurIdentifier()
 描述：解析参数标识符或子函数名
 */
 {
-	if(Cur_Element_Species !=IDENTIFIER && Error_code==ERROR_EXP_SUCCESS ){
-		SetFirstError(ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS); 
+	if(Cur_Element_Species !=IDENTIFIER && error_code==ERROR_EXP_SUCCESS ){
+		SetLastError(ERROR_EXP_IDENTIFIER_INCLUDE_RESERVECHARS); 
 		SetErrorStr(pCurrent_Char-1);
 	}
 	string str = Str_Cur_Identifier;
@@ -586,8 +586,8 @@ double CExpressionParse::GetValueFromCurIdentifier( const string& identifier )
 			
 			if (remote_call_addrs_table.find(identifier) == remote_call_addrs_table.end()){  
 
-				if (Error_code==ERROR_EXP_SUCCESS)
-					SetFirstError(ERROR_EXP_INVAILD_PAPAMETER);
+				if (error_code==ERROR_EXP_SUCCESS)
+					SetLastError(ERROR_EXP_INVAILD_PAPAMETER);
 
 				result=DEFAULT_VALUE;   //说明参数列表里和程函数调用表均找不到该参数，返回默认值
  			
@@ -627,8 +627,8 @@ vector<double> CExpressionParse::GetParameterValueForSupportFuncs()
  			if(Cur_Element_Species ==MULTIPLY || Cur_Element_Species ==DIVIDE || Cur_Element_Species ==POWER ||
 		       Cur_Element_Species==RIGHT_BRACKET || Cur_Element_Species==PARAMETER_SEPERATOR || Cur_Element_Species==FINISHED){
 					
-				   if (Error_code==ERROR_EXP_SUCCESS)
-						SetFirstError(ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS );
+				   if (error_code==ERROR_EXP_SUCCESS)
+						SetLastError(ERROR_EXP_INVAILD_PAPAMETER_IN_SUBFUNCS );
 				   
 				   continue;
 					
@@ -637,8 +637,8 @@ vector<double> CExpressionParse::GetParameterValueForSupportFuncs()
 
 		if (Cur_Element_Species == FINISHED){  //函数缺少右括号
 
-			if (Error_code==ERROR_EXP_SUCCESS)
-				SetFirstError(ERROR_EXP_MISSING_RIGHT_BRACKET );
+			if (error_code==ERROR_EXP_SUCCESS)
+				SetLastError(ERROR_EXP_MISSING_RIGHT_BRACKET );
 
 			break;
 		}
@@ -667,8 +667,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 		
 		}else{
 
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 
@@ -681,8 +681,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 		
 		if (params.size()==0){
 
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 
@@ -705,8 +705,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 
 		if (params.size()==0){
 
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 
@@ -727,8 +727,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "factorial" || name == "FACTORIAL" || name == "fa"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -747,8 +747,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "sqrt" || name == "SQRT"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -759,8 +759,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name=="exp" || name=="EXP"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -771,8 +771,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "logXY" || name == "LOGXY"){
 
 		if (params.size()!=2 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -785,8 +785,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "ln" || name == "log"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -798,8 +798,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "lg" || name == "log10"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -809,8 +809,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "sin" || name == "SIN"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -820,8 +820,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "asin" || name == "ASIN"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -831,8 +831,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "cos" || name == "COS"){
 
 		if (params.size()!=1 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -842,8 +842,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "acos" || name == "ACOS"){
 
 		if (params.size()!=1 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -853,8 +853,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "tan" || name == "tg" || name == "TAN" || name=="TG"){
 
 		if (params.size()!=1 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -864,8 +864,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "atan" || name == "atg" || name == "ATAN" || name=="ATG"){
 
 		if (params.size()!=1 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -875,8 +875,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "pi" || name == "PI"){
 		
 		if (params.size()!=0 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -885,8 +885,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "abs" || name == "ABS"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -897,8 +897,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "floor" || name == "FLOOR")	{
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -909,8 +909,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "ceil" || name == "CEIL")	{
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -921,8 +921,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "mod" || name == "MOD")	{
 
 		if (params.size()!=2){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -935,8 +935,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "sinh" || name == "SINH"){
 
 		if (params.size()!=1){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -946,8 +946,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "cosh" || name == "COSH"){
 
 		if (params.size()!=1 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -957,8 +957,8 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 	}else if (name == "tanh" || name == "tgh" || name == "TANH" || name=="TGH"){
 
 		if (params.size()!=1 ){
-			if(Error_code==ERROR_EXP_SUCCESS){
-				SetFirstError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
+			if(error_code==ERROR_EXP_SUCCESS){
+				SetLastError(ERROR_EXP_CALL_SUBFUNCS_FAIL);
 				SetErrorStr(name.c_str());
 			}
 		}
@@ -967,9 +967,9 @@ double  CExpressionParse::GetValueFromCurSubFunc(const string& name, const vecto
 
 	}else{
 
-		if(Error_code==ERROR_EXP_SUCCESS){
-			SetFirstError(ERROR_EXP_USE_NONSUPPORT_FUNCS);
-			str_error_exp=name;
+		if(error_code==ERROR_EXP_SUCCESS){
+			SetLastError(ERROR_EXP_USE_NONSUPPORT_FUNCS);
+			err_str=name;
 		}
 
 		return DEFAULT_VALUE; //默认值返回

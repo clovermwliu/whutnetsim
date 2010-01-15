@@ -15,7 +15,7 @@ namespace WhuTNetSimConfigClass{
 //----------------------------------------------------------------------------------	
 	
 CFileConfig::CFileConfig(const string& strFilePath)//在初始化列表中对成员fileName赋值
-: fileName(strFilePath), _SectionNum(0), _ItemNum(0),dwErr_code(SUCCESS_NO_ERROR),err_str("")
+: fileName(strFilePath), _SectionNum(0), _ItemNum(0),CErrorHandler()
 {
 	//nothing to do;
 }
@@ -604,14 +604,14 @@ bool CFileConfig::BackupFile()
 
 }
 
-string CFileConfig::GetLastErrorEx()
+Error_str CFileConfig::GetLastErrorEx()
 /*
 #define SUCCESS_NO_ERROR         0x00010000
 #define ERROR_FILE_NOT_EXSITING	 0x00010001
 #define ERROR_FILE_WRITE_FAIL    0x00010002
 */
 {
-	switch (dwErr_code)
+	switch (error_code)
 	{
 	case SUCCESS_NO_ERROR:
 		return "Parse config file successfully";
@@ -1003,7 +1003,7 @@ CItemLine::CItemLine(CFileConfig& file,
 					 const string& section,
 					 const string& key,
 					 const string& remark)
-					 : section(section) , key(key) , remark(remark),pFileCach(&file),Error_code(ERROR_CONFIG_ITEM_SUCCESS)
+					 : section(section) , key(key) , remark(remark),pFileCach(&file),CErrorHandler()
 {
 	//file.AddItemLine(this);
 
@@ -1013,7 +1013,7 @@ CItemLine::CItemLine(CFileConfig& file,
 CItemLine::CItemLine(CFileConfig& file, 
 					 const string& section,
 					 const string& key)
-					 : section(section) , key(key) , remark(""),pFileCach(&file),Error_code(ERROR_CONFIG_ITEM_SUCCESS)
+					 : section(section) , key(key) , remark(""),pFileCach(&file),CErrorHandler()
 {
 	//file.AddItemLine(this);
 
@@ -1033,8 +1033,10 @@ bool CItemLine::GetValueFromFile(string& newvalue)
 { 
 	if(!pFileCach->GetValue(section,key,newvalue,remark)){
 
-		Error_code=ERROR_CONFIG_ITEM_NOT_EXIST;
-
+		SetLastError(ERROR_CONFIG_ITEM_NOT_EXIST);
+		Error_str tmp=section+":";
+		tmp=tmp+key;		
+		SetLastErrorStr(tmp);
 		return false;
 	}
 
@@ -1042,11 +1044,22 @@ bool CItemLine::GetValueFromFile(string& newvalue)
 }
 
 
+Error_str CItemLine::GetLastErrorEx()
+/*
 
+*/
+{
+	switch (error_code)
+	{
+	case ERROR_CONFIG_ITEM_SUCCESS:
+		return "Config LineItem was found in ConfigCache successfully";
+	case ERROR_CONFIG_ITEM_NOT_EXIST:
+		return "Config LineItem does not exist:"+err_str;
+	default:
+		return "UNKNOWN";
+	}
 
-
-
-
+}
 
 
 
