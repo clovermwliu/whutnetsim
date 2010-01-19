@@ -5,9 +5,6 @@
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
-
 
 //----------------------------------------------------------------------------------
 // Sym£ºFileConfig
@@ -611,14 +608,14 @@ Error_str CFileConfig::GetLastErrorEx()
 #define ERROR_FILE_WRITE_FAIL    0x00010002
 */
 {
-	switch (error_code)
+	switch (GetLastError())
 	{
 	case SUCCESS_NO_ERROR:
 		return "Parse config file successfully";
 	case ERROR_FILE_NOT_EXSITING:
-		return "File does not exist:"+err_str;
+		return "File does not exist:"+GetLastErrorStr();
 	case ERROR_FILE_WRITE_FAIL:
-		return "Write file fail:"+err_str;
+		return "Write file fail:"+GetLastErrorStr();
 	default:
 		return "Unknown";
 
@@ -1049,12 +1046,12 @@ Error_str CItemLine::GetLastErrorEx()
 
 */
 {
-	switch (error_code)
+	switch (GetLastError())
 	{
 	case ERROR_CONFIG_ITEM_SUCCESS:
 		return "Config LineItem was found in ConfigCache successfully";
 	case ERROR_CONFIG_ITEM_NOT_EXIST:
-		return "Config LineItem does not exist:"+err_str;
+		return "Config LineItem does not exist:"+GetLastErrorStr();
 	default:
 		return "UNKNOWN";
 	}
@@ -1066,5 +1063,3 @@ Error_str CItemLine::GetLastErrorEx()
 
 
 //end of FileConfig.cpp
-
-}

@@ -12,8 +12,6 @@ typedef std::string     Error_str;
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
 #define ERROR_NO_ERROR 0x00000001
 
 class CErrorHandler
@@ -30,24 +28,27 @@ public:
 
 public:
 
+	virtual Error_str GetLastErrorEx()=0; //要求各派生类实现该函数，一般的，GetLastErrorEx() {return GetLastErrorStr();}
+    //
 	Error_t GetLastError() {return error_code;}
-	virtual Error_str GetLastErrorEx()=0;
 	Error_str GetLastErrorIdentify() {stringstream stream_value(stringstream::out); stream_value << hex<<error_code;return "ERROR "+stream_value.str();}
 
 
 protected:
 
+	Error_str GetLastErrorStr() {return err_str;}
+	//
 	void SetLastError(Error_t dwErrcode) {error_code=dwErrcode;}
 	void SetLastErrorStr(Error_str str) {err_str=str;}
 
-protected:
+private:
 
-	Error_t error_code;
-	Error_str err_str;
+	Error_t error_code; //错误码
+	Error_str err_str;  //辅助错误信息
 
 };
 
-}//end of ERRORHANDLER_H_
+//end of ERRORHANDLER_H_
 
 
 

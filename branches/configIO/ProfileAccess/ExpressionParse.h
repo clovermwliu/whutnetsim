@@ -17,8 +17,6 @@
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
 #define  DEFAULT_VALUE                               1
 #define  ERROR_EXP_SUCCESS			                 ERROR_NO_ERROR
 #define  ERROR_EXP_DIVISOR_IS_ZERO                   0x00030101
@@ -143,6 +141,6 @@ private://以下成员供解析表达式用
 };
 
 
-}//end of EXPRESSIONPARSE_H_
+//end of EXPRESSIONPARSE_H_
 
 #endif

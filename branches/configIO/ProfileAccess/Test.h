@@ -3,10 +3,6 @@
 #ifndef TEST_H_
 #define TEST_H_
 
-
-namespace WhuTNetSimConfigClass{
-
-
 class CTest
 {
 public:
@@ -21,8 +17,5 @@ public:
 	static double GetValue2(void) {return (double)2; }
 
 };
-
-}
-
 
 #endif

@@ -11,9 +11,6 @@
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
-
 #define  ERROR_CONDITION_SUCCESS			          ERROR_PRED_SUCCESS
 #define  ERROR_CONDITION_NO_EXP                       0x00030201
 #define  ERROR_CONDITION_MISSING_OPERATOR             0x00030202
@@ -115,7 +112,7 @@ private:
 
 
 
-}//end of EXPCONDITION_H_
+//end of EXPCONDITION_H_
 
 
 #endif

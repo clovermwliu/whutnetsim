@@ -7,8 +7,6 @@
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
 template <typename ValueType>
 class CGenericConfigItem : public CItemLine
 {
@@ -497,5 +495,4 @@ CExpressionParse ItemDiv(const CExpressionParse& lhs,const CExpressionParse& rhs
 
 
 
-}//end namespace
 #endif /*GENERICCONFIGITEMLINE_H_*/

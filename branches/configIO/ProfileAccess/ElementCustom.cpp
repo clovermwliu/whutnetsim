@@ -1,8 +1,6 @@
 #include "StdAfx.h"
 #include "ElementCustom.h"
 
-namespace WhuTNetSimConfigClass{
-
 CElementCustom::CElementCustom()
 :dwDefault(1),CErrorHandler()
 {
@@ -41,10 +39,11 @@ double CElementCustom::GetValue()
 
 		if(c.GetLastError()!=ERROR_CONDITION_SUCCESS){
 	
-			error_code=c.GetLastError();
-			err_str="[Condition:"+c.GetConExpStr();
-			err_str=err_str+" ERROR]:";
-			err_str=err_str+c.GetLastErrorEx();
+			SetLastError(c.GetLastError());
+			Error_str e_str="[Condition:"+c.GetConExpStr();		
+			e_str=e_str+" ERROR]:";
+			e_str=e_str+c.GetLastErrorEx();
+			SetLastErrorStr(e_str);
 		}
 
 		if (buse ){
@@ -55,10 +54,12 @@ double CElementCustom::GetValue()
 
 			if(e.GetLastError()!=ERROR_EXP_SUCCESS){
 
-				error_code=e.GetLastError();
-				err_str="[Expression:"+e.GetExpStr();
-				err_str=err_str+" ERROR]:";
-                err_str=err_str+e.GetLastErrorEx();
+				
+				SetLastError(e.GetLastError());
+				Error_str e_str="[Expression:"+e.GetExpStr();	
+				e_str=e_str+" ERROR]:";
+				e_str=e_str+e.GetLastErrorEx();
+				SetLastErrorStr(e_str);
 			}
 
 			return result;
@@ -72,4 +73,4 @@ double CElementCustom::GetValue()
 }
 
 
-}//end
+//end

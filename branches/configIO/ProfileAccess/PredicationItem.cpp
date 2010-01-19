@@ -2,8 +2,6 @@
 #include "PredicationItem.h"
 
 
-namespace WhuTNetSimConfigClass{
-
 
 CPredicationItem::CPredicationItem()
 :op("=="),CErrorHandler()
@@ -57,25 +55,25 @@ bool CPredicationItem::GetValue()
 */
 {
 	double dwl=lExp.GetExpValue();
-	error_code=lExp.GetLastError();
-	if (error_code!=ERROR_EXP_SUCCESS){
+	SetLastError(lExp.GetLastError());
+	if (GetLastError()!=ERROR_EXP_SUCCESS){
 
-		err_str="LeftExp:"+lExp.GetLastErrorEx();
+		SetLastErrorStr("LeftExp:"+lExp.GetLastErrorEx());
 		return false;
 	
 	}else{
-		err_str=lExp.GetLastErrorEx();
+		SetLastErrorStr(lExp.GetLastErrorEx());
 	}
 
 	double dwr=rExp.GetExpValue();
-	error_code=rExp.GetLastError();
-	if (error_code!=ERROR_EXP_SUCCESS){
+	SetLastError(rExp.GetLastError());
+	if (GetLastError()!=ERROR_EXP_SUCCESS){
 
-		err_str="RightExp:"+rExp.GetLastErrorEx();
+		SetLastErrorStr("RightExp:"+rExp.GetLastErrorEx());
 		return false;
 	}else{
 
-		err_str=rExp.GetLastErrorEx();
+			SetLastErrorStr(rExp.GetLastErrorEx());
 	}
 
 	if (op==">"){
@@ -104,8 +102,9 @@ bool CPredicationItem::GetValue()
 	
 	}else{
 
-		error_code=ERROR_PRED_OPERATORINVAILD;
-		err_str="Predication item's operator is invalid";
+		
+		SetLastError(ERROR_PRED_OPERATORINVAILD);
+		SetLastErrorStr("Predication item's operator is invalid");
 
 		return false;
 
@@ -114,4 +113,4 @@ bool CPredicationItem::GetValue()
 }
 
 
-}//end
+//end

@@ -9,8 +9,6 @@
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
 #define ERROR_CUSTOM_SUCCESS          ERROR_CONDITION_SUCCESS
 #define ERROR_CUSTOM_NOT_INITAILIZED  0x00030301
 
@@ -31,7 +29,7 @@ public:
 
 	void initail(map<CExpCondition,CExpressionParse>& t,double d) {custom_table.clear();dwDefault=d;custom_table=t;}
 
-	virtual Error_str GetLastErrorEx() {return err_str;}
+	virtual Error_str GetLastErrorEx() {return GetLastErrorStr();}
 
 private:
 
@@ -41,7 +39,5 @@ private:
 };
 
 
-}//end of 
 
-
-#endif
+#endif //end of  ELEMENTCUSTOM_H_
