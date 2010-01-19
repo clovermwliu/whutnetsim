@@ -1,6 +1,10 @@
+CErrorHandler::
+#define ERROR_NO_ERROR 0x00000001
+
+
 CFileConfig::
 
-#define SUCCESS_NO_ERROR         0x00010000
+#define SUCCESS_NO_ERROR         ERROR_NO_ERROR
 #define ERROR_FILE_NOT_EXSITING	 0x00010001
 #define ERROR_FILE_WRITE_FAIL    0x00010002
 
@@ -22,12 +26,12 @@ CFileScript::
 
 CItemLine::
 
-#define  ERROR_CONFIG_ITEM_SUCCESS       0x00020001
+#define  ERROR_CONFIG_ITEM_SUCCESS       ERROR_NO_ERROR
 #define  ERROR_CONFIG_ITEM_NOT_EXIST     0x00020002
 
 CExpressionParse::
 
-#define  ERROR_EXP_SUCCESS			     0x00030100
+#define  ERROR_EXP_SUCCESS			     ERROR_NO_ERROR
 #define  ERROR_EXP_DIVISOR_IS_ZERO                   0x00030101
 #define  ERROR_EXP_SIGN_UNKNOWN                      0x00030102
 #define  ERROR_EXP_INVAILD_PAPAMETER                 0x00030103

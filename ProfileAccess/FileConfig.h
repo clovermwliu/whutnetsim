@@ -11,8 +11,6 @@
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
 
 //Error Code
 #define SUCCESS_NO_ERROR         ERROR_NO_ERROR
@@ -215,7 +213,7 @@ protected://成员变量
 // ConfigItem 类的定义
 //----------------------------------------------------------------------------------
 
-#define  ERROR_CONFIG_ITEM_SUCCESS       0x00020001
+#define  ERROR_CONFIG_ITEM_SUCCESS       ERROR_NO_ERROR
 #define  ERROR_CONFIG_ITEM_NOT_EXIST     0x00020002
 
 
@@ -268,8 +266,6 @@ protected:
 
 
 
-
-}
 
 #endif /*FILECONFIG_H_*/
 

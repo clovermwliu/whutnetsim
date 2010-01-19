@@ -4,8 +4,6 @@
 #include "ExpressionParse.h"
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
 #define  ERROR_PRED_SUCCESS         ERROR_EXP_SUCCESS
 #define  ERROR_PRED_OPERATORINVAILD	0x00030201
 
@@ -27,7 +25,7 @@ public:
 
 	bool GetValue();
 
-	Error_str GetLastErrorEx() {return err_str;}
+	Error_str GetLastErrorEx() {return GetLastErrorStr();}
 
 	void SetExp(bool isLeft, CExpressionParse& exp);
 	void SetOp(string opstr);
@@ -40,5 +38,5 @@ private:
 };
 
 
-}//end of PREDICATIONITEM_H_
+//end of PREDICATIONITEM_H_
 #endif

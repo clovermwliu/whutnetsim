@@ -2,7 +2,6 @@
 #include "FileScript.h"
 #include "ExpCondition.h"
 
-namespace WhuTNetSimConfigClass{
 
 CExpCondition::CExpCondition(void)
 :Cur_Element_Species(BEGININI),Str_Cur_PredicationItem(""),str_error_exp(""),str_conditon(""),id(0),CErrorHandler()
@@ -45,9 +44,10 @@ CExpCondition::CExpCondition(const CExpCondition& c)
 {
 	pred_table=c.pred_table;
 	Cur_Element_Species=c.Cur_Element_Species;
-	error_code=c.error_code;
+	SetLastError(ERROR_CONDITION_SUCCESS);	
+	SetLastErrorStr("");
+
 	Str_Cur_PredicationItem=c.Str_Cur_PredicationItem;
-	err_str=c.err_str;
 	str_error_exp=c.str_error_exp;
 	id=c.id;
 	if (!c.str_conditon.empty()){
@@ -67,10 +67,10 @@ CExpCondition& CExpCondition::operator=(const CExpCondition& rhs)
 	
 	pred_table=rhs.pred_table;
 	Cur_Element_Species=rhs.Cur_Element_Species;
-	error_code=rhs.error_code;
+	SetLastError(ERROR_CONDITION_SUCCESS);	
+	SetLastErrorStr("");
 	Str_Cur_PredicationItem=rhs.Str_Cur_PredicationItem;
 	str_error_exp=rhs.str_error_exp;
-	err_str=rhs.err_str;
 	str_error_exp=rhs.str_error_exp;
 	id=rhs.id;
 
@@ -97,7 +97,7 @@ void CExpCondition::ParseElementThenGotoNext()
 
 		if (static_cast<int>(*pCurrent_Char)>256 || static_cast<int>(*pCurrent_Char)<0){
 
-			if (error_code==ERROR_CONDITION_SUCCESS){
+			if (GetLastError()==ERROR_CONDITION_SUCCESS){
 				SetLastError(ERROR_CONDITION_PRED_FORMAT_INVALID);
 				//SetErrorStr(pCurrent_Char);
 			}
@@ -144,7 +144,7 @@ void CExpCondition::ParseElementThenGotoNext()
 
 				if (static_cast<int>(*pCurrent_Char)>256 || static_cast<int>(*pCurrent_Char)<0){
 
-					if (error_code==ERROR_CONDITION_SUCCESS){
+					if (GetLastError()==ERROR_CONDITION_SUCCESS){
 						SetLastError(ERROR_CONDITION_PRED_FORMAT_INVALID);
 						SetErrorStr(pCurrent_Char-1);
 					}
@@ -159,7 +159,7 @@ void CExpCondition::ParseElementThenGotoNext()
 
 		}else{
 
-			if (error_code==ERROR_CONDITION_SUCCESS){
+			if (GetLastError()==ERROR_CONDITION_SUCCESS){
 				SetLastError(ERROR_CONDITION_OPERATOR_INVALID);
 				SetErrorStr(pCurrent_Char-1);
 			}
@@ -187,7 +187,7 @@ Error_str  CExpCondition::GetLastErrorEx()
 
 */
 {
-	switch (error_code)
+	switch (GetLastError())
 	{
 	case ERROR_CONDITION_SUCCESS:
 		return "SUCCESS";
@@ -206,7 +206,7 @@ Error_str  CExpCondition::GetLastErrorEx()
 	case ERROR_CONDITION_MISSING_PREDITEM : 
 		return "Missing predication item.  Near by "+str_error_exp;
 	default:
-		return err_str;
+		return GetLastErrorStr();
 	}
 
 }
@@ -245,13 +245,13 @@ bool CExpCondition::GetConditionValue()
 	pCurrent_Char=str_conditon.c_str();
 	ParseElementThenGotoNext();
 	SetLastError(ERROR_CONDITION_SUCCESS);
+	SetLastErrorStr("");
 	str_error_exp.clear();
-	err_str.clear();
-
+	
 	bool bresult = GetCondExpValueByOR( GetCondExpValueFromSubRight() );
 
 
-	if (Cur_Element_Species != FINISHED && error_code==ERROR_CONDITION_SUCCESS){
+	if (Cur_Element_Species != FINISHED && GetLastError()==ERROR_CONDITION_SUCCESS){
 
 		SetLastError(ERROR_CONDITION_MISSING_OPERATOR);
 		SetErrorStr(pCurrent_Char-1);
@@ -267,7 +267,7 @@ bool CExpCondition::GetSubCondExpValue()
 /*
 */
 {
-	if (error_code==ERROR_CONDITION_SUCCESS){
+	if (GetLastError()==ERROR_CONDITION_SUCCESS){
 		SetErrorStr(pCurrent_Char-1);
 	}
 	bool bresult = GetCondExpValueByOR( GetCondExpValueFromSubRight() );
@@ -290,7 +290,7 @@ bool  CExpCondition::GetCondExpValueByOR( const bool& left )
 bool  CExpCondition::GetCondExpValueFromSubRight()
 //获得||号右侧表达式的值
 {
-	if (error_code==ERROR_CONDITION_SUCCESS){
+	if (GetLastError()==ERROR_CONDITION_SUCCESS){
 		SetErrorStr(pCurrent_Char-1);
 	}
 	return GetCondExpValueByAND( GetCondExpValueByNOT() );
@@ -318,7 +318,7 @@ bool  CExpCondition::GetCondExpValueByNOT()
 		result = !GetCondExpValueByNOT();
 	}else if (Cur_Element_Species ==AND || Cur_Element_Species ==OR ){ //这些既取反运算符号，又非谓词标识符，如果分支转到这里说明原表达式有误，如 5&&||3
 
-		if (error_code==ERROR_CONDITION_SUCCESS){
+		if (GetLastError()==ERROR_CONDITION_SUCCESS){
 			SetLastError(ERROR_CONDITION_OPERATOR_INVALID);
 		}
 
@@ -326,7 +326,7 @@ bool  CExpCondition::GetCondExpValueByNOT()
 		result = GetCondExpValueByNOT();	//继续处理，同时记录异常值	
 	}else{
 
-		if (error_code==ERROR_CONDITION_SUCCESS)
+		if (GetLastError()==ERROR_CONDITION_SUCCESS)
 			SetErrorStr(pCurrent_Char-1);
 		result = GetElementValue();
 	}
@@ -349,14 +349,14 @@ bool  CExpCondition::GetElementValue()
 		//当作一个新的表达式，从头计算
 		result=GetSubCondExpValue();
 
-		if (Cur_Element_Species != RIGHT_BRACKET && error_code==ERROR_CONDITION_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
+		if (Cur_Element_Species != RIGHT_BRACKET && GetLastError()==ERROR_CONDITION_SUCCESS)//计算结束后一定落在右括号上，否则原表达式括号不匹配
 			SetLastError(ERROR_CONDITION_MISSING_RIGHT_BRACKET);
 		
 		ParseElementThenGotoNext();	
 
 	}else{
 
-		if (error_code==ERROR_CONDITION_SUCCESS){
+		if (GetLastError()==ERROR_CONDITION_SUCCESS){
 			SetLastError(ERROR_CONDITION_MISSING_PREDITEM);
 			SetErrorStr(pCurrent_Char-1);
 		}
@@ -376,7 +376,7 @@ bool  CExpCondition::ParseCurPredItem()
 
 	if( pred_table.find( PredIdentify) == pred_table.end() ) {    
 
-		if (error_code==ERROR_CONDITION_SUCCESS)
+		if (GetLastError()==ERROR_CONDITION_SUCCESS)
 			SetLastError(ERROR_CONDITION_PREDIDENTIFY_NOT_EXIST);
 
 		result=false;   //说明找不到该参数，返回默认值
@@ -387,12 +387,13 @@ bool  CExpCondition::ParseCurPredItem()
 		
 		result = tmp.GetValue();  //去参数列表里取参数值
 
-		if (error_code==ERROR_CONDITION_SUCCESS && tmp.GetLastError()!=ERROR_PRED_SUCCESS){
+		if (GetLastError()==ERROR_CONDITION_SUCCESS && tmp.GetLastError()!=ERROR_PRED_SUCCESS){
 
-			err_str.clear();
+			SetLastErrorStr("");
 			SetLastError(tmp.GetLastError());
-			err_str=PredIdentify+":";
-			err_str=err_str+tmp.GetLastErrorEx();
+			Error_str e_str=PredIdentify+":";
+		    e_str=e_str+tmp.GetLastErrorEx();
+			SetLastErrorStr(e_str);
 		}
 	}
 
@@ -402,4 +403,4 @@ bool  CExpCondition::ParseCurPredItem()
 
 
 
-}//end
+//end

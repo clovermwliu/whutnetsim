@@ -1,8 +1,6 @@
 #include "StdAfx.h"
 #include "FileScript.h"
 
-namespace WhuTNetSimConfigClass{
-
 CFileScript::CFileScript(const string& strFilePath)
 :CFileConfig(strFilePath)
 {
@@ -27,28 +25,28 @@ string CFileScript::GetLastErrorEx()
 #define  ERROR_SCRIPT_CUNSTOM_ELEMENT_INVALID         0x00020009
 */
 {
-	switch (error_code)
+	switch (GetLastError())
 	{
 	case ERROR_SCRIPT_SUCCESS:
 		return "Parse script successfully";
 	case ERROR_SCRIPT_INITIAL_EXP_FAIL:
-		return "Parse expression fail:"+err_str;
+		return "Parse expression fail:"+GetLastErrorStr();
 	case ERROR_SCRIPT_EXP_NOT_FOUND:
-		return "Expression is not found:"+err_str;
+		return "Expression is not found:"+GetLastErrorStr();
 	case ERROR_SCRIPT_INITIAL_PRED_FAIL:
-		return "Parse predication item fail:"+err_str;
+		return "Parse predication item fail:"+GetLastErrorStr();
 	case ERROR_SCRIPT_PRED_NOT_FOUND:
-		return "Predication item is not found:"+err_str;
+		return "Predication item is not found:"+GetLastErrorStr();
 	case ERROR_SCRIPT_INITIAL_COND_FAIL:
-		return "Parse condition expression fail:"+err_str;
+		return "Parse condition expression fail:"+GetLastErrorStr();
 	case ERROR_SCRIPT_COND_NOT_FOUND:
-		return "Condition expression is not found:"+err_str;
+		return "Condition expression is not found:"+GetLastErrorStr();
 	case ERROR_SCRIPT_CONDEXP_INVALID:
-		return "Condition expression may not be right:"+err_str;
+		return "Condition expression may not be right:"+GetLastErrorStr();
 	case ERROR_SCRIPT_CUNSTOM_ELEMENT_NOT_FOUND:
-		return "Custom element is not found:"+err_str;
+		return "Custom element is not found:"+GetLastErrorStr();
 	case ERROR_SCRIPT_CUNSTOM_ELEMENT_INVALID:
-		return "Custom element is invalid:"+err_str;
+		return "Custom element is invalid:"+GetLastErrorStr();
 
 	default:
 		return CFileConfig::GetLastErrorEx();
@@ -461,4 +459,4 @@ bool CFileScript::isValidSymbol(const char c)
 
 
 
-}//end
+//end

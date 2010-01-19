@@ -15,8 +15,6 @@
 
 using namespace std;
 
-namespace WhuTNetSimConfigClass{
-
 #define CHAR_UNDERLINE        '_'
 #define CHAR_INVERTED_COMMA   '\''
 #define CHAR_INVERTED_COMMA2  '\"'
@@ -75,23 +73,16 @@ public:
 
 
 
-	virtual string GetLastErrorEx();
+	virtual Error_str GetLastErrorEx();
 
 public:
 
 
 	static bool isValidSymbol(const char c);
 
-//private:
-
-	//unsigned long dwErr_code;
-	//string err_str;
-	//void SetLastError(unsigned long e) {dwErr_code=e;}
-	//void SetLastErrorStr(string s) {err_str=s;}
-
 };
 
 
-}//end of FILESCRIPT_H_
 
-#endif
+
+#endif  //end of FILESCRIPT_H_

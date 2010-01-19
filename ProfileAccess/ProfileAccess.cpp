@@ -13,8 +13,6 @@
 #include "ElementCustom.h"
 #include "Test.h"
 
-using namespace WhuTNetSimConfigClass;
-
 
 void fun(CFileConfig& f)
 {
