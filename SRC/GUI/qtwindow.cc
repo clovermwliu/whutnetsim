@@ -1372,11 +1372,6 @@ Count_t showCount = 0;
 
 void QTWindow::DisplayAllNodes(bool forced)
 {
-  DEBUG0((cout << "QTWindow::DAN, hm " << Simulator::instance->HasMobility()
-          << " td " << topologyDisplayed
-          << " forced " << forced 
-          << "  nodes.size " << Node::GetNodes().size()
-          << endl));
   const NodeVec_t& nodes = Node::GetNodes();
   // Check if called before topology created..if so just return
   if (nodes.empty()) return;

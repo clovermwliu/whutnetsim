@@ -10,6 +10,7 @@ class Q3CanvasView;
 class QMenu;
 class QToolBar;
 class QAction;
+int   globalfun();
 
 class MainWindow : public QMainWindow
 {
@@ -40,10 +41,12 @@ public:
 	QAction *openAct;
 	QAction *editAct;
 	QAction *quitAct;
+	QAction *testentry;
 public slots:
     void openfile();
 	void newfile();
 	void editfile();
+	void testent();
 
 signals: 
 	void openConfigure(const QString& configureFile);

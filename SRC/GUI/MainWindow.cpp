@@ -24,6 +24,9 @@ void MainWindow::createAction()
 	
 	quitAct = new QAction(QIcon("./resources/quit.png"), tr("&quit"),this);
 	connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
+
+	testentry = new QAction(QIcon("./resources/testentry.png"), tr("&testentry"),this);
+	connect(testentry,SIGNAL(triggered()),this,SLOT(testent()));
 }
 void MainWindow::createMenuBar()
 {
@@ -46,6 +49,7 @@ void MainWindow::createToolbar()
 	fileToolBar->addAction(openAct);
 	fileToolBar->addAction(editAct);
 	fileToolBar->addAction(quitAct);
+	fileToolBar->addAction(testentry);
 }
 
 void MainWindow::createDockWidget()
@@ -86,6 +90,11 @@ void MainWindow::newfile()
 void MainWindow::editfile()
 {
 
+}
+
+void MainWindow::testent()
+{
+     globalfun();
 }
 
 void MainWindow::closeEvent(QCloseEvent *)
