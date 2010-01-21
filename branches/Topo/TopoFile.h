@@ -1,3 +1,4 @@
+#pragma once
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
 //Project Homepage:http://code.google.com/p/whutnetsim/
 //corresponding author's email: guochi@mail.whu.edu.cn
@@ -46,102 +47,58 @@
 //Author Organization:
 //Modify Date:
 
+
 //更改人：李玉
-//更改时间：2010-1-4
+//更改时间：2010-1-15
 
-#include "Ring1.h"
+#ifndef __TOPOFILE_H__ 
+#define __TOPOFILE_H__
 
-#include "G_debug.h"
-#include "node.h"
-#include "linkp2p.h"
-#include "mask.h"
-#include <math.h>
-#include <stdio.h>
-
-
+#include <fstream> 
+#include "G_common_defs.h"
 using namespace std;
+#include "Waxman.h"
+#include "HiberTopoBase.h"
+#include "PlatTopoBase.h"
+#include "star1.h"
 
-// Constructors
+#include "FileConfig.h"
+#include "GenericConfigItem.h"
+#include "ExpressionParse.h"
+using namespace WhuTNetSimConfigClass;
 
-CRing::CRing(Count_t count,
-			 IPAddr_t i,
-			 const Linkp2p& link,
-			 SystemId_t id)
-:CPlatTopoBase(count,i,link,id)
+class CTopoFile
 {
-}
+public:
+	CTopoFile(const string _file);
+	~CTopoFile(void);
+public:
+	void InitFile();
+	void ReadFile();
+	void WriteFile();
 
-bool CRing::GenerateTopo()
-{
-	ConstructorHelper(link, ip);
-	return true;
-}
+	bool ReadAllTopoInfo();
+	//这个似乎应该在main中写?
+	bool ReadAllConnectInfo(CHiberTopoBase* Hiber);
+	bool ReadOneConnectInfo(CHiberTopoBase* Hiber,string connectType);
+	bool ReadOnceWaxmanInfo(const string& PlatType);//获得新建一个平面拓扑时的信息
+	bool ReadOncePHPInfo(const string& PlatType);
 
-// Private methods
-void CRing::ConstructorHelper( const Linkp2p& link,
-							  IPAddr_t leafIP)
-{
-	first = Node::nextId;
-	Node *n = new Node ();
-	//nodes.push_back(n);
-	Node *firstnode = n;
-	//nodeCount = count;
+	bool ReadOnceConnectInfo();//获得一个连接信息，然后连接
 
-	IPAddr_t  nextIP = leafIP;
-
-	for (Count_t l = 1; l <= nodeCount; ++l)
-	{ // Create each subsequent level
-
-		Node *newnode;
-
-		if (l!=nodeCount)
-		{
-			newnode = new Node();
-			//nodes.push_back(newnode);
-		}
-		else
-			newnode = firstnode;
-
-		//if (nextIP == IPADDR_NONE)
-		//{ // No IP specified
-		//	n->AddDuplexLink(newnode, link);
-		//}
-		//else
-		//{
-		//	n->AddDuplexLink(newnode, link,
-		//		nextIP++, Mask(32), 
-		//		IPADDR_NONE, Mask(32));
-		//}
-		//n = newnode;
-	}
-	last = Node::nextId;
-}
-void CRing::SetLocationViaBoundBox(const Location& ll, const Location& ur, BoxType  type)
-{
-	Meters_t xRadius = fabs(ur.X() - ll.X())/2;
-	Meters_t yRadius = fabs(ur.Y() - ll.Y())/2;
-
-	Meters_t xCenter = (ur.X() + ll.X())/2;
-	Meters_t yCenter = (ur.Y() + ll.Y())/2;
-
-	double angle = (2 * M_PI)/ nodeCount;
-
-	NodeId_t thisNode = first;
-	const NodeVec_t& nodes = Node::GetNodes();
-
-	DEBUG0((cout<<"Putting Ring nodes in place"<<endl));
-
-	// Assign locations for each level
-	for (Count_t l = 0; l < nodeCount; ++l)
-	{
-		Meters_t yLoc = yCenter + yRadius * sin(angle * l);
-		Meters_t xLoc = xCenter + xRadius * cos(angle * l);
-
-		nodes[thisNode++]->SetLocation(xLoc,yLoc);
-
-		DEBUG0((cout<<"Putting node "<<l<<" in ("<<xLoc<<","<<yLoc<<")"<<endl));
-	}
-}
+	bool WriteAllTopoInfo();
+	bool WriteAllConnectInfo();
+	bool WriteOneTopoInfo();//写一个拓扑的信息
+	bool WriteOneConnectInfo();//写一个拓扑的连接信息
 
 
-
+	int  ReadTopoNum();
+	bool ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec);//获取一层拓扑的信息
+	bool ReadOnceWaxmanInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);//新建一个Waxman拓扑
+	bool ReadOncePFPInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);//新建一个PHP型拓扑
+	bool ReadOnceStarInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);
+private:
+	string configurePath;       //保存操作的文件
+	CFileConfig* file;
+};
+#endif
