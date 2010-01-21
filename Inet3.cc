@@ -1,3 +1,55 @@
+//Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
+//Project Homepage:http://code.google.com/p/whutnetsim/
+//corresponding author's email: guochi@mail.whu.edu.cn
+
+
+//All rights reserved
+//
+//PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
+//BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
+//THIS LICENSE.  IF YOU DO NOT AGREE TO THE TERMS OF THIS LICENSE, DO
+//NOT USE THIS PROGRAM OR ANY PORTION THEREOF IN ANY FORM OR MANNER.
+//
+//This License allows you to:
+//1. Make copies and distribute copies of the Program's source code provide that any such copy 
+//   clearly displays any and all appropriate copyright notices and disclaimer of warranty as set 
+//   forth in this License.
+//2. Modify the original copy or copies of the Program or any portion thereof ("Modification(s)"). 
+//   Modifications may be copied and distributed under the terms and conditions as set forth above. 
+//   Any and all modified files must be affixed with prominent notices that you have changed the 
+//   files and the date that the changes occurred.
+
+//Termination:
+//   If at anytime you are unable to comply with any portion of this License you must immediately 
+//   cease use of the Program and all distribution activities involving the Program or any portion 
+//   thereof.
+
+//Statement:
+//   In this program, part of the code is from the GTNetS project, The Georgia Tech Network 
+//   Simulator (GTNetS) is a full-featured network simulation environment that allows researchers in 
+//   computer networks to study the behavior of moderate to large scale networks, under a variety of 
+//   conditions. Our work have great advance due to this project, Thanks to Dr. George F. Riley from 
+//   Georgia Tech Research Corporation. Anyone who wants to study the GTNetS can come to its homepage:
+//   http://www.ece.gatech.edu/research/labs/MANIACS/GTNetS/
+//
+
+
+//File Information:
+//
+//
+//File Name:
+//File Purpose:
+//Original Author:
+//Author Organization:
+//Construct Date:
+//Modify Author:
+//Author Organization:
+//Modify Date:
+
+
+//更改人：李玉
+//更改时间：2010-1-11
+
 #include "Inet3.h"
 #include <stdlib.h>
 #include "random.h"
@@ -55,13 +107,26 @@ CInet3::~CInet3(void)
 {
 }
 bool CInet3::GenerateTopo()
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
-	 AllocateForNode();       //为GTNetS的拓扑新建节点
+	 first = Node::nextId;
+   	 AllocateForNode();       //为GTNetS的拓扑新建节点
 	 ConstructorHelper();
 	 
 	 return true;
 }
 bool CInet3::ConstructorHelper()
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
 	node_type *node;                                  //inet的节点放置
 	node = (node_type *)malloc(sizeof(node_type) * node_num);
@@ -77,6 +142,12 @@ bool CInet3::ConstructorHelper()
 	return true;
 }
 void CInet3::AllocateForNode()
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
 	for(int i=0;i<nodeCount;i++) 
 	{
@@ -85,6 +156,12 @@ void CInet3::AllocateForNode()
 	}
 }
 int degree_compare(const void *a1, const void *a2)
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
 	node_type *n1 = (node_type *)a1;
 	node_type *n2 = (node_type *)a2;
@@ -97,6 +174,12 @@ int degree_compare(const void *a1, const void *a2)
 		return -1;
 }
 void CInet3::generate_degrees(node_type *node1, int node_num, int degree_one, int seed)
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
 #define DEBUG_generate_degrees
 
@@ -204,6 +287,12 @@ void CInet3::generate_degrees(node_type *node1, int node_num, int degree_one, in
 } 
 
 int is_graph_connectable(node_type *node1, int node_num)
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
   int i;
   int F_star, F = 0, degree_one = 0;
@@ -228,6 +317,12 @@ int is_graph_connectable(node_type *node1, int node_num)
 /* the main node connection function */
 /*************************************/
 void CInet3::connect_nodes(node_type *node1, int node_num, int seed)
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
 	int i, j, k, degree_g2;
 	int *G, *L, G_num, L_num, g, l;
@@ -422,7 +517,7 @@ void CInet3::connect_nodes(node_type *node1, int node_num, int seed)
 
 		node1[i].nnp[node1[i].degree - node1[i].free_degree] = node1+j;
 		node1[j].nnp[node1[j].degree - node1[j].free_degree] = node1+i;
-		Node::nodes[i]->AddDuplexLink(Node::nodes[j], link);
+		Node::nodes[first+i]->AddDuplexLink(Node::nodes[first+j], link);
 
 		/* add l to G and remove from L */
 		G[G_num] = j;
@@ -459,7 +554,7 @@ void CInet3::connect_nodes(node_type *node1, int node_num, int seed)
 
 		node1[i].nnp[node1[i].degree - node1[i].free_degree] = node1+j;
 		node1[j].nnp[node1[j].degree - node1[j].free_degree] = node1+i;
-		Node::nodes[i]->AddDuplexLink(Node::nodes[j], link);
+		Node::nodes[first+i]->AddDuplexLink(Node::nodes[first+j], link);
 
 		--(node1[i].free_degree);
 		--(node1[j].free_degree);
@@ -523,7 +618,7 @@ void CInet3::connect_nodes(node_type *node1, int node_num, int seed)
 
 			node1[i].nnp[node1[i].degree - node1[i].free_degree] = node1+j;
 			node1[j].nnp[node1[j].degree - node1[j].free_degree] = node1+i;
-			Node::nodes[i]->AddDuplexLink(Node::nodes[j], link);
+			Node::nodes[first+i]->AddDuplexLink(Node::nodes[first+j], link);
 
 			--(node1[i].free_degree);
 			--(node1[j].free_degree);
@@ -540,14 +635,22 @@ void CInet3::connect_nodes(node_type *node1, int node_num, int seed)
 void CInet3::SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
 							        const Location& BoundBoxRightUpper,
 							        BoxType  type)
+/*
+描述：          
+参数：                                                 
+返回值：空                                                                                       
+备注： 
+*/
 {
 	const NodeVec_t& nodes = Node::GetNodes();
 
+	Meters_t  Xbound = BoundBoxRightUpper.X() - BoundBoxLeftDown.X();
+	Meters_t  Ybound = BoundBoxRightUpper.Y() - BoundBoxLeftDown.Y();
 	//随机生成位置
-	for (NodeVec_t::size_type nodeNum=0;nodeNum!=nodes.size();nodeNum++)
+	for (NodeVec_t::size_type nodeNum=0;nodeNum!=nodeCount;nodeNum++)
 	{
-	int x =  random(10000);
-	int y =  random(10000);
-	nodes[nodeNum]->SetLocation(x,y);
+	int x =  random(Xbound);
+	int y =  random(Ybound);
+	nodes[first+nodeNum]->SetLocation(BoundBoxLeftDown.X()+x,BoundBoxLeftDown.Y()+y);
 	}
 }
