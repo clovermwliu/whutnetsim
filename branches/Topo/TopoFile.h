@@ -65,7 +65,7 @@ using namespace std;
 #include "FileConfig.h"
 #include "GenericConfigItem.h"
 #include "ExpressionParse.h"
-using namespace WhuTNetSimConfigClass;
+//using namespace WhuTNetSimConfigClass;
 
 class CTopoFile
 {

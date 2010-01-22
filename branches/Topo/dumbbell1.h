@@ -2,7 +2,7 @@
 #ifndef __dumbbell1_h__ 
 #define __dumbbell1_h__ 
 
-#include "common-defs.h"
+#include "G_common_defs.h"
 #include "node.h"
 #include "HiberTopoBase.h"
 class Node;
