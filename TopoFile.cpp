@@ -38,7 +38,7 @@ bool CTopoFile::ReadAllConnectInfo(CHiberTopoBase* Hiber)
 	int paraNum=file->GetKeyNamesBySectionName("Connect",v);
 	for (list<string>::iterator iter = v.begin();iter!=v.end();iter++)
 	{
-		WhuTNetSimConfigClass::CGenericConfigItem<string> item1(*file,"Connect",*iter);
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<string> item1(*file,"Connect",*iter);
 		string connectType=item1.MyValue();
 
 		if (!ReadOneConnectInfo(Hiber,connectType))
@@ -61,7 +61,7 @@ bool CTopoFile::ReadOneConnectInfo(CHiberTopoBase* Hiber,string connectType)
 	vector<Count_t> connect;
 	for (list<string>::iterator iter = v.begin();iter!=v.end();iter++)
 	{
-		WhuTNetSimConfigClass::CGenericConfigItem<Count_t> item1(*file,connectType,*iter);
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<Count_t> item1(*file,connectType,*iter);
 		Count_t connectPara=item1.MyValue();
         connect.push_back(connectPara);
 	}
@@ -89,10 +89,10 @@ bool CTopoFile::ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec)
 	case 3:lay="L3";break;
 	default:lay="L0";
 	}
-	WhuTNetSimConfigClass::CGenericConfigItem<string> item2(*file,"HiberTopo",lay);
+	/*WhuTNetSimConfigClass::*/CGenericConfigItem<string> item2(*file,"HiberTopo",lay);
 	string inputType=item2.MyValue();
 
-	WhuTNetSimConfigClass::CGenericConfigItem<int> item3(*file,inputType,"Groups");
+	/*WhuTNetSimConfigClass::*/CGenericConfigItem<int> item3(*file,inputType,"Groups");
 	int Groups=item3.MyValue();
 
 	for (int i=0;i<Groups;i++)
@@ -104,10 +104,10 @@ bool CTopoFile::ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec)
 		string Plati = "Plat"+help;
 
 		string PlatiNum = Plati + "Num";
-		WhuTNetSimConfigClass::CGenericConfigItem<int> item4(*file,inputType,PlatiNum);
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<int> item4(*file,inputType,PlatiNum);
 		int Plat1Num=item4.MyValue();
 		
-		WhuTNetSimConfigClass::CGenericConfigItem<string> item5(*file,inputType,Plati);
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<string> item5(*file,inputType,Plati);
 		string PlatType=item5.MyValue();
 
 		string Type = PlatType.substr(0,2);
@@ -154,7 +154,7 @@ int CTopoFile::ReadTopoNum()
 返回值：层次拓扑的平面拓扑数量
 */
 {
-	WhuTNetSimConfigClass::CGenericConfigItem<int> item1(*file,"HiberTopo","CplatNum");
+	/*WhuTNetSimConfigClass::*/CGenericConfigItem<int> item1(*file,"HiberTopo","CplatNum");
 	int CplatNum=item1.MyValue();
 
 	return CplatNum;
@@ -184,13 +184,13 @@ bool CTopoFile::ReadOnceWaxmanInfo(const string& PlatType,CPlatTopoBase*& newPla
 		return false;
 		break;
 	case 3:
-		WhuTNetSimConfigClass::CGenericConfigItem<Count_t> item2(*file,PlatType,"count");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<Count_t> item2(*file,PlatType,"count");
 		Count_t count = item2.MyValue();
 
-		WhuTNetSimConfigClass::CGenericConfigItem<double> item3(*file,PlatType,"alpha");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<double> item3(*file,PlatType,"alpha");
 		double _alpha = item3.MyValue();
 
-		WhuTNetSimConfigClass::CGenericConfigItem<double> item4(*file,PlatType,"beta");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<double> item4(*file,PlatType,"beta");
 		double _beta = item4.MyValue();
         
 		newPlatTopo = new CWaxman(count,_alpha,_beta);
@@ -229,16 +229,16 @@ bool CTopoFile::ReadOncePFPInfo(const string& PlatType,CPlatTopoBase*& newPlatTo
 		return false;
 		break;
 	case 4:
-		WhuTNetSimConfigClass::CGenericConfigItem<int> item1(*file,PlatType,"count");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<int> item1(*file,PlatType,"count");
 		int count=item1.MyValue();
 
-		WhuTNetSimConfigClass::CGenericConfigItem<Count_t> item2(*file,PlatType,"alpha");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<Count_t> item2(*file,PlatType,"alpha");
 		Count_t alpha = item2.MyValue();
 
-		WhuTNetSimConfigClass::CGenericConfigItem<double> item3(*file,PlatType,"p");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<double> item3(*file,PlatType,"p");
 		double p = item3.MyValue();
 
-		WhuTNetSimConfigClass::CGenericConfigItem<double> item4(*file,PlatType,"q");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<double> item4(*file,PlatType,"q");
 		double q = item4.MyValue();
 
 		newPlatTopo = new CPFP(count,alpha,p,q);
@@ -270,7 +270,7 @@ bool CTopoFile::ReadOnceStarInfo(const string& PlatType,CPlatTopoBase*& newPlatT
 		return false;
 		break;
 	case 1:
-		WhuTNetSimConfigClass::CGenericConfigItem<int> item1(*file,PlatType,"count");
+		/*WhuTNetSimConfigClass::*/CGenericConfigItem<int> item1(*file,PlatType,"count");
 		int count=item1.MyValue();
 
 		newPlatTopo = new Star1(count);

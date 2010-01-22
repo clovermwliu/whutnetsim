@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "debug.h"
+#include "G_debug.h"
 #include "node.h"
 #include "linkp2p.h"
 #include "mask.h"

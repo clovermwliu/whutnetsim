@@ -2,7 +2,7 @@
 #ifndef __tree1_h__ 
 #define __tree1_h__ 
 
-#include "common-defs.h"
+#include "G_common_defs.h"
 #include "node.h"
 #include "mask.h"
 #include "PlatTopoBase.h"

@@ -149,7 +149,7 @@
 
 #include <iostream>
 
-#include "debug.h"
+#include "G_debug.h"
 #include "star1.h"
 #include "node.h"
 #include "linkp2p.h"

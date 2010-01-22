@@ -2,7 +2,7 @@
 #ifndef __CRing_h__ 
 #define __CRing_h__ 
 
-#include "common-defs.h"
+#include "G_common_defs.h"
 #include "node.h"
 #include "PlatTopoBase.h"
 
