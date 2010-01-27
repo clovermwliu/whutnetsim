@@ -87,6 +87,7 @@ void CWaxman::AllocateForNode()          //·ÖÅä½Úµã
 	{
 		Node* addNode;
 		addNode = new Node(sid);
+		addNode->SetIPAddr(ip++);
 	}
 }
 void CWaxman::SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 

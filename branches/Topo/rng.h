@@ -101,7 +101,7 @@ class Random {
   //Doc:Class by \GTNS\ is the {\tt RngStream} code by Pierre L'Ecuyer at
   //Doc:Class the University of Montreal.
 public:
-  //Doc:Method
+  //Doc:Meth od
   Random();
     //Doc:Desc Constructor for a random number generator with a random seed.
 

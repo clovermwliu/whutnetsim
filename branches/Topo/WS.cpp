@@ -119,6 +119,7 @@ void CWS::AddNodes()
 {
 	first = Node::nextId;
 	Node *n = new Node ();
+	n->SetIPAddr(ip++);
 	//nodes.push_back(n);
 	Node *firstnode = n;
 	//nodeCount = count;
@@ -127,10 +128,10 @@ void CWS::AddNodes()
 	{ // Create each subsequent level
 
 		Node *newnode;
-
 		if (l!=nodeCount)
 		{
 			newnode = new Node();
+			newnode->SetIPAddr(ip++);
 			//nodes.push_back(newnode);
 		}
 		else

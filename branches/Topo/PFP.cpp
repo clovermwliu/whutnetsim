@@ -88,7 +88,7 @@ bool CPFP::GenerateTopo()
 		if (t < 5)                    //初始的5个节点为孤立节点
 		{
 			addNode = new Node();
-			degree = 1;
+			degree = 1; 
 			degrees.push_back(degree);
             double  dealDegree = ChangeDegree(degree);
 			changeDegrees.push_back(dealDegree);
@@ -156,6 +156,8 @@ bool CPFP::GenerateTopo()
 			
 			degree = 2;
 		}
+		addNode->SetIPAddr(ip++);
+
 		//新增节点的度压入堆栈
 		degrees[t]=degree;
 		double  dealDegree = ChangeDegree(degree);

@@ -153,6 +153,7 @@ void CInet3::AllocateForNode()
 	{
 		Node* addNode;
 		addNode = new Node(sid);
+		addNode->SetIPAddr(ip++);
 	}
 }
 int degree_compare(const void *a1, const void *a2)
