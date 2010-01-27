@@ -68,7 +68,9 @@ bool CBA::GenerateTopo()
 	{
 		if (i <=onceAddEdge)                                   //如果网络中的节点数小于等于需要添加的边的个数,
 		{                                                      //则新添加的节点与已有的所有的节点相连
-			Node* addNode = new Node(sid);                     //新建一个节点
+			Node* addNode = new Node(sid); 
+			addNode->SetIPAddr(ip++);
+
 			degrees.push_back(1); 
 			allNodeDegrees++;
 			//                              
@@ -91,6 +93,7 @@ bool CBA::GenerateTopo()
 bool CBA::AddOneNode(Count_t nodeNum)
 {
 	Node* addNode = new Node(sid);                              //新建一个节点           
+    addNode->SetIPAddr(ip++);
 
 	vector<Count_t> addEdge;                                    //用来记录为新增节点选择的连接节点
 	vector<Count_t>::iterator iter;

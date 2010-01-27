@@ -1,3 +1,4 @@
+
 #pragma once
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
 //Project Homepage:http://code.google.com/p/whutnetsim/
@@ -64,16 +65,17 @@ using namespace std;
 
 #include "FileConfig.h"
 #include "GenericConfigItem.h"
-#include "ExpressionParse.h"
 //using namespace WhuTNetSimConfigClass;
 
-class CTopoFile
+class CTopoFileScript :	public CFileConfig
 {
+	friend class CItemLine;
+	template <typename ValueType> friend class CGenericConfigItem;
+
 public:
-	CTopoFile(const string _file);
-	~CTopoFile(void);
+	CTopoFileScript(const string& _file);
+	~CTopoFileScript(void);
 public:
-	void InitFile();
 	void ReadFile();
 	void WriteFile();
 
@@ -94,11 +96,13 @@ public:
 
 	int  ReadTopoNum();
 	bool ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec);//获取一层拓扑的信息
+
 	bool ReadOnceWaxmanInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);//新建一个Waxman拓扑
 	bool ReadOncePFPInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);//新建一个PHP型拓扑
 	bool ReadOnceStarInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);
-private:
-	string configurePath;       //保存操作的文件
-	CFileConfig* file;
+	bool ReadOnceSimpleInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);
+
+	bool CreatePlatTopo(CPlatTopoBase*& newTopo);     //新建一个平面拓扑
+	bool CreateHiberTopo(CHiberTopoBase*& newTopo);    //新建一个层次拓扑
 };
 #endif

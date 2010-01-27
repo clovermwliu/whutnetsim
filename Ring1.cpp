@@ -83,6 +83,7 @@ void CRing::ConstructorHelper( const Linkp2p& link,
 {
 	first = Node::nextId;
 	Node *n = new Node ();
+	n->SetIPAddr(ip++);
 	//nodes.push_back(n);
 	Node *firstnode = n;
 	//nodeCount = count;
@@ -97,6 +98,7 @@ void CRing::ConstructorHelper( const Linkp2p& link,
 		if (l!=nodeCount)
 		{
 			newnode = new Node();
+			newnode->SetIPAddr(ip++);
 			//nodes.push_back(newnode);
 		}
 		else
@@ -113,6 +115,7 @@ void CRing::ConstructorHelper( const Linkp2p& link,
 		//		IPADDR_NONE, Mask(32));
 		//}
 		//n = newnode;
+		n->AddDuplexLink(newnode, link);
 	}
 	last = Node::nextId;
 }

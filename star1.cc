@@ -280,6 +280,7 @@ void Star1::ConstructorHelper(Count_t l, Node* h,
   if (!hub)
     { // No hub specified, need to allocate
       hub = new Node(id);
+	  hub->SetIPAddr(ip++);
       DEBUG0((cout << "ST HubId " << hub->Id() << endl));
     }
   first = Node::nextId;
@@ -293,20 +294,23 @@ void Star1::ConstructorHelper(Count_t l, Node* h,
   for (Count_t i = 0; i < leafCount; ++i)
     {
       Node* ln = new Node(id);
-      DEBUG0((cout << "ST NodeId " << ln->Id() << endl));
+	  ln->SetIPAddr(ip++);
+
+      /*DEBUG0((cout << "ST NodeId " << ln->Id() << endl));
       if (ip != IPADDR_NONE)
         {
-          ln->AddDuplexLink(hub, link, ip, Mask(31), ip + adder, Mask(31));
+          
+			ln->AddDuplexLink(hub, link, ip, Mask(31), ip + adder, Mask(31));
           DEBUG0((cout << "Star1 leaf " << i << " node " << ln->Id()
                   << " ip " << (string)IPAddr(ln->GetIPAddr()) << endl));
         }
       else
-        {
+        {*/
           ln->AddDuplexLink(hub, link);
-        }
+        //}
       // Add a default route
       ln->DefaultRoute(hub);
-      if (ip != IPADDR_NONE) ip += 2; // Advance to next set of ip's
+      //if (ip != IPADDR_NONE) ip += 2; // Advance to next set of ip's
     }
   last = Node::nextId;
 }

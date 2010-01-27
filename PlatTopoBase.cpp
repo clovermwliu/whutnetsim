@@ -66,6 +66,7 @@ CPlatTopoBase::~CPlatTopoBase(void)
 {
 	delete topoattribute;
 }
+
 Node* CPlatTopoBase::GetNode(Count_t c)
 { // Get specified  node
 	if (c >= nodeCount) return nil;

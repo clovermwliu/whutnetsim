@@ -9,7 +9,6 @@ CStdTS::CStdTS(const string _file)
 返回值：无
 */
 {
-	configFile = _file;
 }
 
 CStdTS::~CStdTS(void)
@@ -23,12 +22,12 @@ bool CStdTS::GenerateTopo()
 备注：是基类中纯虚函数的派生类实现
 */
 {
-	CTopoFile* file = new CTopoFile(configFile);
+	/*CTopoFile* file = new CTopoFile(configFile);
 	file->ReadOneLayerInfo(1,transitTopoVec);
 	file->ReadOneLayerInfo(2,stubTopoVec);
 	file->ReadOneLayerInfo(3,lanTopoVec);
 	file->ReadAllConnectInfo(this);
-	delete file;
+	delete file;*/
 	return true;
 }
 void CStdTS::SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 

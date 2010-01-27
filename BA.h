@@ -74,6 +74,7 @@ public:
 	typedef  enum{ r0 = 50,r1 = 20,r2 = 10} r;
 	~CBA(void);
 	bool GenerateTopo();
+	void AutoSetIP();
 
 	void SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
 		const Location& BoundBoxRightUpper,
