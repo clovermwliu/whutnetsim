@@ -47,7 +47,7 @@
 //Modify Date:
 
 //更改人：李玉
-//更改时间：2010-1-4
+//更改时间：2010-1-28
  
 #include "WS.h"
 #include <math.h>
@@ -68,12 +68,29 @@ CWS::CWS(Count_t _nodeCount,
 		 const Linkp2p& link,
 		 SystemId_t id)
 :CPlatTopoBase(_nodeCount,i,link,id)
+/*
+描述：WS小世界网络的生成          
+参数：[IN] _nodeCount      ：拓扑的节点数目
+	  [IN] _lineForOneNode ：一个节点连接的边数
+      [IN] _p              ：重连概率
+      [IN] i               ：拓扑节点的基IP
+      [IN] id              ：分布式系统标识符 
+      [IN] link            ：拓扑的节点间的连接方式
+返回：无                                                                                       
+备注： 
+*/
 {
 	lineForOneNode = _lineForOneNode;
 	p=_p;
 }
 
 bool CWS::GenerateTopo()
+/*
+描述：生成拓扑        
+参数：无                                                 
+返回：是否生成成功                                                                                       
+备注：
+*/
 {
 	//double r=Computer_r();
 	//addNodes(r);
@@ -83,39 +100,27 @@ bool CWS::GenerateTopo()
 	return true;
 }
 void CWS::ConstructorHelper( const Linkp2p& link,
-							  IPAddr_t leafIP)
+							 IPAddr_t leafIP)
+/*
+描述：生成拓扑的帮助函数        
+参数：[IN] link   ：拓扑的节点间的连接方式 
+	  [IN] leafIP ：拓扑节点的基IP 
+返回：无                                                                                       
+备注：参数可以不要，因为用的都是类中的成员
+*/
 {
 	AddNodes();
 		
 	AddLines(link, leafIP);
 }
-void CWS::SetLocationViaBoundBox(const Location& ll, const Location& ur, BoxType  type)
-{
-	Meters_t xRadius = fabs(ur.X() - ll.X())/2;
-	Meters_t yRadius = fabs(ur.Y() - ll.Y())/2;
 
-	Meters_t xCenter = (ur.X() + ll.X())/2;
-	Meters_t yCenter = (ur.Y() + ll.Y())/2;
-
-	double angle = (2 * M_PI)/ nodeCount;
-
-	NodeId_t thisNode = first;
-	const NodeVec_t& nodes = Node::GetNodes();
-
-	DEBUG0((cout<<"Putting Ring nodes in place"<<endl));
-
-	// Assign locations for each level
-	for (Count_t l = 0; l < nodeCount; ++l)
-	{
-		Meters_t yLoc = yCenter + yRadius * sin(angle * l);
-		Meters_t xLoc = xCenter + xRadius * cos(angle * l);
-
-		nodes[thisNode++]->SetLocation(xLoc,yLoc);
-
-		DEBUG0((cout<<"Putting node "<<l<<" in ("<<xLoc<<","<<yLoc<<")"<<endl));
-	}
-}
 void CWS::AddNodes()
+/*
+描述：添加节点       
+参数：无
+返回：无                                                                                       
+备注：把所有的节点新建好
+*/
 {
 	first = Node::nextId;
 	Node *n = new Node ();
@@ -142,6 +147,13 @@ void CWS::AddNodes()
 }
 void CWS::AddLines(const Linkp2p& link,
 				   IPAddr_t leafIP)//需要传递参数,连接的方式
+/*
+描述：节点之间连接        
+参数：[IN] link   ：拓扑的节点间的连接方式 
+	  [IN] leafIP ：拓扑节点的基IP 
+返回：无                                                                                       
+备注：参数可以不要，因为用的都是类中的成员
+*/
 {
 	int    remote;
     Node*  node0;
@@ -196,5 +208,38 @@ void CWS::AddLines(const Linkp2p& link,
 					IPADDR_NONE, Mask(32));
 			}
 		}
+	}
+}
+void CWS::SetLocationViaBoundBox(const Location& ll, const Location& ur, BoxType  type)
+/*
+描述：通过绑定位置来给节点设置坐标
+参数：[in]ll     ：左下角的位置
+[in]ur     ：右上角的位置
+[in]type   ：设置位置的类型
+返回值：无
+*/
+{
+	Meters_t xRadius = fabs(ur.X() - ll.X())/2;
+	Meters_t yRadius = fabs(ur.Y() - ll.Y())/2;
+
+	Meters_t xCenter = (ur.X() + ll.X())/2;
+	Meters_t yCenter = (ur.Y() + ll.Y())/2;
+
+	double angle = (2 * M_PI)/ nodeCount;
+
+	NodeId_t thisNode = first;
+	const NodeVec_t& nodes = Node::GetNodes();
+
+	DEBUG0((cout<<"Putting Ring nodes in place"<<endl));
+
+	// Assign locations for each level
+	for (Count_t l = 0; l < nodeCount; ++l)
+	{
+		Meters_t yLoc = yCenter + yRadius * sin(angle * l);
+		Meters_t xLoc = xCenter + xRadius * cos(angle * l);
+
+		nodes[thisNode++]->SetLocation(xLoc,yLoc);
+
+		DEBUG0((cout<<"Putting node "<<l<<" in ("<<xLoc<<","<<yLoc<<")"<<endl));
 	}
 }

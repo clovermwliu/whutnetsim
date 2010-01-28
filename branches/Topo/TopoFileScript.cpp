@@ -3,6 +3,7 @@
 #include "Waxman.h"
 #include "PFP.h"
 #include "Simple.h"
+#include "StdTS.h"
 
 
 CTopoFileScript::CTopoFileScript(const string& _file)
@@ -60,12 +61,12 @@ bool CTopoFileScript::ReadOneConnectInfo(CHiberTopoBase* Hiber,string connectTyp
 	if (connect.size()==6)
 	{
 		Hiber->ConnectDomain(connect[0],connect[1],connect[2],
-			connect[3],connect[4],connect[5]);
+			                 connect[3],connect[4],connect[5]);
 		return true;
 	}
 	else {return false;}
 }
-bool CTopoFileScript::ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec)
+bool CTopoFileScript::ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec,const string& section)
 /*
 描述：读取一层平面拓扑的信息，并新建拓扑
 参数：[IN]_lay     ：读取的是第几层拓扑
@@ -81,7 +82,7 @@ bool CTopoFileScript::ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec
 	case 3:lay="L3";break;
 	default:lay="L0";
 	}
-	CGenericConfigItem<string> item2(*this,"HiberTopo",lay);
+	CGenericConfigItem<string> item2(*this,section,lay);
 	string inputType=item2.MyValue();
 
 	CGenericConfigItem<int> item3(*this,inputType,"Groups");
@@ -291,7 +292,8 @@ bool CTopoFileScript::ReadOnceSimpleInfo(const string& PlatType,CPlatTopoBase*& 
 		newPlatTopo = new CSimple(i);
 		newPlatTopo->GenerateTopo();
 		break;
-
+	//default:
+	//	break;
 	}
 	return true;
 }
@@ -330,24 +332,19 @@ bool CTopoFileScript::CreateHiberTopo(CHiberTopoBase*& newTopo)
 	string style = total.MyValue();
 
 	string Type = style.substr(0,2);
-	//if (Type =="Wa")                   //Waxman
-	//{
-	//	ReadOnceWaxmanInfo(style,newTopo);
-	//	return true;
-	//}
-	//else if (Type=="PF")              //PFP
-	//{
-	//	ReadOncePFPInfo(style,newTopo);
-	//	return true;
-	//}
-	//else if (Type=="St")             //Star
-	//{
-	//	ReadOnceStarInfo(style,newTopo);
-	//	return true;
-	//}
-	//else  if (Type=="TS")
-	//{
-	//	return true;
-	//}
+	if (Type =="TS")                   //Waxman
+	{
+		ReadOnceTSInfo(style,newTopo);
+		return true;
+	}
+	return true;
+}
+bool CTopoFileScript::ReadOnceTSInfo(const string& PlatType,CHiberTopoBase*& newPlatTopo)
+{
+	newPlatTopo = new CStdTS();
+	ReadOneLayerInfo(1,newPlatTopo->GetTransit(),PlatType);
+	ReadOneLayerInfo(2,newPlatTopo->GetStub(),PlatType);
+	ReadOneLayerInfo(3,newPlatTopo->GetLan(),PlatType);
+	ReadAllConnectInfo(newPlatTopo);
 	return true;
 }

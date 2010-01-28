@@ -62,7 +62,7 @@ using namespace std;
 #include "linkp2p.h"
 #include "ErrorHandler.h"
 
-#define  SUCCESS_PLATTOPO       ERROR_NO_ERROR
+#define  SUCCESS_PLATTOPO                              ERROR_NO_ERROR
 #define  ERROR_ID_OUT_OF_NODECOUNT_FAIL                0x00050101 //要找的节点的ID超出了nodecount的范围
 
 class TopoMask;
@@ -77,7 +77,13 @@ public:
 	double       Cluster;//聚类系数
 	map<int,int> distribution;//度分布
 };
-
+struct ConnectInfo 
+{
+	Count_t ItselfId;//本拓扑作为相连的节点的ID
+	Count_t lay;    //相连的拓扑属于哪一层
+	Count_t topoNum;//相连的那一层的拓扑Id
+	Count_t nodeNum;//相连的那一层的拓扑中的Id号
+};
 class CPlatTopoBase : public CErrorHandler
 {
 public:
@@ -153,8 +159,14 @@ public:
 //protected:
 	Node* GetNode(Count_t);    // Get node at specified level, index
 
+
+public:
+	vector<ConnectInfo>  brotherConnect; //同一层的拓扑之间的连接
+	vector<ConnectInfo>  routerConnect;  //与路由的连接，即控制这一层的路由
+	vector<ConnectInfo>  controlConnect; //这一层可以控制的下一层的拓扑
 private:
 	pHook      hook;        //关于钩子的操作
+
 protected:	
 	NodeId_t   first;       // 第一个叶子结点,即第一个主机结点
 	NodeId_t   last;        // 最后一个主机结点

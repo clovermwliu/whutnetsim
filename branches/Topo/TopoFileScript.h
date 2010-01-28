@@ -85,6 +85,7 @@ public:
 	bool ReadOneConnectInfo(CHiberTopoBase* Hiber,string connectType);
 	bool ReadOnceWaxmanInfo(const string& PlatType);//获得新建一个平面拓扑时的信息
 	bool ReadOncePHPInfo(const string& PlatType);
+	bool ReadOnceTSInfo(const string& PlatType,CHiberTopoBase*& newPlatTopo);
 
 	bool ReadOnceConnectInfo();//获得一个连接信息，然后连接
 
@@ -95,7 +96,7 @@ public:
 
 
 	int  ReadTopoNum();
-	bool ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec);//获取一层拓扑的信息
+	bool ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec,const string& section);//获取一层拓扑的信息
 
 	bool ReadOnceWaxmanInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);//新建一个Waxman拓扑
 	bool ReadOncePFPInfo(const string& PlatType,CPlatTopoBase*& newPlatTopo);//新建一个PHP型拓扑

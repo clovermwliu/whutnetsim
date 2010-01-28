@@ -47,23 +47,108 @@
 //Modify Date:
 
 //更改人：李玉
-//更改时间：2010-1-4
+//更改时间：2010-1-28
 
+#define DomainNum       6
+#define NodesInDomain   7
+#define NodesInStub     9
+#define NodesInLan      10
 #include "HiberTopoBase.h"
 #include "duplexlink.h "
 CHiberTopoBase::CHiberTopoBase(IPAddr_t i,
-							 const Linkp2p& link1 ,
-							 SystemId_t id1)
+							   const Linkp2p& link1 ,
+							   SystemId_t id1)
 :CErrorHandler(),ip(i),link(link1),sid(id1)/*,configFile("")*/
+/*
+描述：层次拓扑的基类构造函数        
+参数：[IN] i     ：拓扑节点的基IP
+      [IN] link1 ：拓扑的节点间的连接方式
+      [IN] id1    ：分布式系统标识符 
+返回值：空                                                                                       
+备注：目前的层次拓扑有TS 
+*/
 {
-
 }
 CHiberTopoBase::~CHiberTopoBase(void)
+/*
+描述：层次拓扑的析构函数、此函数执行完，Node类中的nodes并没有释放
+*/
 {
 
 }
+void CHiberTopoBase::AutoSetTopoIP()
+/*
+描述：层次拓扑自动设置IP       
+参数：无
+返回值：无                                                                                 
+备注：实现方法，三层。
+      第一层 很多个域，Domain1、Domain2、Domain3，域占最高位的DomainNum位
+	  对每个域遍历，域中的节点占接下来的NodesInDomain位
+	  第二层，先找到管这一层的路由节点，然后根据路由节点的IP，对这一层的节点赋IP，
+	  占接下来的NodesInStub位
+	  第三层，和第二层很类似，找到管这一层的stub，然后根据上一层的节点的IP，对这一层的节点赋IP，
+	  占最后的NodesInLan位
+*/
+{
+	IPAddr_t  newIp;
+	IPAddr_t  ip;
+	IPAddr_t stubIp,getUpIp;
+	//第一层
+	for(size_t  domain = 0;domain!=transitTopoVec.size();domain++)
+	{
+		ip = 0;
+		ip |=(domain+1)<<DomainNum;
+		CPlatTopoBase* needSetTopo = transitTopoVec[domain];
+		IPAddr_t  setIp;
+		for (size_t domainNum = 1;domainNum<=needSetTopo->NodeCount();domainNum++)
+		{
+			setIp = ip|(domainNum<<NodesInDomain);
+			needSetTopo->GetNode(domainNum-1)->SetIPAddr(setIp);
+			setIp = 0;
+		}
+	}
+	//第二层
+	CPlatTopoBase* needSetStubTopo;
 
+	for (size_t stub = 0;stub!=(stubTopoVec.size());stub++)
+	{
+		needSetStubTopo = stubTopoVec[stub];
+		if(needSetStubTopo->routerConnect.size()==0) continue;
+
+		Node* up = Node::GetNode(needSetStubTopo->routerConnect[0].nodeNum);//一个节点可以有多个路由节点吗
+		getUpIp  = up->GetIPAddr();
+		for (size_t stubNodeNum = 1;stubNodeNum<=needSetStubTopo->NodeCount();stubNodeNum++)
+		{
+			stubIp = getUpIp|(stubNodeNum<<NodesInStub);
+			needSetStubTopo->GetNode(stubNodeNum-1)->SetIPAddr(stubIp);
+			stubIp = 0;
+		}
+	}
+	//第三层
+	CPlatTopoBase* LanTopo;
+	for (size_t lan = 0;lan<lanTopoVec.size();lan++)
+	{
+		LanTopo = lanTopoVec[lan];
+		if(LanTopo->routerConnect.size()==0) continue;
+		Node* up = Node::GetNode(LanTopo->routerConnect[0].nodeNum);
+		getUpIp  = up->GetIPAddr();
+		for (size_t lanNodeNum = 1;lanNodeNum<=LanTopo->NodeCount();lanNodeNum++)
+		{
+			stubIp = getUpIp|(lanNodeNum<<NodesInLan);
+			LanTopo->GetNode(lanNodeNum-1)->SetIPAddr(stubIp);
+			stubIp = 0;
+		}
+	}
+}
 Interface* CHiberTopoBase::AddDuplexLink(Node* ln,Node* rn, const Linkp2p& l)
+/*
+描述：在两个指定的结点之间添加一条边      
+参数：[IN] ln  ：需要连接的第一个节点的指针
+      [IN] rn  ：需要连接的第二个节点的指针
+      [IN] l   ：两个节点的连接方式
+返回值：连接时的接口                                                                                       
+备注： 
+*/
 {
 	DuplexLink dl(ln, l, rn, l);
 	return dl.localif;
@@ -82,11 +167,25 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 	  [IN]layer2      ：right拓扑的层数
 	  [IN]numOfTopo2  ：right拓扑相对应层上的第几个拓扑
 	  [IN]topo2NodeId ：相应拓扑的第几个节点
-返回值：是否连接成功
+返回：是否连接成功
+备注：连接的过程中，会记录连接的信息
+      同一层相连，则，连接信息记录在brotherConnect中
+	  下一层和上一层相连，出错
+	  上一层和下一层相连，连接信息上一层记录在controlConnect，下一层记录在routerConnect中
 */
 {
 	Node* left;
 	Node* right;
+	ConnectInfo connleft;
+	connleft.ItselfId = topo2NodeId;
+	connleft.lay = layer1;
+	connleft.topoNum = numOfTopo1;
+	connleft.nodeNum = topo1NodeId;
+	ConnectInfo connright;
+	connright.ItselfId = topo1NodeId;
+	connright.lay = layer2;
+	connright.topoNum = numOfTopo2;
+	connright.nodeNum = topo2NodeId;
 	switch(layer1)
 	{
 	case 1:
@@ -94,6 +193,16 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		{
 			left = transitTopoVec[numOfTopo1]->GetNode(topo1NodeId);
 			SetLastError(SUCCESS_HIBERTOPO);
+			if (layer1 == layer2)
+			{
+				transitTopoVec[numOfTopo1]->brotherConnect.push_back(connright);
+			}
+			else if (layer1 < layer2)
+			{
+				transitTopoVec[numOfTopo1]->controlConnect.push_back(connright);
+				stubTopoVec[numOfTopo2]->routerConnect.push_back(connleft);
+			}
+			else {return false;}
 		}
 		else 
 		{
@@ -107,6 +216,16 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		{
 			left = stubTopoVec[numOfTopo1]->GetNode(topo1NodeId);
 			SetLastError(SUCCESS_HIBERTOPO);
+			if (layer1 == layer2)
+			{
+				stubTopoVec[numOfTopo1]->brotherConnect.push_back(connright);
+			}
+			else if (layer1 < layer2)
+			{
+				stubTopoVec[numOfTopo1]->controlConnect.push_back(connright);
+				lanTopoVec[numOfTopo2]->routerConnect.push_back(connleft);
+			}
+			else {return false;}
 		}
 		else 
 		{
@@ -120,6 +239,12 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		{
 			left = lanTopoVec[numOfTopo1]->GetNode(topo1NodeId);
 			SetLastError(SUCCESS_HIBERTOPO);
+
+			if (layer1 == layer2)
+			{
+				lanTopoVec[numOfTopo1]->brotherConnect.push_back(connright);
+			}
+			else {return false;}
 		}
 		else 
 		{
@@ -137,6 +262,15 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		{
 			right = transitTopoVec[numOfTopo2]->GetNode(topo2NodeId);
 			SetLastError(SUCCESS_HIBERTOPO);
+			if (layer1 == layer2)
+			{
+				transitTopoVec[numOfTopo2]->brotherConnect.push_back(connright);
+			}
+			else if (layer1 < layer2)
+			{
+				transitTopoVec[numOfTopo2]->controlConnect.push_back(connright);
+			}
+			else {return false;}
 		}
 		else 
 		{
@@ -150,6 +284,15 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		{
 			right = stubTopoVec[numOfTopo2]->GetNode(topo2NodeId);
 			SetLastError(SUCCESS_HIBERTOPO);
+			if (layer1 == layer2)
+			{
+				stubTopoVec[numOfTopo2]->brotherConnect.push_back(connright);
+			}
+			else if (layer1 < layer2)
+			{
+				stubTopoVec[numOfTopo2]->controlConnect.push_back(connright);
+			}
+			else {return false;}
 		}
 		else 
 		{
@@ -163,6 +306,11 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		{
 			right = lanTopoVec[numOfTopo2]->GetNode(topo2NodeId);
 			SetLastError(SUCCESS_HIBERTOPO);
+			if (layer1 == layer2)
+			{
+				lanTopoVec[numOfTopo2]->brotherConnect.push_back(connright);
+			}
+			else {return false;}
 		}
 		else 
 		{
@@ -179,6 +327,7 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 	return true;
 }
 
+//关于IP没有考虑
 bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 					Count_t  numOfTopo1,
 					Count_t layer2,
