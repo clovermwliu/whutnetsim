@@ -48,20 +48,36 @@
 
 
 //更改人：李玉
-//更改时间：2010-1-8
+//更改时间：2010-1-28
 #include "BA.h"
 
 //#include <qnamespace.h>
-CBA::CBA(Count_t count,                                        //生成的拓扑的节点的个数
-		 int onceAddEdge_m,                                    //每次添加的点与多少个点相连
-		 IPAddr_t i,                                           //给所有节点赋的基IP
-		 SystemId_t id,const Linkp2p& link)                    //节点号,点之间的连接方式
-		 :CPlatTopoBase(count,i,link,id),onceAddEdge(onceAddEdge_m)
+CBA::CBA(Count_t count,                                        
+		 int onceAddEdge_m,                                    
+		 IPAddr_t i,                                           
+		 SystemId_t id,const Linkp2p& link)                    
+:CPlatTopoBase(count,i,link,id),onceAddEdge(onceAddEdge_m)
+/*
+描述：平面拓扑CBA构造函数      
+参数：[IN] count          ：拓扑的节点数目
+	  [IN] onceAddEdge_m  ：每次添加的点与多少个点相连
+      [IN] i              ：拓扑节点的基IP
+      [IN] id             ：分布式系统标识符 
+	  [IN] link           ：拓扑的节点间的连接方式
+返回值：空                                                                                       
+备注： 
+*/
 {
 	allNodeDegrees = 0;
 }
 
 bool CBA::GenerateTopo()
+/*
+描述：生成拓扑        
+参数：无                                                 
+返回值：是否生成成功                                                                                       
+备注：初始的onceAddEdge个节点为孤立节点，degree中保存的是每个节点的度+1
+*/
 {
 	first = Node::nextId;
 	for (Count_t i = 0; i < nodeCount; i++)
@@ -87,10 +103,17 @@ bool CBA::GenerateTopo()
 			allNodeDegrees +=onceAddEdge+1;                     //allNodeDegrees总度数增加了新增边的两倍,新增了onceAddEdge条边
 		}
 	}
+	SetLastError(SUCCESS_PLATTOPO);
 	return true;
 }
 
 bool CBA::AddOneNode(Count_t nodeNum)
+/*
+描述：添加一个节点        
+参数：[IN] nodeNum ：添加的第nodeNum个节点，可以不要，后来认为。                                                
+返回：是否添加成功                                                                                    
+备注：如果网络中的节点数大于需要添加的边的个数,调用AddOneNode
+*/
 {
 	Node* addNode = new Node(sid);                              //新建一个节点           
     addNode->SetIPAddr(ip++);
@@ -123,12 +146,16 @@ bool CBA::AddOneNode(Count_t nodeNum)
 		}	
 	}
 	degrees.push_back(onceAddEdge+1);
+	SetLastError(SUCCESS_PLATTOPO);
 	return true;
 }
 void CBA::QuickSort(RecType& R, 
 					NodeVec_t& changeOther,
 					RecType::size_type s, 
 					RecType::size_type t)
+/*
+描述：不要        
+*/
 {
 	RecType::size_type i = s,j = t;
 	iVeca tmp;
@@ -176,6 +203,14 @@ void CBA::QuickSort(RecType& R,
 void CBA::SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
 								 const Location& BoundBoxRightUpper,
 								 BoxType  type)
+/*
+描述：通过绑定位置来给节点设置坐标
+参数：[in]BoundBoxLeftDown   ——左下角的位置
+      [in]BoundBoxRightUpper ——右上角的位置
+	  [in]type               ——设置位置的类型
+返回值：无
+备注：
+*/
 {
 	const NodeVec_t& nodes = Node::GetNodes();
 
@@ -236,6 +271,7 @@ void CBA::SetLocationViaBoundBox(const Location& BoundBoxLeftDown,
 			nodeNeigh.node->SetLocation(Location(lx,ly));
 		}
 	}
+	SetLastError(SUCCESS_PLATTOPO);
 }
 bool CBA::AddEdges(Count_t nodeNum)
 {

@@ -58,7 +58,7 @@ CPFP::CPFP( Count_t count,
 		   const Linkp2p& link)
 :CPlatTopoBase(count,i,link,id),sigma(_sigma),p(_p),q(_q)
 /*
-描述：          
+描述：PFP网络的生成         
 参数：[IN] count ：拓扑的节点数目
 	  [IN] _sigma：范围[0,1]
 	  [IN] _p    ：新增节点，连接方式选择时的概率
@@ -164,6 +164,7 @@ bool CPFP::GenerateTopo()
 		changeDegrees[t] = dealDegree;
 		allChangeDegrees += dealDegree;
 	}
+	SetLastError(SUCCESS_PLATTOPO);
 	return true;
 }
 void  CPFP::ChooseOneIdOuter(NodeId_t &chooseid)
@@ -305,6 +306,7 @@ void CPFP::SetLocationViaBoundBox(const Location& BoundBoxLeftDown,
 		int y =  random(Ybound);
 		nodes[first + nodeNum]->SetLocation(BoundBoxLeftDown.X()+x,BoundBoxLeftDown.Y()+y);
 	}
+	SetLastError(SUCCESS_PLATTOPO);
 }
 int  CPFP::ChooseNode()
 /*

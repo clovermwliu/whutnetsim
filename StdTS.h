@@ -11,7 +11,7 @@ using namespace std;
 class CStdTS : public CHiberTopoBase
 {
 public:
-	CStdTS(const string _file);
+	CStdTS();
 	~CStdTS(void);
 public:
 	bool GenerateTopo();

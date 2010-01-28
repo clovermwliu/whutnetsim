@@ -1,7 +1,7 @@
 #include "StdTS.h"
 #include "TopoFile.h"
 
-CStdTS::CStdTS(const string _file)
+CStdTS::CStdTS()
 :CHiberTopoBase()
 /*
 描述：层次拓扑的派生类

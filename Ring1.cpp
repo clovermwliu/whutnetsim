@@ -47,7 +47,7 @@
 //Modify Date:
 
 //更改人：李玉
-//更改时间：2010-1-4
+//更改时间：2010-1-28
 
 #include "Ring1.h"
 
@@ -68,18 +68,40 @@ CRing::CRing(Count_t count,
 			 const Linkp2p& link,
 			 SystemId_t id)
 :CPlatTopoBase(count,i,link,id)
+/*
+描述：CRing的构造函数      
+参数：[IN] count ：拓扑的节点数目
+      [IN] i     ：拓扑节点的基IP
+      [IN] link  ：拓扑的节点间的连接方式
+      [IN] id    ：分布式系统标识符 
+返回：空                                                                                       
+备注：     
+*/
 {
 }
 
 bool CRing::GenerateTopo()
+/*
+描述：生成拓扑         
+参数：无
+返回：是否生成成功                                                                               
+备注：                                       
+*/
 {
 	ConstructorHelper(link, ip);
 	return true;
 }
 
 // Private methods
-void CRing::ConstructorHelper( const Linkp2p& link,
+void CRing::ConstructorHelper(const Linkp2p& link,
 							  IPAddr_t leafIP)
+/*
+描述：生成拓扑的帮助函数        
+参数：[IN] link   ：拓扑的节点间的连接方式 
+	  [IN] leafIP ：拓扑节点的基IP 
+返回：无                                                                                       
+备注：参数可以不要，因为用的都是类中的成员
+*/
 {
 	first = Node::nextId;
 	Node *n = new Node ();
@@ -120,6 +142,13 @@ void CRing::ConstructorHelper( const Linkp2p& link,
 	last = Node::nextId;
 }
 void CRing::SetLocationViaBoundBox(const Location& ll, const Location& ur, BoxType  type)
+/*
+描述：通过绑定位置来给节点设置坐标
+参数：[in]ll     ：左下角的位置
+      [in]ur     ：右上角的位置
+      [in]type   ：设置位置的类型
+返回：无
+*/
 {
 	Meters_t xRadius = fabs(ur.X() - ll.X())/2;
 	Meters_t yRadius = fabs(ur.Y() - ll.Y())/2;

@@ -105,11 +105,15 @@ public:
 						 Count_t layer2,
 						 Count_t  numOfTopo2);
 	
+	 void AutoSetTopoIP();
 
 	 Count_t  GetLay1Num(){return transitTopoVec.size();}
 	 Count_t  GetLay2Num(){return stubTopoVec.size();}
 	 Count_t  GetLay3Num(){return lanTopoVec.size();}
 
+	 vector<CPlatTopoBase*>& GetTransit(){return transitTopoVec;}
+	 vector<CPlatTopoBase*>& GetStub(){return stubTopoVec;}
+	 vector<CPlatTopoBase*>& GetLan(){return lanTopoVec;}
 protected:
 	 IPAddr_t ip;
 	 const Linkp2p&  link;
