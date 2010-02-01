@@ -1,0 +1,9 @@
+[Total]
+name=Waxman Simulator
+owner=whu
+createTime=201001261639
+modifyTime=201001264639
+description=SimulationTest
+style=Platopo
+topoScriptpath=E:\GTnet\whutnetsim\task\topoScript1.dat
+appScriptpath=E:\GTnet\whutnetsim\task\appScript1.dat
