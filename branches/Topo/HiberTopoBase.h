@@ -66,7 +66,8 @@ using namespace std;
 #define  ERROR_ID_OUT_OF_LAY1NODECOUNT_FAIL                0x00050201 //要找的节点的ID超出了第一层nodecount的范围
 #define  ERROR_ID_OUT_OF_LAY2NODECOUNT_FAIL                0x00050202 //要找的节点的ID超出了第二层nodecount的范围
 #define  ERROR_ID_OUT_OF_LAY3NODECOUNT_FAIL                0x00050203 //要找的节点的ID超出了第三层nodecount的范围
-
+#define  ERROR_LAY_OUT_OF_TOPOVEC_WHEN_CONNECT             0x00050204 //连接的时候层数超出了范围
+#define  ERROR_NODE_OUT_OF_TOPO_WHEN_CONNECT               0x00050205 //连接的时候节点的ID超出范围
 //#define ERROR_HIBERTOPO_NOT_EXSITING	 0x00050001
 //#define ERROR_FILE_WRITE_FAIL            0x00050002
 
@@ -78,7 +79,7 @@ public:
 				   SystemId_t = 0);
 	typedef enum  {DEFAULT, CIRCLE, GRID, CIRCLES} BoxType;
 public:
-	~CHiberTopoBase(void);
+	virtual ~CHiberTopoBase(void);
 	 Error_str GetLastErrorEx(){return "hello";}
 	 Interface* AddDuplexLink(Node* ln,Node* rn, const Linkp2p& l = Linkp2p::Default());
 
@@ -106,6 +107,7 @@ public:
 						 Count_t  numOfTopo2);
 	
 	 void AutoSetTopoIP();
+	 bool GetNodeByConnectInfo(ConnectInfo& connectinfo,Node*& connectId);
 
 	 Count_t  GetLay1Num(){return transitTopoVec.size();}
 	 Count_t  GetLay2Num(){return stubTopoVec.size();}

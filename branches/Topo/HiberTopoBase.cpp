@@ -97,13 +97,16 @@ void CHiberTopoBase::AutoSetTopoIP()
 	for(size_t  domain = 0;domain!=transitTopoVec.size();domain++)
 	{
 		ip = 0;
-		ip |=(domain+1)<<DomainNum;
+		ip = domain+1;
 		CPlatTopoBase* needSetTopo = transitTopoVec[domain];
 		IPAddr_t  setIp;
+		Mask mask(DomainNum+NodesInDomain);
 		for (size_t domainNum = 1;domainNum<=needSetTopo->NodeCount();domainNum++)
 		{
-			setIp = ip|(domainNum<<NodesInDomain);
-			needSetTopo->GetNode(domainNum-1)->SetIPAddr(setIp);
+			setIp = ip<<NodesInDomain|(domainNum);
+			//needSetTopo->GetNode(domainNum-1)->SetIPAddr(setIp);
+			setIp = setIp<<(NodesInStub+NodesInLan);
+			needSetTopo->GetNode(domainNum-1)->SetProxyRoutingConfig(setIp,mask);
 			setIp = 0;
 		}
 	}
@@ -114,13 +117,25 @@ void CHiberTopoBase::AutoSetTopoIP()
 	{
 		needSetStubTopo = stubTopoVec[stub];
 		if(needSetStubTopo->routerConnect.size()==0) continue;
-
-		Node* up = Node::GetNode(needSetStubTopo->routerConnect[0].nodeNum);//一个节点可以有多个路由节点吗
-		getUpIp  = up->GetIPAddr();
+       
+		Node* up;
+		//Node* up = Node::GetNode(needSetStubTopo->routerConnect[0].nodeNum);//一个节点可以有多个路由节点吗
+		GetNodeByConnectInfo(needSetStubTopo->routerConnect[0],up);
+		
+		if (up==nil)
+		{
+			SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+			string tmp="SetIP:Get routeId error!";
+			SetLastErrorStr(tmp);
+			return;
+		}
+		getUpIp  = up->GetProxyIP();
+		Mask mask(DomainNum+NodesInDomain+NodesInStub);
 		for (size_t stubNodeNum = 1;stubNodeNum<=needSetStubTopo->NodeCount();stubNodeNum++)
 		{
-			stubIp = getUpIp|(stubNodeNum<<NodesInStub);
-			needSetStubTopo->GetNode(stubNodeNum-1)->SetIPAddr(stubIp);
+			stubIp = getUpIp|stubNodeNum<<NodesInLan;
+			//needSetStubTopo->GetNode(stubNodeNum-1)->SetIPAddr(stubIp);
+			needSetStubTopo->GetNode(stubNodeNum-1)->SetProxyRoutingConfig(stubIp,mask);
 			stubIp = 0;
 		}
 	}
@@ -130,16 +145,60 @@ void CHiberTopoBase::AutoSetTopoIP()
 	{
 		LanTopo = lanTopoVec[lan];
 		if(LanTopo->routerConnect.size()==0) continue;
-		Node* up = Node::GetNode(LanTopo->routerConnect[0].nodeNum);
-		getUpIp  = up->GetIPAddr();
+		Node* up;
+		//Node* up = Node::GetNode(LanTopo->routerConnect[0].nodeNum);
+		GetNodeByConnectInfo(LanTopo->routerConnect[0],up);
+		if (up==nil)
+		{
+			SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+			string tmp="SetIP:Get routeId error!";
+			SetLastErrorStr(tmp);
+			return;
+		}
+		getUpIp  = up->GetProxyIP();
 		for (size_t lanNodeNum = 1;lanNodeNum<=LanTopo->NodeCount();lanNodeNum++)
 		{
-			stubIp = getUpIp|(lanNodeNum<<NodesInLan);
+			stubIp = getUpIp|lanNodeNum;
 			LanTopo->GetNode(lanNodeNum-1)->SetIPAddr(stubIp);
 			stubIp = 0;
 		}
 	}
 }
+bool  CHiberTopoBase::GetNodeByConnectInfo(ConnectInfo& connectinfo,Node*& connectNode)
+{
+	CPlatTopoBase* connectTopo;
+	switch(connectinfo.lay)
+	{
+	case 1:
+		connectTopo = transitTopoVec[connectinfo.topoNum];
+		break;
+	case 2:
+		connectTopo = stubTopoVec[connectinfo.topoNum];
+		break;
+	case 3:
+		connectTopo = lanTopoVec[connectinfo.topoNum];
+		break;
+	default:
+		SetLastError(ERROR_LAY_OUT_OF_TOPOVEC_WHEN_CONNECT);
+		string tmp="Lay out of topovec when connect";
+		SetLastErrorStr(tmp);
+		return false;
+	}
+	connectNode = connectTopo->GetNode(connectinfo.nodeNum);
+
+	if (connectNode!=NULL)
+	{
+		return true;
+	}
+	else  
+	{
+		SetLastError(ERROR_NODE_OUT_OF_TOPO_WHEN_CONNECT);
+		string tmp="node out of topo when connect";
+		SetLastErrorStr(tmp);
+		return false;
+	}
+}
+
 Interface* CHiberTopoBase::AddDuplexLink(Node* ln,Node* rn, const Linkp2p& l)
 /*
 描述：在两个指定的结点之间添加一条边      
@@ -192,6 +251,13 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		if (numOfTopo1 <transitTopoVec.size())
 		{
 			left = transitTopoVec[numOfTopo1]->GetNode(topo1NodeId);
+			if (left==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="Get topo1NodwId error!";
+				SetLastErrorStr(tmp);
+				return false;
+			}
 			SetLastError(SUCCESS_HIBERTOPO);
 			if (layer1 == layer2)
 			{
@@ -206,7 +272,9 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		}
 		else 
 		{
-			SetLastError(ERROR_ID_OUT_OF_LAY1NODECOUNT_FAIL);		
+			SetLastError(ERROR_ID_OUT_OF_LAY1NODECOUNT_FAIL);	
+			string tmp="The first ID out of lay1 nodeNum";
+			SetLastErrorStr(tmp);
 			return false;
 		}
 		break;
@@ -215,6 +283,13 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		if (numOfTopo1 <stubTopoVec.size())
 		{
 			left = stubTopoVec[numOfTopo1]->GetNode(topo1NodeId);
+			if (left==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="Get topo1NodwId error!";
+				SetLastErrorStr(tmp);
+				return false;
+			}
 			SetLastError(SUCCESS_HIBERTOPO);
 			if (layer1 == layer2)
 			{
@@ -230,6 +305,8 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		else 
 		{
 			SetLastError(ERROR_ID_OUT_OF_LAY2NODECOUNT_FAIL);
+			string tmp="The first ID out of lay2 nodeNum";
+			SetLastErrorStr(tmp);
 			return false;
 		}
 		break;
@@ -238,6 +315,13 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		if (numOfTopo1 <lanTopoVec.size())
 		{
 			left = lanTopoVec[numOfTopo1]->GetNode(topo1NodeId);
+			if (left==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="Get topo1NodwId error!";
+				SetLastErrorStr(tmp);
+				return false;
+			}
 			SetLastError(SUCCESS_HIBERTOPO);
 
 			if (layer1 == layer2)
@@ -249,6 +333,8 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		else 
 		{
 			SetLastError(ERROR_ID_OUT_OF_LAY3NODECOUNT_FAIL);
+			string tmp="The first ID out of lay3 nodeNum";
+			SetLastErrorStr(tmp);
 			return false;
 		}
 		break;
@@ -261,6 +347,13 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		if (numOfTopo2 <transitTopoVec.size())
 		{
 			right = transitTopoVec[numOfTopo2]->GetNode(topo2NodeId);
+			if (right==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="Get topo2NodeId error!";
+				SetLastErrorStr(tmp);
+				return false;
+			}
 			SetLastError(SUCCESS_HIBERTOPO);
 			if (layer1 == layer2)
 			{
@@ -275,6 +368,8 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		else 
 		{
 			SetLastError(ERROR_ID_OUT_OF_LAY1NODECOUNT_FAIL);
+			string tmp="The second ID out of lay1 nodeNum";
+			SetLastErrorStr(tmp);
 			return false;
 		}
 		break;
@@ -283,6 +378,13 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		if (numOfTopo2 <stubTopoVec.size())
 		{
 			right = stubTopoVec[numOfTopo2]->GetNode(topo2NodeId);
+			if (right==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="Get topo2NodeId error!";
+				SetLastErrorStr(tmp);
+				return false;
+			}
 			SetLastError(SUCCESS_HIBERTOPO);
 			if (layer1 == layer2)
 			{
@@ -297,6 +399,8 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		else 
 		{
 			SetLastError(ERROR_ID_OUT_OF_LAY2NODECOUNT_FAIL);
+			string tmp="The second ID out of lay2 nodeNum";
+			SetLastErrorStr(tmp);
 			return false;
 		}
 		break;
@@ -305,16 +409,28 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 		if (numOfTopo2 <lanTopoVec.size())
 		{
 			right = lanTopoVec[numOfTopo2]->GetNode(topo2NodeId);
+			if (right==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="Get topo2NodeId error!";
+				SetLastErrorStr(tmp);
+				return false;
+			}
 			SetLastError(SUCCESS_HIBERTOPO);
 			if (layer1 == layer2)
 			{
 				lanTopoVec[numOfTopo2]->brotherConnect.push_back(connright);
-			}
+			}else
+				if (layer1<layer2)
+				{
+				}
 			else {return false;}
 		}
 		else 
 		{
 			SetLastError(ERROR_ID_OUT_OF_LAY3NODECOUNT_FAIL);
+			string tmp="The second ID out of lay3 nodeNum";
+			SetLastErrorStr(tmp);
 			return false;
 		}
 		break;
@@ -329,9 +445,9 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 
 //关于IP没有考虑
 bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
-					Count_t  numOfTopo1,
-					Count_t layer2,
-					Count_t  numOfTopo2)
+					                Count_t  numOfTopo1,
+					                Count_t layer2,
+					                Count_t  numOfTopo2)
 /*
 描述：连接两个拓扑（left，right），随机的选择对应拓扑的内部节点
 参数：[IN]layer1      ：left拓扑的层数

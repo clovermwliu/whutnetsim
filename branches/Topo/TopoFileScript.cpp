@@ -1,5 +1,4 @@
 #include "TopoFileScript.h"
-#include "TopoFile.h"
 #include "Waxman.h"
 #include "PFP.h"
 #include "Simple.h"
@@ -64,7 +63,13 @@ bool CTopoFileScript::ReadOneConnectInfo(CHiberTopoBase* Hiber,string connectTyp
 			                 connect[3],connect[4],connect[5]);
 		return true;
 	}
-	else {return false;}
+	else 
+	{
+		SetLastError(ERROR_CONNECT_PARA_ERROR);
+		string tmp="Connect para error!";
+		SetLastErrorStr(tmp);
+		return false;
+	}
 }
 bool CTopoFileScript::ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec,const string& section)
 /*
@@ -85,6 +90,14 @@ bool CTopoFileScript::ReadOneLayerInfo(int _lay,vector<CPlatTopoBase*>&  TopoVec
 	CGenericConfigItem<string> item2(*this,section,lay);
 	string inputType=item2.MyValue();
 
+	if (inputType=="")
+	{
+		SetLastError(ERROR_HIBERTOPO_LAY_NO_SECTION);
+		string tmp="HiberTopo "+lay+" read NULL";
+		tmp=tmp+" Plat style read NULL";
+		SetLastErrorStr(tmp);
+		return false;
+	}
 	CGenericConfigItem<int> item3(*this,inputType,"Groups");
 	int Groups=item3.MyValue();
 
@@ -176,21 +189,27 @@ bool CTopoFileScript::ReadOnceWaxmanInfo(const string& PlatType,CPlatTopoBase*& 
 		return false;
 		break;
 	case 3:
-		CGenericConfigItem<Count_t> item2(*this,PlatType,"count");
-		Count_t count = item2.MyValue();
+		{
+			CGenericConfigItem<Count_t> item2(*this,PlatType,"count");
+			Count_t count = item2.MyValue();
 
-		CGenericConfigItem<double> item3(*this,PlatType,"alpha");
-		double _alpha = item3.MyValue();
+			CGenericConfigItem<double> item3(*this,PlatType,"alpha");
+			double _alpha = item3.MyValue();
 
-		CGenericConfigItem<double> item4(*this,PlatType,"beta");
-		double _beta = item4.MyValue();
+			CGenericConfigItem<double> item4(*this,PlatType,"beta");
+			double _beta = item4.MyValue();
 
-		newPlatTopo = new CWaxman(count,_alpha,_beta);
-		newPlatTopo->GenerateTopo();
-		break;
-
+			newPlatTopo = new CWaxman(count,_alpha,_beta);
+			newPlatTopo->GenerateTopo();
+			break;
+		}
+		
 		//case 4:break;
-		//default:break;
+	default:
+		SetLastError(ERROR_NO_WRITE_YET);
+		string tmp="Not write yet";
+		SetLastErrorStr(tmp);
+		return false;
 
 	}
 	return true;
@@ -221,24 +240,31 @@ bool CTopoFileScript::ReadOncePFPInfo(const string& PlatType,CPlatTopoBase*& new
 		return false;
 		break;
 	case 4:
-		CGenericConfigItem<int> item1(*this,PlatType,"count");
-		int count=item1.MyValue();
+		{
+			CGenericConfigItem<int> item1(*this,PlatType,"count");
+			int count=item1.MyValue();
 
-		CGenericConfigItem<Count_t> item2(*this,PlatType,"alpha");
-		Count_t alpha = item2.MyValue();
+			CGenericConfigItem<Count_t> item2(*this,PlatType,"alpha");
+			Count_t alpha = item2.MyValue();
 
-		CGenericConfigItem<double> item3(*this,PlatType,"p");
-		double p = item3.MyValue();
+			CGenericConfigItem<double> item3(*this,PlatType,"p");
+			double p = item3.MyValue();
 
-		CGenericConfigItem<double> item4(*this,PlatType,"q");
-		double q = item4.MyValue();
+			CGenericConfigItem<double> item4(*this,PlatType,"q");
+			double q = item4.MyValue();
 
-		newPlatTopo = new CPFP(count,alpha,p,q);
-		newPlatTopo->GenerateTopo();
-		break;
+			newPlatTopo = new CPFP(count,alpha,p,q);
+			newPlatTopo->GenerateTopo();
+			break;
+		}
+		
 
 		//case 5:break;
-		//default:break;
+	default:
+		SetLastError(ERROR_NO_WRITE_YET);
+		string tmp="Not write yet";
+		SetLastErrorStr(tmp);
+		return false;
 
 	}
 	return true;
@@ -262,13 +288,19 @@ bool CTopoFileScript::ReadOnceStarInfo(const string& PlatType,CPlatTopoBase*& ne
 		return false;
 		break;
 	case 1:
-		CGenericConfigItem<int> item1(*this,PlatType,"count");
-		int count=item1.MyValue();
+		{
+			CGenericConfigItem<int> item1(*this,PlatType,"count");
+			int count=item1.MyValue();
 
-		newPlatTopo = new Star1(count);
-		newPlatTopo->GenerateTopo();
-		break;
-
+			newPlatTopo = new Star1(count);
+			newPlatTopo->GenerateTopo();
+			break;
+		}
+	default:
+		SetLastError(ERROR_NO_WRITE_YET);
+		string tmp="Not write yet";
+		SetLastErrorStr(tmp);
+		return false;
 	}
 	return true;
 }
@@ -278,6 +310,7 @@ bool CTopoFileScript::ReadOnceSimpleInfo(const string& PlatType,CPlatTopoBase*& 
 	int paraNum=GetKeyNamesBySectionName(PlatType,v);//没有用到v，觉得很浪费
 	//获得PlatType域的个数
 	//Star1(Count_t, IPAddr_t = IPADDR_NONE, SystemId_t = 0);// Number of nodes
+
 	switch(paraNum)
 	{
 	case 0:
@@ -285,15 +318,21 @@ bool CTopoFileScript::ReadOnceSimpleInfo(const string& PlatType,CPlatTopoBase*& 
 		newPlatTopo->GenerateTopo();
 		break;
 	case 1:
-		CGenericConfigItem<string> item1(*this,PlatType,"ip");
-		string ips=item1.MyValue();
-		IPAddr_t i = IPAddr(ips);
+		{
+			CGenericConfigItem<string> item1(*this,PlatType,"ip");
+			string ips=item1.MyValue();
+			IPAddr_t i = IPAddr(ips);
 
-		newPlatTopo = new CSimple(i);
-		newPlatTopo->GenerateTopo();
-		break;
-	//default:
-	//	break;
+			newPlatTopo = new CSimple(i);
+			newPlatTopo->GenerateTopo();
+			break;
+		}
+		
+	default:
+		SetLastError(ERROR_NO_WRITE_YET);
+		string tmp="Not write yet";
+		SetLastErrorStr(tmp);
+		return false;
 	}
 	return true;
 }
@@ -303,6 +342,15 @@ bool CTopoFileScript::CreatePlatTopo(CPlatTopoBase*& newTopo)
 	CGenericConfigItem<string> total(*this,"Total","style");
 	string style = total.MyValue();
 
+	if (style=="")
+	{
+		SetLastError(ERROR_PLATTOPO_NO_SECTION);
+		string tmp="Total";
+		tmp=tmp+" Plat style read NULL";
+		SetLastErrorStr(tmp);
+		return false;
+	}
+	
 	string Type = style.substr(0,2);
 	if (Type =="Wa")                   //Waxman
 	{
@@ -330,6 +378,15 @@ bool CTopoFileScript::CreateHiberTopo(CHiberTopoBase*& newTopo)
 {
 	CGenericConfigItem<string> total(*this,"Total","style");
 	string style = total.MyValue();
+	
+	if (style=="")
+	{
+		SetLastError(ERROR_HIBERTOPO_NO_SECTION);
+		string tmp="Total";
+		tmp=tmp+" Hiber style read NULL";
+		SetLastErrorStr(tmp);
+		return false;
+	}
 
 	string Type = style.substr(0,2);
 	if (Type =="TS")                   //Waxman

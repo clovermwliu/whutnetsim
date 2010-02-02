@@ -105,15 +105,32 @@ bool  CPlatTopoBase::AddLinkBetweenTwoNodes(Count_t firstNodeId,
 {
 	if ((firstNodeId<nodeCount)&&(secondNodeId<nodeCount))
 	{
-		Node* firstNode=Node::nodes[firstNodeId];
-		Node* secondNode=Node::nodes[secondNodeId];
+		Node* firstNode=GetNode(firstNodeId);
+		if (firstNode==nil)
+		{
+			SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+			string tmp="Link:Get first node error";
+			SetLastErrorStr(tmp);
+			return false;
+		}
+
+		Node* secondNode=GetNode(secondNodeId);
+		if (secondNode==nil)
+		{
+			SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+			string tmp="Link:Get second node error";
+			SetLastErrorStr(tmp);
+			return false;
+		}
 		firstNode->AddDuplexLink(secondNode, link);
         
 		SetLastError(SUCCESS_PLATTOPO);
 		return true;
 	}
-	
+
 	SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+	string tmp="Link£ºnodeNum out of vector!";
+	SetLastErrorStr(tmp);
 	return false;
 }
 
@@ -163,13 +180,12 @@ Node* CPlatTopoBase::Begin()
 {
 	if (nodeCount==0)
 	{
-		
 		return NULL;
 	}
 	else
 	{
 		index=0;
-		return  Node::nodes[index++];
+		return  GetNode(index++);
 	}
 }
 Node* CPlatTopoBase::Next()           
@@ -186,7 +202,7 @@ Node* CPlatTopoBase::Next()
 	}
 	else
 	{
-		return  Node::nodes[index++];
+		return  GetNode(index++);
 	}
 }
 bool  CPlatTopoBase::End()           //
