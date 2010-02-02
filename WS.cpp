@@ -99,7 +99,7 @@ bool CWS::GenerateTopo()
 	ConstructorHelper(link, ip);
 	return true;
 }
-void CWS::ConstructorHelper( const Linkp2p& link,
+bool CWS::ConstructorHelper( const Linkp2p& link,
 							 IPAddr_t leafIP)
 /*
 描述：生成拓扑的帮助函数        
@@ -111,7 +111,14 @@ void CWS::ConstructorHelper( const Linkp2p& link,
 {
 	AddNodes();
 		
-	AddLines(link, leafIP);
+	if (!AddLines(link, leafIP))
+	{
+		SetLastError(ERROR_WS_LINK);
+		string tmp="WS Link error";
+		SetLastErrorStr(tmp);
+		return false;
+	}
+	return true;
 }
 
 void CWS::AddNodes()
@@ -131,7 +138,6 @@ void CWS::AddNodes()
 
 	for (Count_t l = 1; l <= nodeCount; ++l)
 	{ // Create each subsequent level
-
 		Node *newnode;
 		if (l!=nodeCount)
 		{
@@ -145,7 +151,7 @@ void CWS::AddNodes()
 	}
 	last = Node::nextId;
 }
-void CWS::AddLines(const Linkp2p& link,
+bool CWS::AddLines(const Linkp2p& link,
 				   IPAddr_t leafIP)//需要传递参数,连接的方式
 /*
 描述：节点之间连接        
@@ -170,7 +176,15 @@ void CWS::AddLines(const Linkp2p& link,
 			//cout<<cp<<endl;
 			if (cp>p*100)
 			{
-				node1=Node::nodes[first+remote];
+				//node1=Node::nodes[first+remote];
+				node1 = GetNode(remote);
+				if (node1==nil)
+				{
+					SetLastError(ERROR_WSID_OUT_OF_NODECOUNT_FAIL);
+					string tmp="Link:WS id out of nodecount";
+					SetLastErrorStr(tmp);
+					return false;
+				}
 			}
 			else
 			{
@@ -195,7 +209,15 @@ void CWS::AddLines(const Linkp2p& link,
 						flag=false;
 					}
 				}
-				node1=Node::nodes[first+nonum];
+				//node1=Node::nodes[first+nonum];
+				node1 = GetNode(nonum);
+				if (node1==nil)
+				{
+					SetLastError(ERROR_WSID_OUT_OF_NODECOUNT_FAIL);
+					string tmp="Link:WS id out of nodecount";
+					SetLastErrorStr(tmp);
+					return false;
+				}
 			}
 			if (nextIP == IPADDR_NONE)
 			{ // No IP specified
@@ -209,6 +231,7 @@ void CWS::AddLines(const Linkp2p& link,
 			}
 		}
 	}
+	return true;
 }
 void CWS::SetLocationViaBoundBox(const Location& ll, const Location& ur, BoxType  type)
 /*

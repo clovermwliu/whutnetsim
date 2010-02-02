@@ -5,8 +5,10 @@
 #include "node.h"
 #include "PlatTopoBase.h"
 //#include "link.h"
+#define ERROR_WS_LINK  0x00051001    //wsÍøÂçÁ¬½Ó´íÎó
+#define ERROR_WSID_OUT_OF_NODECOUNT_FAIL  0x00051002
 class Link;
-class CWS:public CPlatTopoBase
+class CWS : public CPlatTopoBase
 {
 public:
 	CWS(Count_t _nodeCount,
@@ -29,8 +31,8 @@ private:
 
 private:
 	void AddNodes();
-	void AddLines(const Linkp2p& link,
+	bool AddLines(const Linkp2p& link,
 			      IPAddr_t leafIP);
-	void ConstructorHelper(const Linkp2p&,IPAddr_t);
+	bool ConstructorHelper(const Linkp2p&,IPAddr_t);
 };
 #endif

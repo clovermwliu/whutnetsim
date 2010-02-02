@@ -66,6 +66,11 @@ using namespace std;
 #include "FileConfig.h"
 #include "GenericConfigItem.h"
 //using namespace WhuTNetSimConfigClass;
+#define ERROR_PLATTOPO_NO_SECTION        0x00050501   //PlatTopo读取Section空
+#define ERROR_HIBERTOPO_NO_SECTION       0x00050502   //Hiber读取Section空
+#define ERROR_HIBERTOPO_LAY_NO_SECTION   0x00050503   //HiberLay读取Section空
+#define ERROR_NO_WRITE_YET               0x00050504   //还没有写
+#define ERROR_CONNECT_PARA_ERROR         0x00050505   //连接时配置参数错误
 
 class CTopoFileScript :	public CFileConfig
 {

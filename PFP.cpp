@@ -101,14 +101,32 @@ bool CPFP::GenerateTopo()
 		{
 			NodeId_t chooseid;
 			ChooseOneIdOuter(chooseid);
+			Node* chooseNode = GetNode(chooseid);
+			if (chooseNode==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
 			addNode = new Node();
 			degrees.push_back(0);
 			changeDegrees.push_back(0);
-			addNode->AddDuplexLink(Node::nodes[first + chooseid],link);
+			addNode->AddDuplexLink(chooseNode,link);
 
 			NodeId_t innerchooseid;
 			ChooseOneIdInner(innerchooseid,chooseid);
-			Node::nodes[first + chooseid]->AddDuplexLink(Node::nodes[first + innerchooseid],link);
+			
+
+			Node* innerchooseNode = GetNode(innerchooseid);
+			if (innerchooseNode==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
+			chooseNode->AddDuplexLink(innerchooseNode,link);
 			
 			degrees[chooseid]+=2;
 			degrees[innerchooseid]++;
@@ -122,13 +140,40 @@ bool CPFP::GenerateTopo()
 			addNode = new Node();
 			degrees.push_back(0);
 			changeDegrees.push_back(0);
-			addNode->AddDuplexLink(Node::nodes[first + chooseid],link);
+			Node* chooseNode = GetNode(chooseid);
+			if (chooseNode==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
+			addNode->AddDuplexLink(chooseNode,link);
 			
 
 			NodeId_t innerchooseid1,innerchooseid2;
 			ChooseTwoIdInner(innerchooseid1,innerchooseid2,chooseid);
-			Node::nodes[first + chooseid]->AddDuplexLink(Node::nodes[first + innerchooseid1],link);
-			Node::nodes[first + chooseid]->AddDuplexLink(Node::nodes[first + innerchooseid2],link);
+
+			Node* innerchooseNode1 = GetNode(innerchooseid1);
+			if (innerchooseNode1==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
+			chooseNode->AddDuplexLink(innerchooseNode1,link);
+
+
+			Node* innerchooseNode2 = GetNode(innerchooseid2);
+			if (innerchooseNode2==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
+			chooseNode->AddDuplexLink(innerchooseNode2,link);
            
 			degrees[chooseid]+=3;
 			degrees[innerchooseid1]++;
@@ -143,12 +188,39 @@ bool CPFP::GenerateTopo()
 			addNode = new Node();
 			degrees.push_back(0);
 			changeDegrees.push_back(0);
-			addNode->AddDuplexLink(Node::nodes[first + chooseid1],link);
-			addNode->AddDuplexLink(Node::nodes[first + chooseid2],link);
+
+			Node* chooseNode1 = GetNode(chooseid1);
+			if (chooseNode1==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
+			addNode->AddDuplexLink(chooseNode1,link);
+
+			Node* chooseNode2 = GetNode(chooseid2);
+			if (chooseNode1==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
+			addNode->AddDuplexLink(chooseNode2,link);
 		
 			NodeId_t innerchooseid1;
 			ChooseOneIdInner(innerchooseid1,chooseid1);
-			Node::nodes[first + chooseid1]->AddDuplexLink(Node::nodes[first + innerchooseid1],link);
+
+			Node* innerchooseNode1 = GetNode(innerchooseid1);
+			if (innerchooseNode1==nil)
+			{
+				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
+				string tmp="PFP:Link get node error";
+				SetLastErrorStr(tmp);
+				return false;
+			}
+			chooseNode1->AddDuplexLink(innerchooseNode1,link);
 			
 			degrees[chooseid1]+=2;
 			degrees[chooseid2]++;

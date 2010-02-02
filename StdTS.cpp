@@ -1,11 +1,11 @@
 #include "StdTS.h"
-#include "TopoFile.h"
+
 
 CStdTS::CStdTS()
 :CHiberTopoBase()
 /*
 描述：层次拓扑的派生类
-参数：[IN]_file : 配置文件的路径
+参数：无
 返回值：无
 */
 {
