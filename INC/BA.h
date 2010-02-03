@@ -1,5 +1,9 @@
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
-//All rights reserved.
+//Project Homepage:http://code.google.com/p/whutnetsim/
+//corresponding author's email: guochi@mail.whu.edu.cn
+
+
+//All rights reserved
 //
 //PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
 //BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
@@ -37,13 +41,13 @@
 //File Purpose:
 //Original Author:
 //Author Organization:
-//Construct Data:
+//Construct Date:
 //Modify Author:
 //Author Organization:
-//Modify Data:
+//Modify Date:
 
 //更改人：李玉
-//更改时间：2010-1-4
+//更改时间：2010-1-8
 
 #ifndef __BA_H__ 
 #define __BA_H__
@@ -51,23 +55,37 @@
 #include "PlatTopoBase.h"
 #include "G_common_defs.h"
 #include "linkp2p.h"
+#include "node.h"
+#include <map>
+using namespace std;
+
+typedef vector<int>  RecType;
+typedef int          iVeca;
+typedef Node*          iChangeVeca;
+typedef multimap<int,Node*>::reverse_iterator  miter;
 
 class CBA : public CPlatTopoBase
 {
 public:
-     CBA( Count_t count,  
-		  int onceAddEdge_m = 5,
-		  IPAddr_t i = IPADDR_NONE,     
-		  SystemId_t id = 0,const Linkp2p& link = Linkp2p::Default());
+	CBA( Count_t count,  
+		int onceAddEdge_m = 5,
+		IPAddr_t i = IPADDR_NONE,     
+		SystemId_t id = 0,const Linkp2p& link = Linkp2p::Default());
+	typedef  enum{ r0 = 50,r1 = 20,r2 = 10} r;
 	~CBA(void);
 	bool GenerateTopo();
+	void AutoSetIP();
 
 	void SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
-								const Location& BoundBoxRightUpper,
-								BoxType  type = DEFAULT);
+		const Location& BoundBoxRightUpper,
+		BoxType  type = DEFAULT);
 private:
 	bool AddOneNode(Count_t nodeNum);
 	bool AddEdges(Count_t nodeNum);
+	void QuickSort(RecType& R, 
+		NodeVec_t& changeOther,
+		RecType::size_type s, 
+		RecType::size_type t);
 private:
 	int  onceAddEdge;
 	vector<int>  degrees;

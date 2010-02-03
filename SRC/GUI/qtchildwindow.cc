@@ -61,7 +61,7 @@ QMainWindow(),
 canvas(nil), view(nil), width(0), height(0)
 {
 #ifdef HAVE_QT
-	QTWindow* qtw = Simulator::instance->GetQTWindow();
+	QTWindow* qtw = QTWindow::qtWin;
 	if (qtw) qtw->AddChild(this);
 #endif
 }
@@ -74,7 +74,7 @@ QMainWindow(),
 canvas(nil), view(nil), width(w), height(h), caption(c)
 {
 #ifdef HAVE_QT
-	QTWindow* qtw = Simulator::instance->GetQTWindow();
+	QTWindow* qtw = QTWindow::qtWin;
 	if (qtw)
 	{
 		qtw->AddChild(this);
@@ -99,7 +99,7 @@ caption(cw.caption)
 QTChildWindow::~QTChildWindow()
 {
 #ifdef HAVE_QT
-	QTWindow* qtw = Simulator::instance->GetQTWindow();
+	QTWindow* qtw = QTWindow::qtWin;
 	if (qtw) qtw->DeleteChildWindow(this);
 	hide();
 #endif
@@ -109,7 +109,7 @@ void QTChildWindow::Initialize()
 {
 #ifdef HAVE_QT
 	if (canvas) return; // Already initilized
-	QTWindow* qtw = Simulator::instance->GetQTWindow();
+	QTWindow* qtw = QTWindow::qtWin;
 	if (!qtw) return; // Nothing to do if no animation
 	//QApplication* app = qtw->GetApp();
 	QApplication* app;

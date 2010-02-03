@@ -1,5 +1,9 @@
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
-//All rights reserved.
+//Project Homepage:http://code.google.com/p/whutnetsim/
+//corresponding author's email: guochi@mail.whu.edu.cn
+
+
+//All rights reserved
 //
 //PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
 //BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
@@ -37,33 +41,52 @@
 //File Purpose:
 //Original Author:
 //Author Organization:
-//Construct Data:
+//Construct Date:
 //Modify Author:
 //Author Organization:
-//Modify Data:
+//Modify Date:
 
 
 //更改人：李玉
-//更改时间：2010-1-4
-
+//更改时间：2010-1-28
 #include "BA.h"
-#include <qnamespace.h>
-CBA::CBA(Count_t count,                                        //生成的拓扑的节点的个数
-		 int onceAddEdge_m,                                    //每次添加的点与多少个点相连
-		 IPAddr_t i,                                           //给所有节点赋的基IP
-		 SystemId_t id,const Linkp2p& link)                    //节点号,点之间的连接方式
+
+//#include <qnamespace.h>
+CBA::CBA(Count_t count,                                        
+		 int onceAddEdge_m,                                    
+		 IPAddr_t i,                                           
+		 SystemId_t id,const Linkp2p& link)                    
 :CPlatTopoBase(count,i,link,id),onceAddEdge(onceAddEdge_m)
+/*
+描述：平面拓扑CBA构造函数      
+参数：[IN] count          ：拓扑的节点数目
+	  [IN] onceAddEdge_m  ：每次添加的点与多少个点相连
+      [IN] i              ：拓扑节点的基IP
+      [IN] id             ：分布式系统标识符 
+	  [IN] link           ：拓扑的节点间的连接方式
+返回值：空                                                                                       
+备注： 
+*/
 {
-     allNodeDegrees = 0;
+	allNodeDegrees = 0;
 }
 
 bool CBA::GenerateTopo()
+/*
+描述：生成拓扑        
+参数：无                                                 
+返回值：是否生成成功                                                                                       
+备注：初始的onceAddEdge个节点为孤立节点，degree中保存的是每个节点的度+1
+*/
 {
+	first = Node::nextId;
 	for (Count_t i = 0; i < nodeCount; i++)
 	{
 		if (i <=onceAddEdge)                                   //如果网络中的节点数小于等于需要添加的边的个数,
 		{                                                      //则新添加的节点与已有的所有的节点相连
-			Node* addNode = new Node(sid);                     //新建一个节点
+			Node* addNode = new Node(sid); 
+			addNode->SetIPAddr(ip++);
+
 			degrees.push_back(1); 
 			allNodeDegrees++;
 			//                              
@@ -80,19 +103,27 @@ bool CBA::GenerateTopo()
 			allNodeDegrees +=onceAddEdge+1;                     //allNodeDegrees总度数增加了新增边的两倍,新增了onceAddEdge条边
 		}
 	}
+	SetLastError(SUCCESS_PLATTOPO);
 	return true;
 }
 
 bool CBA::AddOneNode(Count_t nodeNum)
+/*
+描述：添加一个节点        
+参数：[IN] nodeNum ：添加的第nodeNum个节点，可以不要，后来认为。                                                
+返回：是否添加成功                                                                                    
+备注：如果网络中的节点数大于需要添加的边的个数,调用AddOneNode
+*/
 {
 	Node* addNode = new Node(sid);                              //新建一个节点           
+    addNode->SetIPAddr(ip++);
 
 	vector<Count_t> addEdge;                                    //用来记录为新增节点选择的连接节点
 	vector<Count_t>::iterator iter;
 	for (Count_t i = 0;i < onceAddEdge;)
 	{
-		int ran =  random(allNodeDegrees);                      //产生一个随机数,最大为度总数-1
-		int findthenode = 0;                                    //findthenode用来寻找满足条件的节点
+		int ran =  random(allNodeDegrees)+1;                      //产生一个随机数,[1,allNodeDegrees]
+		int findthenode = 0;                                      //findthenode用来寻找满足条件的节点
 		for (vector<Count_t>::size_type  findnum = 0;
 			findnum != degrees.size(); findnum++)
 		{
@@ -100,11 +131,11 @@ bool CBA::AddOneNode(Count_t nodeNum)
 			if (findthenode >=ran)
 			{
 				iter = find(addEdge.begin(), addEdge.end(), findnum);//是否已经和这个节点相连
-				
+
 				if (iter == addEdge.end())                        //没有和这个节点相连,则
 				{
 					addEdge.push_back(findnum);                   //在addEdge中记录,表示新增节点已经和这个节点相连
-					Node *old=Node::nodes[findnum];
+					Node *old=Node::nodes[first+findnum];
 					degrees[findnum]++;
 					allNodeDegrees++;
 					addNode->AddDuplexLink(old,Linkp2p::Default());
@@ -114,58 +145,133 @@ bool CBA::AddOneNode(Count_t nodeNum)
 			}
 		}	
 	}
-	degrees.push_back(onceAddEdge);
+	degrees.push_back(onceAddEdge+1);
+	SetLastError(SUCCESS_PLATTOPO);
 	return true;
 }
+void CBA::QuickSort(RecType& R, 
+					NodeVec_t& changeOther,
+					RecType::size_type s, 
+					RecType::size_type t)
+/*
+描述：不要        
+*/
+{
+	RecType::size_type i = s,j = t;
+	iVeca tmp;
+	iChangeVeca changeothertmp;
+	if (s < t)
+	{
+		tmp = R[s];
+		changeothertmp = changeOther[s];
 
+		while (i != j)
+		{
+			while(j > i && R[j] < tmp)
+				j--;
+			if (i < j)
+			{
+				R[i] = R[j];
+				changeOther[i] = changeOther[j];
+				i++;
+			}
+			while (i < j && R[i] > tmp)
+				i++;
+			if (i < j)
+			{
+				R[j] = R[i];
+				changeOther[j] = changeOther[i];
+				j--;
+			}
+
+			if (i != s)
+			{
+				R[i] = tmp;
+				changeOther[i] = changeothertmp;
+			}
+			if (i > s)
+			{
+				QuickSort(R,changeOther,s,i-1);
+			}
+			if (i < t)
+			{
+				QuickSort(R,changeOther,i+1,t);
+			} 
+		}
+	}
+}
 void CBA::SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
-							     const Location& BoundBoxRightUpper,
-							     BoxType  type)
+								 const Location& BoundBoxRightUpper,
+								 BoxType  type)
+/*
+描述：通过绑定位置来给节点设置坐标
+参数：[in]BoundBoxLeftDown   ——左下角的位置
+      [in]BoundBoxRightUpper ——右上角的位置
+	  [in]type               ——设置位置的类型
+返回值：无
+备注：
+*/
 {
 	const NodeVec_t& nodes = Node::GetNodes();
 
-	//随机生成位置
-	/*for (NodeVec_t::size_type nodeNum=0;nodeNum!=nodes.size();nodeNum++)
+	//按照度从小到大进行排序,从后往前访问,即由度从大到小开始访问
+	multimap<int,Node*> imulti;
+	for (NodeVec_t::size_type  copy = 0;copy !=nodeCount;copy++)
 	{
-		int x =  random(10000);
-		int y =  random(10000);
-		nodes[nodeNum]->SetLocation(x,y);
-	}*/
+		Node* newNode = nodes[first+copy];
+		imulti.insert(make_pair(degrees[copy],newNode));   //pair<度,节点指针>
+	}
+
+	////随机生成位置
+	//for (NodeVec_t::size_type nodeNum=0;nodeNum!=nodes.size();nodeNum++)
+	//{
+	//	int x =  random(10000);
+	//	int y =  random(10000);
+	//	nodes[nodeNum]->SetLocation(x,y);
+	//}
 
 	//按照度的大小生成
-	Meters_t x0 = (BoundBoxRightUpper.X()+BoundBoxLeftDown.X())/2;
+	Meters_t x0 = (BoundBoxRightUpper.X()+BoundBoxLeftDown.X())/2;   //第一个大圆的中心位置
 	Meters_t y0 = (BoundBoxRightUpper.Y()+BoundBoxLeftDown.Y())/2;
 
-    //Meters_t x0,y0;
-	for (NodeVec_t::size_type nodeNum=0;nodeNum!=nodes.size();nodeNum++)
+	Meters_t x,y;
+	miter begin,end;
+	int count_node=0;
+	for (begin = imulti.rbegin();begin != imulti.rend();begin++)
 	{
-		Node* node=nodes[nodeNum];
+		Node* node=begin->second;                                    //获得节点
+		count_node++;
 		if (node->HasLocation())
 		{
-			x0 =  random(10000);
-			y0 =  random(10000);
 		}
 		else
 		{
-			//x0 =  random(10000);
-			//y0 =  random(10000);
-			node->SetLocation(x0,y0);
-			//node->Color(Qt::red);
-		
-			NodeWeightVec_t nwv;
-			node->Neighbors(nwv);
-			Count_t  neighNum = nwv.size();
-			for (Count_t  numsize = 0;numsize<nwv.size();numsize++)
-			{
-				NodeIfWeight& nodeNeigh = nwv[numsize];
-				Count_t  NodeId=nodeNeigh.node->Id();
-				Meters_t   lx = x0 +50*degrees[NodeId]*cos((M_PI/180)*(360*(numsize+1)/neighNum));
-				Meters_t   ly = y0 +50*degrees[NodeId]*sin((M_PI/180)*(360*(numsize+1)/neighNum));
-				nodeNeigh.node->SetLocation(Location(lx,ly));
-			}
+			int ranangle = random(360);
+			x = x0 +r0*cos((M_PI/180)*ranangle);                    //没有位置则随机生成度,放在圆心为大圆圆心,半径为ro的圆上
+			y = y0 +r0*sin((M_PI/180)*ranangle);
+			node->SetLocation(x,y);
+		}
 
+		NodeWeightVec_t nwv;
+		node->Neighbors(nwv);                                    //获得邻居节点数组
+		Count_t  neighNum = nwv.size();
+		for (Count_t  numsize = 0;numsize != nwv.size();numsize++)
+		{
+			NodeIfWeight& nodeNeigh = nwv[numsize];              //获得邻居节点
+			if (nodeNeigh.node->HasLocation())                   //如果已经有位置,则继续处理下一个邻居              
+				continue;
+
+			int ranangle = random(360);                          //没有位置,则随机生成度,放在圆心为它node,
+			r  rnode;                                            //半径可以调整,此时是如果前30%个节点半径为r1,后面为r2
+			if(count_node < degrees.size()*0.3) rnode = r1;
+			else rnode = r2;
+			Meters_t   lx  = node->GetLocation().X() +rnode*cos((M_PI/180)*ranangle);
+			Meters_t   ly  = node->GetLocation().Y() +rnode*sin((M_PI/180)*ranangle);
+
+			nodeNeigh.node->SetLocation(Location(lx,ly));
 		}
 	}
+	SetLastError(SUCCESS_PLATTOPO);
 }
 bool CBA::AddEdges(Count_t nodeNum)
 {

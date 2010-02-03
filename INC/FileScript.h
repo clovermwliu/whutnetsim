@@ -70,6 +70,8 @@ public:
 		                                CElementCustom& cust_ele,
 										const string& keyoption="Option",
 										const string& keydefault="Default");
+	//如果没有远程参数，则该自定义部件的RevelantToNode为false
+	//如果有远程参数，则根据远程参数的类别设置各ExpressionParse、ExpCondition等的RevelantToNode
 
 
 

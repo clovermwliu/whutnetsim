@@ -51,7 +51,7 @@
 #include <string>
 #include <math.h>
 #include <fstream>
-
+#include "qtwindow.h"
 //#define	CTRLFIFO true
 
 #include "G_common_defs.h"
@@ -62,15 +62,14 @@
 #include "timer.h"
 #include "location.h"
 #include "rng.h"
-
 // For testing, include scheduler.h..remove later //delete
 #include "scheduler.h" //delete
-
+using namespace std;
 class Interface;
 class Node;
 class NotifyHandler;
-
 class QTWindow;
+
 // 定义一个动画背景的回调
 typedef void(*CustomBackground_t)(MyCanvas*);
 
@@ -119,6 +118,11 @@ class EventPair {
 public:
   EventPair() : time(0.0), event(nil) { }
   EventPair(Time_t t, Event* e) : time(t), event(e) { }
+  //添加eventpair类析构函数
+  ~EventPair() 
+  { 
+	  //delete event;
+  }
 public:
   Time_t time;
   Event* event;
@@ -298,11 +302,10 @@ public:
   bool    IsScheduled(Event*);// Debug用，来检查event是否已经放入事件队列
 
   // QTWindow接口
-  QTWindow* GetQTWindow() { return qtWin; }//返回QTWindow对象的指针
-  void    DisplayTopology();//打开一个动画显示窗口并可视化的显示拓扑
-  void    DisplayTopologyAndReturn(); //打开一个动画显示窗口并可视化的显示拓扑，立即返回
+  void    DisplayTopology( );//打开一个动画显示窗口并可视化的显示拓扑
+  //void    DisplayTopologyAndReturn(); //打开一个动画显示窗口并可视化的显示拓扑，立即返回
   void    UpdateTopology();//使一个已经存在的动画窗口更新所有的动画对象的状态
-  void    StartAnimation(Time_t, bool = true, bool = false);// 在一个特定时间开始动画的演示
+  void    StartAnimation(Time_t,bool = true, bool = false);// 在一个特定时间开始动画的演示
   void    StopAnimation(Time_t);//在一个特定时间停止动画演示并关闭动画窗口
   void    PauseAnimation(Time_t);//在一个特定时间暂停动画演示
   void    AnimationUpdateInterval(Time_t);//为动画演示初始化更新频率。更新频率可以在动画窗口的控制条上进行调节。
@@ -348,8 +351,9 @@ public:
     //Doc:Return TRUE if pause on wireless transmit set.
   
   //Doc:Method
-  bool    AddBackgroundMap(const std::string&,
-                           const RectRegion& = RectRegion());
+  bool    AddBackgroundMap( const std::string&,
+                            const RectRegion& = RectRegion()
+						   );
     //Doc:Desc Add background map lines from the specified map file.  The
     //Doc:Desc maps can be either in the CIA World Databank II format,
     //Doc:Desc or  a simple file of lat/lon coordinates with a single
@@ -360,7 +364,8 @@ public:
     //Doc:Return True if successfully loaded
 
   bool    AddBackgroundMap(const StringVec_t&,
-                           const RectRegion& = RectRegion());
+                           const RectRegion& = RectRegion()
+                          );
     //Doc:Desc Add background map lines from the specified map files.  The
     //Doc:Desc maps can be either in the CIA World Databank II format,
     //Doc:Desc or  a simple file of lat/lon coordinates with a single
@@ -555,7 +560,7 @@ protected:
   Time_t          startRouteTime;   // CPU time used before Route computations
   Time_t          startRunTime;     // CPU time used before the "Run" call
 
-  QTWindow*       qtWin;            // QTWindow的对象，用来显示仿真的动画过程
+  //QTWindow*       qtWin;            // QTWindow的对象，用来显示仿真的动画过程
   bool            animate;          //动画开始演示时为真
   bool            playbackAnimate;  // True if animate from trace file
   std::ifstream   playbackFile;     // Input stream for playback file
@@ -564,7 +569,7 @@ protected:
   bool            basebandTxStart;  // True if Bluetooth tx animation started
   bool            pauseWirelessTx;  // True if pause on wireless transmit 
   bool            haltEventSched;   // 如果终止事件已经加入事件队列则为true
-  
+
   // Location min/max
   Meters_t        smallestX;
   Meters_t        smallestY;

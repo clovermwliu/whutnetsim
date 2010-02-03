@@ -1,3 +1,4 @@
+
 #include "FileScript.h"
 
 CFileScript::CFileScript(const string& strFilePath)
@@ -129,6 +130,9 @@ CFileScript::InitExpressionBySectionName(const string& exp_section,
 	 }
 
 	 //给远程调用函数挂钩
+	 //*****
+	 //根据远程参数是否与结点的状态有关设置该表达式对象的RevelantToNode，初始值为false
+	 //*****
 
 	 //if (item.MyValue() == "cur_time"){
 
@@ -198,6 +202,11 @@ CFileScript::InitPredicationItemBySectionName(const string& pred_item_section,
 
 		return false;
 	}
+	//设置该谓词项是否与结点状态有关
+	if (exp_tmp.GetRevelantToNode())
+	{
+		pred.SetRevelantToNode(true);
+	}
 
 	pred.SetExp(true,exp_tmp);
 
@@ -206,6 +215,12 @@ CFileScript::InitPredicationItemBySectionName(const string& pred_item_section,
 	if (!InitExpressionBySectionName(r.MyValue(),exp_tmp)){
 
 		return false;
+	}
+
+	//设置该谓词项是否与结点状态有关
+	if (exp_tmp.GetRevelantToNode())
+	{
+		pred.SetRevelantToNode(true);
 	}
 
 	pred.SetExp(false,exp_tmp);
@@ -283,6 +298,11 @@ CFileScript::InitConditionBySectionName(const string& cond_section,
 			CPredicationItem preditem;
 
 			result=InitPredicationItemBySectionName(str_pred_identify,preditem) && result;
+			//根据谓词项 设置该条件是否与结点相关
+			if (preditem.GetRevelantToNode())
+			{
+				cond.SetRevelantToNode(true);
+			}
 
 			table.insert(pair<string, CPredicationItem>(str_pred_identify,preditem));
 
@@ -337,7 +357,9 @@ CFileScript::InitCustomElementBySectionName(const string& cust_ele_section,
 	}
 
 	int i=1;
-	map<CExpCondition,CExpressionParse> t;
+	//map<CExpCondition,CExpressionParse> t;
+	vector<CExpCondition> t_con;
+	vector<CExpressionParse> t_exp;
 	bool result=true;
 
 
@@ -419,16 +441,23 @@ CFileScript::InitCustomElementBySectionName(const string& cust_ele_section,
 		CExpressionParse e;
 
 		result=InitConditionBySectionName(tmpif,c,i) && result;
+		
 		result=InitExpressionBySectionName(tmpthen,e) && result;
 
-		t.insert(pair<CExpCondition, CExpressionParse>(c,e));
+		//设置该自定义部件是否与结点状态有关
+		if (e.GetRevelantToNode() || c.GetRevelantToNode())
+		{
+			cust_ele.SetRevelantToNode(true);
+		}
 
-
+		//t.insert(pair<CExpCondition, CExpressionParse>(c,e));
+		t_con.push_back(c);
+		t_exp.push_back(e);
 		//
 		i++;
 	}
 
-	cust_ele.initail(t,default_value.MyValue());
+	cust_ele.initail(t_con, t_exp, default_value.MyValue());
 	
 	return result;
 

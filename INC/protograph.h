@@ -74,6 +74,9 @@ public:
   typedef enum { N_LAYERS = 7 } NLayers_t;
   static ProtocolGraph* common;   // The shared protocol graph
   static void CreateCommon();     // Create the shared graph if needed
+  static void ClearCommon();
+
+
 };
 
 #endif

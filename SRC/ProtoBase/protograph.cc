@@ -104,3 +104,20 @@ void ProtocolGraph::CreateCommon()     // Create the shared graph if needed
     common = new ProtocolGraph();
 }
 
+void ProtocolGraph::ClearCommon()
+{
+	/*ProtoVec_t::iterator itervec;
+	ProtoMap_t::iterator itermap;
+
+	for ( itervec=ProtoByLayer.begin(); itervec!=ProtoByLayer.end(), itervec++ )
+	{
+		for ( itermap=(*itervec).begin(); itermap!=(*itervec).end(); itermap++ )
+		{
+		}
+	}*/
+	if ( common )
+	{
+		common->ProtoByLayer.clear();
+	}
+
+}

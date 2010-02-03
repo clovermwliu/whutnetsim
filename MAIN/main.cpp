@@ -2,8 +2,8 @@
 
 int main(int argc, char** argv)
 {
-	QApplication app(argc, argv);
-	QTWindow w = new QTWindow(false);
-	w.DisplayTopologyAndReturn();
-	return app.exec();
+	QApplication* app;
+	app = new QApplication(argc, argv);
+	QTWindow* w = new QTWindow(false,app);
+	return app->exec();
 }

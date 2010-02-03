@@ -86,6 +86,7 @@
 #include "node.h"
 #include "routing-nixvector.h"
 #include "interface.h" //v1.01
+#include "protograph.h"
 //#include "interface-interconnect-remote.h"
 
 #ifdef CTRLFIFO
@@ -108,9 +109,6 @@ extern "C" {
 }
 #endif
 
-#ifdef HAVE_QT
-#include "qtwindow.h"
-#endif
 
 using namespace std;
 
@@ -179,7 +177,8 @@ Simulator::Simulator() :
   halted(false), uid(0),
   progressInterval(0), serverEnabled(false), progressEvent(0),
   startRouteTime(0), startRunTime(0),
-  qtWin(nil), animate(false), playbackAnimate(false), animateWirelessTx(false),
+  //qtWin(nil), 
+  animate(false), playbackAnimate(false), animateWirelessTx(false),
   animateBasebandTx(false), 
   basebandTxStart(false), 
   pauseWirelessTx(false),
@@ -217,17 +216,28 @@ Simulator::~Simulator()
 {
   DEBUG0((cout << "Hello from Simulator Destructor" << endl));
   instance = nil;
+  Scheduler::ClearEventlist();
+
   const NodeVec_t& nodes = Node::GetNodes();
-  if (cleanUp)
-    {
+  //if (cleanUp)
+  //  {
       for (NodeVec_t::size_type i = 0; i < nodes.size(); ++i)
-        {
+      {
+
           DEBUG0((nodes[i]->DumpNV())); //打印节点的调试信息
           delete nodes[i];
-        }
+      }
       DEBUG0((ReuseBase::DumpQ())); //打印内存应用的调试信息
-    }
+    //}
   Node::Clear(); //清理所有的节点
+  //ProtocolGraph::ClearCommon();
+  //mac类static变量的重新初始化
+  MACAddr::next = 0;
+  MACAddr::NONE = 0;
+  //link类static变量的重新初始化
+  Link::useSeqEvents = true;  // True 代表进入系统仿真事件列表
+
+
   Trace::Instance()->Close();
 #ifdef CTRLFIFO
   unlink(name.c_str());
@@ -467,8 +477,11 @@ void Simulator::CommonRunInit()
 void Simulator::Run()
 {
   CommonRunInit();
+  	int test=0;
   while(!halted)
     {
+      test++;
+
       Event* e = Scheduler::DeQueue();
       if (!e) break; //没有事件
       if (e->handler)
@@ -508,7 +521,7 @@ SimulatorEvent* e = new SimulatorEvent(SimulatorEvent::HALT);
 
 void Simulator::Halt()
 {
-  halted = true;
+	halted = true;
 }
 
 void Simulator::Name(const string& n)
@@ -553,42 +566,23 @@ bool Simulator::IsScheduled(Event* p )
   return Scheduler::Instance()->IsScheduled(p);
 }
 
-void Simulator::DisplayTopology()
+void Simulator::DisplayTopology( )
 {
-#ifdef HAVE_QT
-  if (!qtWin) qtWin = new QTWindow(false);
-  qtWin->DisplayTopology();
-  delete qtWin; //销毁qt的应用和窗口
-  qtWin = nil;
-#endif
+	QTWindow::qtWin->DisplayTopology();
 }
 
-void Simulator::DisplayTopologyAndReturn()
+void Simulator::UpdateTopology( )
 {
-#ifdef HAVE_QT
-  if (!qtWin) qtWin = new QTWindow(false);
-  qtWin->DisplayTopologyAndReturn();
-  qtWin->ProcessEvents();
-#endif
+    QTWindow::qtWin->UpdateTopology();
+
 }
 
-void Simulator::UpdateTopology()
+void Simulator::StartAnimation(Time_t when,bool initialPause, bool fullScreen)
 {
-#ifdef HAVE_QT
-  if (qtWin)
-    {
-      qtWin->UpdateTopology();
-    }
-#endif
-}
 
-void Simulator::StartAnimation(Time_t when, bool initialPause, bool fullScreen)
-{
-#ifdef HAVE_QT
-  if (!qtWin) qtWin = new QTWindow(fullScreen);
   animate = true;
-  qtWin->DisplayTopologyAndReturn();
-  // Schedule the start animation event
+  QTWindow::qtWin->DisplayTopology();
+
   QTEvent* ev;
   if (initialPause)
     {
@@ -598,37 +592,27 @@ void Simulator::StartAnimation(Time_t when, bool initialPause, bool fullScreen)
     {
       ev = new QTEvent(QTEvent::START);
     }
-  Scheduler::Schedule(ev, when - Simulator::Now(), qtWin);
-#endif
+  Scheduler::Schedule(ev, when - Simulator::Now(), QTWindow::qtWin);
+
 }
 
 void Simulator::StopAnimation(Time_t when)
 {
-#ifdef HAVE_QT
-  if (!qtWin) qtWin = new QTWindow(false);
-  // Schedule the stop animation event
   QTEvent* ev = new QTEvent(QTEvent::STOP);
-  Scheduler::Schedule(ev, when - Simulator::Now(), qtWin);
-#endif
+  Scheduler::Schedule(ev, when - Simulator::Now(), QTWindow::qtWin);
 }
 
 void Simulator::PauseAnimation(Time_t when)
 {
-#ifdef HAVE_QT
-  if (!qtWin) qtWin = new QTWindow(false);
-  // Schedule the pause animation event
   QTEvent* ev = new QTEvent(QTEvent::PAUSE);
-  Scheduler::Schedule(ev, when - Simulator::Now(), qtWin);
-#endif
+  Scheduler::Schedule(ev, when - Simulator::Now(),QTWindow::qtWin);
 }
 
 void Simulator::AnimationUpdateInterval(Time_t t)
 //设置初始的动画更新频率
 { 
-#ifdef HAVE_QT
-  if (!qtWin) qtWin = new QTWindow(false);
-  qtWin->AnimationUpdateRate(t);
-#endif
+
+  QTWindow::qtWin->AnimationUpdateRate(t);
 }
 
 void Simulator::AnimateWirelessTx(bool a)
@@ -731,11 +715,9 @@ bool Simulator::AddBackgroundMap(const StringVec_t& maps, const RectRegion& r)
            << " locVecVec.size " << locVecVec.size() 
            << endl;
     }
-  // Now display each of the polylines
-  if (!qtWin) qtWin = new QTWindow(false);
   for (Count_t i = 0; i < locVecVec.size(); ++i)
     {
-      qtWin->AddBackgroundLines(locVecVec[i]);
+      QTWindow::qtWin->AddBackgroundLines(locVecVec[i]);
     }
   return true;
 #else
@@ -775,15 +757,15 @@ bool    Simulator::StartPlayback()
       cout << "No playback file specified, can't start playback" << endl;
       return false;
     }
-  DisplayTopologyAndReturn();
-  qtWin->PlaybackMode(true); // Notify qtwindow we are in playback mode
-  qtWin->PlaybackPause();
+  DisplayTopology( );
+  QTWindow::qtWin->PlaybackMode(true); // Notify qtwindow we are in playback mode
+  QTWindow::qtWin->PlaybackPause();
 
-  while(!qtWin->HasQuit())
+  while(!QTWindow::qtWin->HasQuit())
     {
       FillEventsFromTrace(simtime + 0.1);
-      qtWin->UpdateTopology(false);
-      simtime += qtWin->PlaybackRate() * (double)msPerFrame / 1000.0;
+	  QTWindow::qtWin->UpdateTopology(false);
+	  simtime += QTWindow::qtWin->PlaybackRate() * (double)msPerFrame / 1000.0;
       DEBUG0((cout << "Simtime updated to " << simtime << endl));
     }
   return true;

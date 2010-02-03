@@ -1,9 +1,12 @@
+
 #include "FileScript.h"
 #include "ExpCondition.h"
 
 
+
 CExpCondition::CExpCondition(void)
-:Cur_Element_Species(BEGININI),Str_Cur_PredicationItem(""),str_error_exp(""),str_conditon(""),id(0),CErrorHandler()
+:Cur_Element_Species(BEGININI),Str_Cur_PredicationItem(""),str_error_exp(""),
+str_conditon(""),id(0),CErrorHandler(), RevelantToNode(false), node(NULL)
 {
 }
 
@@ -14,6 +17,17 @@ CExpCondition::CExpCondition(string condstr,
 :str_conditon(condstr),pred_table(t),Cur_Element_Species(BEGININI),
  pCurrent_Char(str_conditon.c_str()),Str_Cur_PredicationItem(""),str_error_exp(""),id(0),CErrorHandler()
 {
+	//设置该条件是否与结点状态相关
+	map<string, CPredicationItem>::iterator it = pred_table.begin();
+	while(it != t.end())
+	{
+		if ((it->second).GetRevelantToNode())
+		{
+			RevelantToNode = true;
+			break;
+		}
+		++it;
+	}
 	ParseElementThenGotoNext();
 }
 
@@ -21,6 +35,24 @@ CExpCondition::~CExpCondition(void)
 {
 }
 
+void
+CExpCondition::AttachNode(Node *n)
+{
+	node = n;
+	//map<string,CPredicationItem> pred_table;
+	
+	map<string, CPredicationItem>::iterator it = pred_table.begin();
+	while(it != pred_table.end())
+	{
+		CPredicationItem p = it->second;
+		
+		if(p.GetRevelantToNode())
+		{
+			p.AttachNode(n);
+		}
+		++it;
+	}
+}
 
 void CExpCondition::Initial(string condstr,
 			                const map<string,CPredicationItem>& t,

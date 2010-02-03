@@ -1,3 +1,4 @@
+
 #include "FileScript.h"
 #include "ExpressionParse.h"
 
@@ -10,7 +11,8 @@ CExpressionParse::CExpressionParse()
 /*
 构造函数
 */
-:dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),CErrorHandler()
+:dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),CErrorHandler(), 
+ RevelantToNode(false), node(NULL)
 {
 
 }
@@ -18,10 +20,11 @@ CExpressionParse::CExpressionParse()
 	
 CExpressionParse::CExpressionParse(const std::string&  _expression,
 								   const map< string, double>& _parameter_table,
-								   const map< string,void*>& _remote_call_table)
+								   const map< string,void*>& _remote_call_table,
+								   bool revelantToNode)
 : parameter_table( _parameter_table ), str_expression( _expression ),pCurrent_Char(str_expression.c_str()),
   dwCur_Value(0),Str_Cur_Identifier(""),Cur_Element_Species(BEGININI),CErrorHandler(),
-  remote_call_addrs_table( _remote_call_table)
+  remote_call_addrs_table( _remote_call_table), RevelantToNode(revelantToNode), node(NULL)
 /*
 构造函数
 */
@@ -54,8 +57,11 @@ CExpressionParse::CExpressionParse(const CExpressionParse& rhs)
 		pCurrent_Char=str_expression.c_str();
 		ParseElementThenGotoNext();
 	}
+	RevelantToNode = false;
+	node = NULL;
 
 }
+
 
 
 CExpressionParse& CExpressionParse::operator=(const CExpressionParse& rhs)
@@ -76,9 +82,11 @@ CExpressionParse& CExpressionParse::operator=(const CExpressionParse& rhs)
 		pCurrent_Char=str_expression.c_str();
 		ParseElementThenGotoNext();
 	}
+	RevelantToNode = false;
+	node = NULL;
+
 	return *this;
 }
-
 
 void CExpressionParse::clear()
 /*

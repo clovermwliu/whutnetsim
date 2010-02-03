@@ -35,6 +35,18 @@ private:
 	CExpressionParse rExp;
 	string           op;
 
+	bool RevelantToNode;//该自谓词项是否和结点相关
+
+	Node *node;
+
+public:
+
+	void AttachNode(Node *n);
+
+	bool GetRevelantToNode() { return RevelantToNode; }
+
+	void SetRevelantToNode(bool revelantToNode) { RevelantToNode = revelantToNode; }
+
 };
 
 

@@ -131,6 +131,8 @@ Node::Node(NodeImpl* ni, SystemId_t sysId)
 Node::~Node()
 //删除该结点
 {
+  nextId = 0;
+  
   delete pImpl;                    
 }
 
@@ -497,6 +499,14 @@ Application* Node::AddApplication(const Application& app)
 {
   return pImpl->AddApplication(app);
 }
+
+ApplicationVec_t* Node::GetApplication()
+/*
+描述：查询本节点应用
+*/
+{
+	return pImpl->GetApplicationVec(); 
+}
 ////
 ////
 ////void Node::UseWormContainment(bool b) 
@@ -759,7 +769,7 @@ bool  Node::Unbind(Proto_t proto, PortId_t port, Protocol* p)
       p——待删除的协议
 */
 {
-  return pImpl->Unbind(proto, port, p);
+	return pImpl->Unbind(proto, port, p);
 }
 
 bool  Node::Unbind(Proto_t proto,
@@ -945,27 +955,6 @@ MyCanvasItem* Node::Display(const MyPoint& qp, QTWindow* qc)
 {
   return pImpl->Display(qp, qc);
 }
-
-////void Node::WirelessTxColor(const MyColor& c)
-////{
-////  pImpl->WirelessTxColor(c);
-////}
-////
-////const MyColor& Node::WirelessTxColor()
-////{
-////  return pImpl->WirelessTxColor();
-////}
-////
-////bool Node::PushWirelessTx(MyCanvasItem* c)
-////{
-////  return pImpl->PushWirelessTx(c);
-////}
-////
-////MyCanvasItem* Node::PopWirelessTx()
-////
-////{
-////  return pImpl->PopWirelessTx();
-////}
 
 void Node::PixelSize(Count_t nps) 
 //设置点在显示时的大小

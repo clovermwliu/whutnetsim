@@ -58,6 +58,8 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 { 
+	Scheduler::uid = 0;       //下一个事件可用的ID
+	Scheduler::instance = nil;  //当前的scheduler的实例
 }
 
   
@@ -117,3 +119,7 @@ Event* Scheduler::PeekEvent()
   return Instance()->prPeekEvent();
 }
 
+bool Scheduler::ClearEventlist()
+{
+	return Instance()->Clearlist();
+}

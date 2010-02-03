@@ -72,6 +72,7 @@
 //#include "node-blue.h"
 //#include "node-blue-impl.h"
 #include "ratetimeparse.h"
+#include "Task.h"
 
 #ifdef HAVE_QT
 
@@ -88,8 +89,14 @@
 #include <qmessagebox.h>
 #include <qlayout.h>
 #include <Qt3Support/q3hbox.h>
+#include <q3canvas.h>
+#include <Qt3Support/q3valuelist.h>
 
 using namespace std;
+
+class QStandardItem;
+
+QTWindow* QTWindow::qtWin;
 
 #ifdef NOT_USED
 // Pixmaps for vcr controls
@@ -526,84 +533,8 @@ protected:
 };
 #endif
 
-// Subclass the Q3CanvasView class to process mouse clicks
-//class QSelectableView : public Q3CanvasView 
-//{
-//public:
-//  QSelectableView(Q3Canvas*, QWidget* parent=0, const char* name=0, WFlags f=0);
-//protected:
-//  void contentsMousePressEvent(QMouseEvent*);
-//  void contentsMouseMoveEvent(QMouseEvent*);
-//};
-
-//QSelectableView::QSelectableView(
-//	Q3Canvas* c, QWidget* parent,
-//	const char* name, WFlags f) :
-//    Q3CanvasView(c,parent,name,f)
-//{
-//}
-
-//void QSelectableView::contentsMousePressEvent(QMouseEvent* e)
-//{
-//  if (!Simulator::pNodeSelected) return; // No callback, nothing to do
-//  QPoint p = inverseWorldMatrix().map(e->pos());
-//  Q3CanvasItemList l=canvas()->collisions(p);
-//  for (Q3CanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it)
-//    {
-//      Q3CanvasItem* ci = (*it);
-//      // Check each node to see of this is the one
-//      const NodeVec_t& nodes = Node::GetNodes();
-//      for (NodeVec_t::size_type i = 0; i < nodes.size(); ++i)
-//        {
-//          Node* n = nodes[i];
-//          NodeAnimation* anim = n->GetNodeAnimation();
-//          if  (anim)
-//            { // Animation info exists
-//              if (ci == anim->nodeSprite ||
-//                  ci == anim->nodePolygon)
-//                { // Found it
-//                  Simulator::pNodeSelected(n);
-//                  break; // No need to keep looking
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//
-//void QSelectableView::contentsMouseMoveEvent(QMouseEvent* e)
-//{
-//  cout << "Got mouse move event" << endl;
-//  QPoint p = inverseWorldMatrix().map(e->pos());
-//  Q3CanvasItemList l=canvas()->collisions(p);
-//  for (Q3CanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it)
-//    {
-//      Q3CanvasItem* ci = (*it);
-//      // Check each node to see of this is the one
-//      const NodeVec_t& nodes = Node::GetNodes();
-//      for (NodeVec_t::size_type i = 0; i < nodes.size(); ++i)
-//        {
-//          Node* n = nodes[i];
-//          NodeAnimation* anim = n->GetNodeAnimation();
-//          if  (anim)
-//            { // Animation info exists
-//              if (ci == anim->nodeSprite ||
-//                  ci == anim->nodePolygon)
-//                { // Found it
-//                  cout << "Mouse over node " << n->Id() << endl;
-//                  break; // No need to keep looking
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//
-
-// Constructor
-QTWindow::QTWindow(bool fullScreen)
-  //: app(nil),
-  : canvas(nil), view(nil), 
+QTWindow::QTWindow(bool fullScreen, QApplication* a)
+  : canvas(nil), view(nil), t(nil),
     updateRate(nil), slider(nil), simTime(nil), readyTimer(nil),
     mw(nil), box(nil), quitButton(nil), exitButton(nil), 
     record(nil), save(nil), stop(nil), play(nil), pause(nil),
@@ -615,11 +546,8 @@ QTWindow::QTWindow(bool fullScreen)
     ready(true), paused(false), quit(false), oneShot(false),
     playbackMode(false), recording(false), recordingFrame(0)
 {
-#ifdef HUH
-  int argc = 1;
-  char* argv[] = { "GTNetS", nil};
-  //app = new QApplication(argc, argv);
-#endif
+  app = a;
+  qtWin = this;
   // Reduce window size to 512x512 if animation recorder enabled
   if (Simulator::recorderEnabled)
     {
@@ -627,24 +555,15 @@ QTWindow::QTWindow(bool fullScreen)
       canvasY = 512;
     }
   
-  int argc = 1;
-  char* argv = "GTNetS";
-  //app = new QApplication(argc, &argv);
   QDesktopWidget* qd = QApplication::desktop();
-  //if (canvasX > (qd->width()-20))  canvasX = qd->width() - 20;
-  //if (canvasY > (qd->height()-100)) canvasY = qd->height() - 100;
   if (canvasX > (qd->width()-40))  canvasX = qd->width() - 40;
   if (canvasY > (qd->height()-150)) canvasY = qd->height() - 150;
   if (!fullScreen)
-    { // Not full screen, use square region
+    {  
       if (canvasX > canvasY) canvasX = canvasY;
       if (canvasY > canvasX) canvasY = canvasX;
     }
 
-
-  // cout << "canvX " << canvasX << " canvY " << canvasY << endl;
-  // Set the mapping from slider values to display update rate
-  // For playback mode, these are "fraction of real time"
   updateRates[0]  = 0.000000001;
   updateRates[1]  = 0.000000002;
   updateRates[2]  = 0.000000004;
@@ -678,15 +597,99 @@ QTWindow::QTWindow(bool fullScreen)
   updateRates[29] = 1.000000;
 
   currentUpdateRate = updateRates[MAX_SLIDER-1];
-  //QObject::connect(mw,SIGNAL(closewindow()),this,SLOT(Quit()));
-  //QObject::connect(this,SIGNAL(closeqtwindow()),this,SLOT(Play()));
+
+  if (canvas) return;            
+  Initialize();                
+  mw = new MainWindow( );
+  mw->resize(canvasX+8, canvasY+32 );
+  mw->setWindowState(Qt::WindowMaximized);
+  mw->setIcon(QPixmap("./resources/mainframe.png"));
+  box = new Q3VBox(mw);          // Get a vertical box to hold quit and canvas
+  box->resize(canvasX+8, canvasY+32 ); // Size of canvas plus a fudge
+
+  canvas = new Q3Canvas(canvasX, canvasY);
+  canvas->setDoubleBuffering(true);
+  view=new Q3CanvasView(canvas,box);
+  view->resize(canvasX, canvasY);
+
+  Q3HBox* hbox = new Q3HBox(box);
+
+  updateRate  = new QLCDNumber(hbox);
+  updateRate->setName("UpdateRate");    
+  updateRate->setMode(QLCDNumber::Dec); // Decimal mode
+  updateRate->setNumDigits(7);
+  updateRate->setSegmentStyle(QLCDNumber::Filled);
+  updateRate->setStyleSheet("background-color:darkgreen;");
+
+ 
+  slider = new QSlider( Qt::Horizontal,hbox);
+  connect( slider, SIGNAL(valueChanged(int)), SLOT(NewSliderValue(int)));
+  hbox->setStretchFactor(slider, 4);
+
+  // Create the simtime display
+  simTime = new QLCDNumber(hbox);
+  simTime->setName("simTime"); 
+  simTime->setMode(QLCDNumber::Dec); // Decimal mode
+  simTime->setNumDigits(7);
+  simTime->setSegmentStyle(QLCDNumber::Filled);
+  simTime->display(0.0);
+  simTime->setStyleSheet("background-color:darkgreen;");
+  slider->setRange( 0, MAX_SLIDER-1 );
+  slider->setValue( MAX_SLIDER-1 );
+
+  record = new QPushButton( );
+  // Put the record button if enabled
+  if (Simulator::recorderEnabled)
+  {
+	  record->setIcon(QPixmap(record_xpm));
+	  //hbox->addWidget(record);
+	  record->setToggleButton(true);
+	  connect(record, SIGNAL(toggled(bool)), SLOT(Record(bool)));
+  }
+  else
+  { // Put the save button
+	  save = new QPushButton(hbox);
+	  connect(save, SIGNAL(clicked()), SLOT(Save()));
+	  save->setPixmap(QPixmap( filesave_xpm ));
+  }
+
+  //stop = new QPushButton(hbox);
+   stop = new QPushButton( );
+  QObject::connect(stop, SIGNAL(clicked()), SLOT(Stop()));
+
+  play = new QPushButton(hbox);
+  QObject::connect(play, SIGNAL(clicked()), SLOT(Play()));
+
+  pause = new QPushButton(hbox);
+
+  QObject::connect(pause, SIGNAL(clicked()), SLOT(Pause()));
+
+  stop->setPixmap(QPixmap( stop_xpm ));
+  play->setPixmap(QPixmap( play_xpm ));
+  pause->setPixmap(QPixmap( pause_xpm ));
+  // Allocate the canvas and canvas view
+
+  quitButton = new QPushButton("Quit",hbox);
+  quitButton->setFixedSize(40,25);
+
+  quitButton->setFont(QFont("Times", 12, QFont::Bold));
+  connect(quitButton, SIGNAL(clicked()), SLOT(Quit()));
+  exitButton = new QPushButton("Exit");
+
+
+  //if (Simulator::pCustomBackground) Simulator::pCustomBackground(canvas);
+  //DisplayAllNodes(); // Display the topology
+  setdown(true);
+  mw->setCentralWidget(box);
+  mw->resize(canvasX+8, canvasY+32 );
+  mw->show();
+  QObject::connect(mw,SIGNAL(fileready(QString)),this,SLOT(newtask(QString)));
 }
 
 // Destructor
 QTWindow::~QTWindow()
 {
-  //QApplication::exit(); // Stop processing and close windows
-  //delete app;           // Delete the application object
+
 }
 
 // Event Handler
@@ -768,170 +771,56 @@ void QTWindow::Handle(Event* e, Time_t t)
       delete ev; // New event allocated in private subroutines
       break;
 #endif
-	  //v1.01
-//    case QTEvent::BASEBAND_TX_START :
-//    case QTEvent::BASEBAND_TX_END :
-//#ifdef VERBOSE
-//      cout << "Bluetooth TX ";
-//      if (ev->event == QTEvent::BASEBAND_TX_START) 
-//        cout << "Start ";
-//      else
-//        cout << "End ";
-//      cout << " iter " << ev->iter
-//           << " time " << Simulator::Now() << endl;
-//#endif
-//      if (ev->event == QTEvent::BASEBAND_TX_START) 
-//        BasebandTxStart(ev->bluesrc, ev->range, ++(ev->iter));
-//      else
-//        BasebandTxEnd(ev->bluesrc, ev->range, ++(ev->iter));
-//      delete ev; // New event allocated in private subroutines
-//      break;
+	  
     }
-  // Don't delete update event since reused above
+  
 }
 
 void QTWindow::DisplayTopology()
-{
-  DEBUG0((cout << "Display Topology" << endl));
-  DEBUG0((cout << " SmallestX " << Simulator::instance->SmallestX()
-       << " SmallestY " << Simulator::instance->SmallestY()
-       << " LargestX " << Simulator::instance->LargestX()
-       << " LargestY " << Simulator::instance->LargestY()
-          << endl));
-  DisplayTopologyAndReturn();
-  //app->exec(); // Run until quit button pressed
+{	
+  // if (canvas) return;            // Already initialized
+   mw->show();
+   DisplayAllNodes( );
 }
 
-void QTWindow::DisplayTopologyAndReturn()
+void QTWindow::setdown(bool down)
 {
-  DEBUG0((cout << "Display TopologyAndReturn" << endl));
-  if (canvas) return;            // Already initialized
-  Initialize();                  // Pre-compute some coordinates
-  // Create the main window
-  //mw = new QMainWindow(0, "GTNetS");
-  //mw->resize(canvasX+8, canvasY+32 ); // Size of canvas plus a fudge
-  mw = new MainWindow( );
-  mw->resize(canvasX+8, canvasY+32 );
-  mw->setWindowState(Qt::WindowMaximized);
-  mw->setIcon(QPixmap("./resources/mainframe.png"));
-  box = new Q3VBox(mw);          // Get a vertical box to hold quit and canvas
-  box->resize(canvasX+8, canvasY+32 ); // Size of canvas plus a fudge
+  updateRate->setEnabled(!down);
+  slider->setEnabled(!down);
+  simTime->setEnabled(!down);
+  save->setEnabled(!down);
+  stop->setEnabled(!down);
+  play->setEnabled(!down);
+  pause->setEnabled(!down);
+  quitButton->setEnabled(!down);
+}
 
-  canvas = new Q3Canvas(canvasX, canvasY);
-  canvas->setDoubleBuffering(true);
-  view=new Q3CanvasView(canvas,box);
-  view->resize(canvasX, canvasY);
+void QTWindow::newtask(QString s)
+{
+	if(t)
+	{
+		delete t;
+	}
+	mw->dirlist->currentitem->setIcon(QIcon(".\\Resources\\play.png"));
+	setdown(false);
+	char c[64];
+	strcpy(c, s.toLatin1().data());
 
-  Q3HBox* hbox = new Q3HBox(box);
+	const string str(c); 
 
-  quitButton = new QPushButton("Quit");
-  //quitButton->setFont(QFont("Times", 12, QFont::Bold));
-  //connect(quitButton, SIGNAL(clicked()), SLOT(Quit()));
-
-  exitButton = new QPushButton("Exit");
-  //exitButton->setFont(QFont("Times", 12, QFont::Bold));
-  //connect(exitButton, SIGNAL(clicked()),this, SLOT(Exit()));
-
-  // Put the update rate lcd and slider
-  updateRate  = new QLCDNumber(hbox);
-  updateRate->setEnabled(false);
-  updateRate->setName("UpdateRate");    
-  //hbox->addWidget(updateRate);
-  updateRate->setMode(QLCDNumber::Dec); // Decimal mode
-  updateRate->setNumDigits(7);
-  updateRate->setSegmentStyle(QLCDNumber::Filled);
-  updateRate->setStyleSheet("background-color:darkgreen;");
-  
-  //updateRate->display(updateRates[MAX_SLIDER-1]);
-  // Create the slider
-  slider = new QSlider( Qt::Horizontal,hbox);
-  slider->setEnabled(false);
-  //hbox->addWidget(slider);
-  connect( slider, SIGNAL(valueChanged(int)), SLOT(NewSliderValue(int)));
-  // And insure the slider is longer than the pushbuttons
-  hbox->setStretchFactor(slider, 4);
-  
-  // Create the simtime display
-  simTime = new QLCDNumber(hbox);
-  simTime->setName("simTime"); 
-  simTime->setEnabled(false);
-  simTime->setMode(QLCDNumber::Dec); // Decimal mode
-  simTime->setNumDigits(7);
-  simTime->setSegmentStyle(QLCDNumber::Filled);
-  simTime->display(0.0);
-  simTime->setStyleSheet("background-color:darkgreen;");
-  slider->setRange( 0, MAX_SLIDER-1 );
-  slider->setValue( MAX_SLIDER-1 );
-
-  record = new QPushButton( );
-  // Put the record button if enabled
-  if (Simulator::recorderEnabled)
-    {
-	  record->setIcon(QPixmap(record_xpm));
-	  //hbox->addWidget(record);
-      record->setToggleButton(true);
-      connect(record, SIGNAL(toggled(bool)), SLOT(Record(bool)));
-    }
-  else
-    { // Put the save button
-      save = new QPushButton(hbox);
-	  save->setEnabled(false);
-      connect(save, SIGNAL(clicked()), SLOT(Save()));
-      save->setPixmap(QPixmap( filesave_xpm ));
-    }
-  
-  
-  // Put the vcr controls
-
-    stop = new QPushButton(hbox);
-	stop->setEnabled(false);
-	//hbox->addWidget(stop);
-    connect(stop, SIGNAL(clicked()), SLOT(Stop()));
-    play = new QPushButton(hbox);
-	play->setEnabled(false);
-    //hbox->addWidget(play);
-	connect(play, SIGNAL(clicked()), SLOT(Play()));
-    pause = new QPushButton(hbox);
-	pause->setEnabled(false);
-    //hbox->addWidget(pause);
-	connect(pause, SIGNAL(clicked()), SLOT(Pause()));
-
-    stop->setPixmap(QPixmap( stop_xpm ));
-    play->setPixmap(QPixmap( play_xpm ));
-    pause->setPixmap(QPixmap( pause_xpm ));
-  // Allocate the canvas and canvas view
-  
-  if (Simulator::pCustomBackground) Simulator::pCustomBackground(canvas);
-  DisplayAllNodes(); // Display the topology
-  mw->setCentralWidget(box);
-  mw->show();
+	t = new CTask(0,str);
+	t->InitTask();
+	t->Start();
 }
 
 void QTWindow::ProcessEvents()
 {
-  //if (!app) return;
-  //while(app && app->hasPendingEvents() && !quit)
-  //  {
-  //    app->processEvents();
-  //  }
-  //if (app) app->processEvents(); // Once more to clear quit events
-  //if (quit)
-  //  {
-  //    app->quit();
-  //    delete app;
-  //    app = nil;
-  //    if (qtEvent)
-  //      { // Cancel any pending event
-  //        Scheduler::Cancel(qtEvent);
-  //        delete qtEvent;
-  //        qtEvent = nil;
-  //      }
-  //  }
+	app->processEvents( );
 }
 
 void QTWindow::AnimationUpdateRate(Time_t t)
 {
-  if (!slider) DisplayTopologyAndReturn();
+  if (!slider) DisplayTopology();
   
   // Find nearest slider value
   for (Count_t i = 0; i < MAX_SLIDER; ++i)
@@ -978,7 +867,7 @@ void QTWindow::AddBackgroundLines(const LocationVec_t& points)
   QPoint prior; // Prior point
   Location priorLoc; // debug
    
-  if (!canvas) DisplayTopologyAndReturn();
+  if (!canvas) DisplayTopology();
   DEBUG0((cout << "QTW::ABL points.size " << points.size() << endl));
   for (LocationVec_t::size_type i = 0; i < points.size(); ++i)
     {
@@ -1161,11 +1050,11 @@ void QTWindow::Pause()
 {
   DEBUG0((cout << "QTWindow::Pause, paused " << paused 
           << " now " << Simulator::Now() << endl));
-  if (paused)
-    { // Pressing pause while already paused is a "one-shot"
-      oneShot = true;
-      return;
-    }
+  //if (paused)
+  //  { // Pressing pause while already paused is a "one-shot"
+  //    oneShot = true;
+  //    return;
+  //  }
   paused = true;
   WaitWhilePaused();
 #ifdef OLD_WAY
@@ -1178,10 +1067,32 @@ void QTWindow::Pause()
 }
 
 void QTWindow::Quit()
-{
-	Exit();
-  //cout << "Quit button pushed" << endl;
+{ 
+  mw->currentfilepath = "";
+  //清除画布
+  Q3CanvasItemList items = canvas->allItems();
+  Q3CanvasItemList::iterator iter;
+  for(iter = items.begin();iter != items.end(); iter++)
+  {
+	  delete *iter;
+  }
+  canvas->update();
+  //file窗口任务图标转换
+  mw->dirlist->currentitem->setIcon(QIcon(".\\Resources\\pause.png"));
+  setdown(true);
+  Exit();
   Simulator::instance->Halt();
+
+  qtEvent = nil;
+  topologyDisplayed = false;
+  updateScheduled = false;
+  ready = true;
+  paused = false;
+  quit = false;
+  oneShot = false;
+  playbackMode = false; 
+  recording = false;
+  recordingFrame = 0;
 
 }
 
@@ -1248,7 +1159,7 @@ void QTWindow::Initialize()
   metersToPixelsY = ch / (largestY - smallestY);
 }
 
-QPoint QTWindow::NodeLocation(Node* n)
+MyPoint QTWindow::NodeLocation(Node* n)
 {
   Location l = n->UpdateLocation();
   DEBUG0((cout << "nx " << l.X() << " ny " << l.Y()
@@ -1365,6 +1276,10 @@ void QTWindow::UpdateSimTime()
 void QTWindow::WaitWhilePaused()
 {
   if (!paused) return;
+  while (app && paused && !quit && !oneShot)
+  {
+	  app->processEvents();
+  }
   oneShot = false;
 }
 
@@ -1375,7 +1290,14 @@ void QTWindow::DisplayAllNodes(bool forced)
   const NodeVec_t& nodes = Node::GetNodes();
   // Check if called before topology created..if so just return
   if (nodes.empty()) return;
-  if (!topologyDisplayed) Initialize(); // Initialize some canvas values
+  if (!topologyDisplayed)
+  {
+	  smallestX = Simulator::instance->SmallestX();
+	  smallestY = Simulator::instance->SmallestY();
+	  largestX = Simulator::instance->LargestX();
+	  largestY = Simulator::instance->LargestY();
+	  Initialize(); // Initialize some canvas values
+  }
   showCount = 0;
   //if (!topologyDisplayed || forced) displayedLinks.clear();
   for (NodeVec_t::size_type i = 0; i < nodes.size(); ++i)
@@ -1625,7 +1547,7 @@ void QTWindow::DisplayOnePacket(Node* s, Node* d,
 }
 #endif
 
-QPoint QTWindow::LocationToPixels(const Location& l)
+MyPoint QTWindow::LocationToPixels(const Location& l)
 {
   return QPoint((QTCoord_t)((l.X() - smallestX)*metersToPixelsX) 
                  - nodePixelSize / 2 + border * 2,
@@ -1633,7 +1555,7 @@ QPoint QTWindow::LocationToPixels(const Location& l)
                 + nodePixelSize / 2 + border * 2);
 }
 
-QPoint QTWindow::LocationToPixelsAbs(const Location& l)
+MyPoint QTWindow::LocationToPixelsAbs(const Location& l)
 {
   return QPoint((QTCoord_t)((l.X() - smallestX)*metersToPixelsX),
                 (QTCoord_t)((largestY - l.Y())*metersToPixelsY));
@@ -1805,9 +1727,6 @@ void QTWindow::RecordNextFrame(QTEvent* e)
   Time_t future = 1.0 / (25.0 * Simulator::recorderSpeedup);
   Scheduler::Schedule(e, future, this);
 }
-void QTWindow::closeEvent(QCloseEvent *)
-{
-	emit closeqtwindow();
-}
+
 #endif
 

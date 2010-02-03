@@ -4,7 +4,7 @@
 
 
 CPredicationItem::CPredicationItem()
-:op("=="),CErrorHandler()
+:op("=="),CErrorHandler(), RevelantToNode(false), node(NULL) 
 {
 
 }
@@ -17,11 +17,28 @@ CPredicationItem::CPredicationItem(CExpressionParse& l,
 	lExp=l;
 	rExp=r;
 	op=opstr;
+	//是否与结点状态有关
+	node = NULL;
+	if (lExp.GetRevelantToNode() || rExp.GetRevelantToNode())
+		RevelantToNode = true;
 }
 
 CPredicationItem::~CPredicationItem(void)
-
 {
+}
+
+void
+CPredicationItem::AttachNode(Node *n)
+{
+	node = n;
+	if (lExp.GetRevelantToNode())
+	{
+		lExp.AttachNode(n);
+	}
+	if (rExp.GetRevelantToNode())
+	{
+		rExp.AttachNode(n);
+	}
 }
 
 

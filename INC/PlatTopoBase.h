@@ -1,5 +1,9 @@
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
-//All rights reserved.
+//Project Homepage:http://code.google.com/p/whutnetsim/
+//corresponding author's email: guochi@mail.whu.edu.cn
+
+
+//All rights reserved
 //
 //PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
 //BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
@@ -37,10 +41,10 @@
 //File Purpose:
 //Original Author:
 //Author Organization:
-//Construct Data:
+//Construct Date:
 //Modify Author:
 //Author Organization:
-//Modify Data:
+//Modify Date:
 
 //更改人：李玉
 //更改时间：2010-1-4
@@ -56,11 +60,15 @@ using namespace std;
 #include "node.h"
 #include "G_common_defs.h"
 #include "linkp2p.h"
+#include "ErrorHandler.h"
+
+#define  SUCCESS_PLATTOPO                              ERROR_NO_ERROR
+#define  ERROR_ID_OUT_OF_NODECOUNT_FAIL                0x00050101 //要找的节点的ID超出了nodecount的范围
 
 class TopoMask;
 typedef bool (* pHook)(const Node*, Count_t argc, char **argv);//对接点分析和处理，然后将处理完的结果放在argv中
 
-class TopoAnalysisAttribute
+class TopoAnalysisAttribute 
 {
 public:
 	TopoAnalysisAttribute():btchange(true),Cluster(0){}
@@ -69,8 +77,14 @@ public:
 	double       Cluster;//聚类系数
 	map<int,int> distribution;//度分布
 };
-
- class CPlatTopoBase
+struct ConnectInfo 
+{
+	Count_t ItselfId;//本拓扑作为相连的节点的ID
+	Count_t lay;    //相连的拓扑属于哪一层
+	Count_t topoNum;//相连的那一层的拓扑Id
+	Count_t nodeNum;//相连的那一层的拓扑中的Id号
+};
+class CPlatTopoBase : public CErrorHandler
 {
 public:
 	CPlatTopoBase(Count_t,
@@ -81,10 +95,11 @@ public:
 	typedef enum  {DEFAULT, CIRCLE, GRID, CIRCLES} BoxType;
 
 public:
+	Error_str GetLastErrorEx(){return "hello";}
 	virtual bool GenerateTopo() = 0;
 	virtual void SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
 										const Location& BoundBoxRightUpper,
-										BoxType  type = DEFAULT) {};
+										BoxType  type = DEFAULT) {}
 										//在这个函数里面会对拓扑中的结点确定位置
 
 	virtual void StarSetLocationViaBoundBox(const Location&, const Location&,
@@ -139,12 +154,19 @@ public:
 	bool  End();            //是否到达末尾
 
 	int random(int Max);	//这个需要一个random类
+	double random();        //产生一个0到1之间的随机数
 
-protected:
+//protected:
 	Node* GetNode(Count_t);    // Get node at specified level, index
 
+
+public:
+	vector<ConnectInfo>  brotherConnect; //同一层的拓扑之间的连接
+	vector<ConnectInfo>  routerConnect;  //与路由的连接，即控制这一层的路由
+	vector<ConnectInfo>  controlConnect; //这一层可以控制的下一层的拓扑
 private:
 	pHook      hook;        //关于钩子的操作
+
 protected:	
 	NodeId_t   first;       // 第一个叶子结点,即第一个主机结点
 	NodeId_t   last;        // 最后一个主机结点

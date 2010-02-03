@@ -95,6 +95,7 @@ protected:
   virtual void prScheduleEarly(Event*, Time_t, Handler*) = 0;
   virtual Event* prDeQueue() = 0;	//取得事件队列中要出队的事件并返回它的指针
   virtual Event* prPeekEvent() = 0; //返回事件队列中要出队的事件并返回它的指针，但不将它从队列中移除
+  virtual bool Clearlist() = 0;
 public:
   virtual bool    IsScheduled(Event*) = 0;//调试用，检测事件是否进入事件队列
   void    PrintStats(); //打印仿真当中的一些细节信息
@@ -111,6 +112,7 @@ public:
   static void ScheduleEarly(Event*, Time_t, Handler*);
   static Event* DeQueue();//取得事件队列中要出队的事件并返回它的指针
   static Event* PeekEvent(); //返回事件队列中要出队的事件并返回它的指针，但不将它从队列中移除
+  static bool ClearEventlist();
 public:
 
   Count_t         totevs;      //被安排过的事件总数

@@ -7,20 +7,20 @@
 
 TabItem::TabItem(QWidget *parent):QWidget(parent)
 {
-	TabWidget=new QTabWidget;
-	TabWidget->addTab(new FirstTab,QString("ATab"));
-	TabWidget->addTab(new SecondTab,QString("BTab"));
-	QPushButton *ok=new QPushButton(tr("OK"));
-	QPushButton *cancel=new QPushButton(tr("Cancel"));
-	//connect(ok,SIGNAL(clicked()),this,SLOT(accept()));
-	//connect(cancel,SIGNAL(clicked()),this,SLOT(reject()));
-	QHBoxLayout *btnLayout=new QHBoxLayout;
-	btnLayout->addStretch(1);
-	btnLayout->addWidget(ok);
-	btnLayout->addWidget(cancel);
+	TabWidget = new QTabWidget;
+	fileinfo = new QTextEdit(TabWidget);
+	fileinfo->setReadOnly(true);
+
+	ErrorInfo = new QTextEdit(TabWidget);
+	ErrorInfo->setReadOnly(true); 
+
+	TabWidget->addTab(fileinfo,QString("File Information"));
+	TabWidget->addTab(ErrorInfo,QString("Error Information"));
+	//TabWidget->addTab(new FirstTab,QString("ATab"));
+	//TabWidget->addTab(new SecondTab,QString("BTab"));
+
 	QVBoxLayout *mainLayout=new QVBoxLayout;
 	mainLayout->addWidget(TabWidget);
-	mainLayout->addLayout(btnLayout);
 	setLayout(mainLayout);
 	resize(500,500);
 }

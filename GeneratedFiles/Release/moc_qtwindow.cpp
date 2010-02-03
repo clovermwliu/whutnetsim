@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'qtwindow.h'
 **
-** Created: Thu Jan 21 16:07:13 2010
+** Created: Mon Feb 1 12:39:43 2010
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.3.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -22,33 +22,29 @@ static const uint qt_meta_data_QTWindow[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-      11,   10, // methods
+      10,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
- // signals: signature, parameters, type, tag, flags
-      10,    9,    9,    9, 0x05,
-
  // slots: signature, parameters, type, tag, flags
-      26,    9,    9,    9, 0x0a,
-      46,    9,    9,    9, 0x0a,
-      53,    9,    9,    9, 0x0a,
-      66,    9,    9,    9, 0x0a,
-      73,    9,    9,    9, 0x0a,
-      80,    9,    9,    9, 0x0a,
-      88,    9,    9,    9, 0x0a,
-      95,    9,    9,    9, 0x0a,
-     102,    9,    9,    9, 0x0a,
-     114,    9,    9,    9, 0x0a,
+      10,    9,    9,    9, 0x0a,
+      30,    9,    9,    9, 0x0a,
+      37,    9,    9,    9, 0x0a,
+      50,    9,    9,    9, 0x0a,
+      57,    9,    9,    9, 0x0a,
+      64,    9,    9,    9, 0x0a,
+      72,    9,    9,    9, 0x0a,
+      79,    9,    9,    9, 0x0a,
+      86,    9,    9,    9, 0x0a,
+      98,    9,    9,    9, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QTWindow[] = {
-    "QTWindow\0\0closeqtwindow()\0NewSliderValue(int)\0"
-    "Save()\0Record(bool)\0Play()\0Stop()\0"
-    "Pause()\0Quit()\0Exit()\0TimerDone()\0"
-    "closeEvent(QCloseEvent*)\0"
+    "QTWindow\0\0NewSliderValue(int)\0Save()\0"
+    "Record(bool)\0Play()\0Stop()\0Pause()\0"
+    "Quit()\0Exit()\0TimerDone()\0newtask(QString)\0"
 };
 
 const QMetaObject QTWindow::staticMetaObject = {
@@ -78,25 +74,18 @@ int QTWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: closeqtwindow(); break;
-        case 1: NewSliderValue((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 2: Save(); break;
-        case 3: Record((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 4: Play(); break;
-        case 5: Stop(); break;
-        case 6: Pause(); break;
-        case 7: Quit(); break;
-        case 8: Exit(); break;
-        case 9: TimerDone(); break;
-        case 10: closeEvent((*reinterpret_cast< QCloseEvent*(*)>(_a[1]))); break;
+        case 0: NewSliderValue((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 1: Save(); break;
+        case 2: Record((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 3: Play(); break;
+        case 4: Stop(); break;
+        case 5: Pause(); break;
+        case 6: Quit(); break;
+        case 7: Exit(); break;
+        case 8: TimerDone(); break;
+        case 9: newtask((*reinterpret_cast< QString(*)>(_a[1]))); break;
         }
-        _id -= 11;
+        _id -= 10;
     }
     return _id;
-}
-
-// SIGNAL 0
-void QTWindow::closeqtwindow()
-{
-    QMetaObject::activate(this, &staticMetaObject, 0, 0);
 }

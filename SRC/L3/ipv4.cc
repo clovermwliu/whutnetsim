@@ -311,6 +311,7 @@ char*  IPV4Header::Construct(char* b, Size_t& sz)
 IPV4::IPV4()
 /*默认构造函数*/
 {
+	//
   if (instance == nil)
     { // First instance
       instance = this;
@@ -1183,6 +1184,7 @@ void IPV4::Broadcast(Node* n, Packet* p, IPV4ReqInfo* r)
 // Static methods
 IPV4* IPV4::Instance()
 {
+	//保证只有一个ipv4的对象
   if (!instance) instance = new IPV4();
   return instance;
 }

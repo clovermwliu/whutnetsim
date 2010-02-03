@@ -70,7 +70,12 @@ public:
   Event(Event_t ev, Handler* h) 
     : event(ev), uid(0), time(0), handler(h)
     {Stats::eventsAllocated++;}
-  virtual ~Event() { Stats::eventsDeleted++; };
+  //Ìí¼Óhandler³ÉÔ±É¾³ıÓï¾ä
+  virtual ~Event() 
+  { 
+	  Stats::eventsDeleted++; 
+	  //delete handler; 
+  };
   inline Time_t         Time() const { return time;}
   inline void           Time(Time_t t){  time = t; }
 public:

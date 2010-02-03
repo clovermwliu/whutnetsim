@@ -98,6 +98,10 @@ Interface::Interface(const Interface& i)
 
 Interface::~Interface()
 {
+	macIfVec.clear();//接口指针的mac地址列表清空 2010-1-30
+
+	//调用父类的析构函数，用来释放Link和本地event队列
+	InterfaceBasic::~InterfaceBasic();
 }
 
 
@@ -174,7 +178,7 @@ void Interface::Down(bool noReInit)
   if (!noReInit) Simulator::instance->TopologyChanged(false);
 #ifdef HAVE_QT
   // May need to redisplay as well
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   Link* link = GetLink();
   if (qtw && link)
     {
@@ -195,7 +199,7 @@ void Interface::Up()
   Simulator::instance->TopologyChanged(true);
 #ifdef HAVE_QT
   // May need to redisplay as well
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   Link* link = GetLink();
   if (qtw && link)
     {

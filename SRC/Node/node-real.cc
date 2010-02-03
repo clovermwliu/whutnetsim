@@ -109,14 +109,16 @@ NodeReal::NodeReal(Node* n)
 
 NodeReal::~NodeReal()
 {
-  if (mobility) delete mobility;
-  if (pRouting) delete pRouting;
+	if (mobility) delete mobility;
+	if (pRouting) delete pRouting;
 #ifndef COMPACT
-  if (graph) delete graph;
+	 if (graph) delete graph;
 #endif
-  if (demux) delete demux;
-  //if(wormcontainment) delete wormcontainment;
-  count--;
+	 if (demux) delete demux;
+	 if (animInfo) delete animInfo;
+	//if(wormcontainment) delete wormcontainment;
+	 count--;
+	 NodeImpl::~NodeImpl();
 }
 
 
@@ -175,7 +177,9 @@ Queue* NodeReal::GetQueue(Node* n)
 Application* NodeReal::AddApplication(const Application& a)
 //给本地结点添加指定应用
 {
+  
   Application* pa = a.Copy(); //复制一份应用a的对象
+  pappvec.push_back(pa);
   pa->AttachNode(pNode);//给本地结点添加应用     
   return pa;
 }
@@ -904,7 +908,7 @@ void NodeReal::CustomShape(CustomShape_t cs)
 bool NodeReal::CustomShapeFile(const char*  fn)
 //载入一个包含一般图形的文件，若成功返回true，否则返回false
 {
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   if (!qtw) return false; // Simulator::StartAnimation must be already called
   ifstream t(fn);
   if (!t)
@@ -925,7 +929,7 @@ bool NodeReal::CustomShapeFile(const char*  fn)
 bool NodeReal::CustomShapeImage(const Image& im)
 //载入一个一般图形，若成功返回true，否则返回false
 {
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   if (!qtw) return false; // Simulator::StartAnimation must be already called
   MyPixmap qpm;
   qpm.loadFromData((const uchar*)im.Data(), im.Size());
@@ -1000,7 +1004,7 @@ void NodeReal::Down()
   down = true;
   Simulator::instance->TopologyChanged();
 #ifdef HAVE_QT  
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   Display(qtw);
 #endif
 }
@@ -1016,7 +1020,7 @@ void NodeReal::Up()
   down = false;
   Simulator::instance->TopologyChanged();
 #ifdef HAVE_QT
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   Display(qtw);
 #endif
 }
@@ -1589,7 +1593,7 @@ bool NodeReal::CheckTrace(Protocol* p, PDU* h)
 bool NodeReal::CustomShapeHelper(MyPixmap& qpm)
 //处理一般图形
 {
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   MyValueList list;
   list.push_back(qpm);
   MyCanvasPixmapArray* qcpa = new MyCanvasPixmapArray(list);

@@ -1,5 +1,5 @@
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
-//All rights reserved.
+//All rights reserved
 //
 //PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
 //BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
@@ -37,10 +37,10 @@
 //File Purpose:
 //Original Author:
 //Author Organization:
-//Construct Data:
+//Construct Date:
 //Modify Author:
 //Author Organization:
-//Modify Data:
+//Modify Date:
 
 
 // Georgia Tech Network Simulator - Random Number class
@@ -101,7 +101,7 @@ class Random {
   //Doc:Class by \GTNS\ is the {\tt RngStream} code by Pierre L'Ecuyer at
   //Doc:Class the University of Montreal.
 public:
-  //Doc:Method
+  //Doc:Meth od
   Random();
     //Doc:Desc Constructor for a random number generator with a random seed.
 
@@ -175,7 +175,7 @@ protected:
   static unsigned long heuristic_sequence;
   static RngStream* globalRNG;
 public:
-};
+};  
 
 
 //Doc:ClassXRef

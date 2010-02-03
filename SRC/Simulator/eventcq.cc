@@ -63,6 +63,21 @@ EventCQ::EventCQ()
 {
 }
 
+EventCQ::~EventCQ()
+//添加了EVENTCQ的析构函数
+{
+	EventCQVec_t::iterator iter;
+	for ( iter=events.begin(); iter!=events.end(); iter++ )
+	{
+		if ( (*iter) != nil )
+		{
+			delete *iter;
+		}
+
+	}
+	events.clear();
+}
+
 #ifdef  MOVED_TO_H
 // Data access functions
 void EventCQ::push_back(EventPair* e)

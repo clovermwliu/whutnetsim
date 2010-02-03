@@ -123,7 +123,7 @@ DuplexLink::DuplexLink(Node* ln, IPAddr_t la, Mask_t lm,  const Linkp2p& ll,
 }
 
 DuplexLink::~DuplexLink()
-{ 
+{
 
 }
 

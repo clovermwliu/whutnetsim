@@ -2,6 +2,7 @@
 #ifndef EXPRESSIONPARSE_H_
 #define EXPRESSIONPARSE_H_
 
+
 #include <map>
 #include <vector>
 #include <sstream>
@@ -13,6 +14,7 @@
 #include "assert.h"
 
 #include "ErrorHandler.h"
+#include "node.h"
 
 using namespace std;
 
@@ -44,7 +46,8 @@ public:
 	
 	CExpressionParse( const std::string&  _expression ,
 		              const map< string, double>& _parameter_table,
-					  const map< string,void*>& _remote_call_table);
+					  const map< string,void*>& _remote_call_table,
+					  bool revelantToNode);
 
 
 
@@ -137,6 +140,18 @@ private://以下成员供解析表达式用
 	};
 	
 	ElementSpecies Cur_Element_Species; //记录当前解析到的表达式元素的种类
+
+	bool RevelantToNode;//该自表达式是否和结点相关
+
+	Node *node;
+
+public:
+	void AttachNode(Node *n) { node = n;}
+
+	bool GetRevelantToNode() { return RevelantToNode; }
+
+	void SetRevelantToNode(bool revelantToNode) { RevelantToNode = revelantToNode; }
+
 };
 
 

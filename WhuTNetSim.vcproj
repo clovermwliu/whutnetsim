@@ -128,6 +128,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="version.lib"
 				AdditionalDependencies=" qtmaind.lib QtCored4.lib QtGuid4.lib Qt3Supportd4.lib comdlg32.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
@@ -169,6 +170,41 @@
 			Filter="moc;h;cpp"
 			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
 			>
+			<File
+				RelativePath=".\GeneratedFiles\Debug\moc_listview.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_listview.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
 			<File
 				RelativePath=".\GeneratedFiles\Release\moc_MainWindow.cpp"
 				>
@@ -295,6 +331,10 @@
 			UniqueIdentifier="{99349809-55BA-4b9d-BF79-8FDBB0286EB3}"
 			>
 			<File
+				RelativePath=".\INC\AppFileScript.h"
+				>
+			</File>
+			<File
 				RelativePath=".\INC\application-tcp.h"
 				>
 			</File>
@@ -308,6 +348,18 @@
 			</File>
 			<File
 				RelativePath=".\INC\application.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\ApplicationWithTimer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\ApplicationWormUDP.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\AppModel.h"
 				>
 			</File>
 			<File
@@ -451,6 +503,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\INC\Inet3.h"
+				>
+			</File>
+			<File
 				RelativePath=".\INC\interface-basic.h"
 				>
 			</File>
@@ -509,6 +565,32 @@
 			<File
 				RelativePath=".\INC\linkp2p.h"
 				>
+			</File>
+			<File
+				RelativePath=".\INC\listview.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing listview.h..."
+						CommandLine="$(QTDIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_QT3SUPPORT_LIB -DQT3_SUPPORT -DSYSV -D_USE_MATH_DEFINES -D_CRT_SECURE_NO_DEPRECATE -DCYGWIN_NT_5_1 -DHAVE_QT -I&quot;$(SolutionDir)\INC&quot; -I&quot;.\GeneratedFiles&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;$(QTDIR)\include\Qt3Support&quot; &quot;.\INC\listview.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_listview.cpp&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\INC\listview.h"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_listview.cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing listview.h..."
+						CommandLine="$(QTDIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_QT3SUPPORT_LIB -DQT3_SUPPORT -DSYSV -D_USE_MATH_DEFINES -D_CRT_SECURE_NO_DEPRECATE -DCYGWIN_NT_5_1 -DHAVE_QT -I&quot;$(SolutionDir)\INC&quot; -I&quot;.\GeneratedFiles&quot; -I&quot;$(QTDIR)\include&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)&quot; -I&quot;$(QTDIR)\include\QtCore&quot; -I&quot;$(QTDIR)\include\QtGui&quot; -I&quot;$(QTDIR)\include\Qt3Support&quot; &quot;.\INC\listview.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_listview.cpp&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(QTDIR)\bin\moc.exe;.\INC\listview.h"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_listview.cpp&quot;"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\INC\llcsnap.h"
@@ -609,6 +691,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\INC\PFP.h"
+				>
+			</File>
+			<File
 				RelativePath=".\INC\PlatTopoBase.h"
 				>
 			</File>
@@ -664,6 +750,10 @@
 			</File>
 			<File
 				RelativePath=".\INC\queue.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\random.h"
 				>
 			</File>
 			<File
@@ -723,6 +813,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\INC\Simple.h"
+				>
+			</File>
+			<File
 				RelativePath=".\INC\simulator.h"
 				>
 			</File>
@@ -732,6 +826,10 @@
 			</File>
 			<File
 				RelativePath=".\INC\statistics.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\StdTS.h"
 				>
 			</File>
 			<File
@@ -763,6 +861,14 @@
 						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_tab.cpp&quot;"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\INC\task-stats.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\Task.h"
+				>
 			</File>
 			<File
 				RelativePath=".\INC\tcp-newreno.h"
@@ -809,7 +915,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\INC\TopoFileScript.h"
+				>
+			</File>
+			<File
 				RelativePath=".\INC\trace.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\TransitSub.h"
 				>
 			</File>
 			<File
@@ -822,6 +936,14 @@
 			</File>
 			<File
 				RelativePath=".\INC\udpdemux.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\Waxman.h"
+				>
+			</File>
+			<File
+				RelativePath=".\INC\WormScanModel.h"
 				>
 			</File>
 			<File
@@ -860,36 +982,12 @@
 					RelativePath=".\SRC\Application\application.cc"
 					>
 				</File>
-			</Filter>
-			<Filter
-				Name="ProtoBase"
-				>
 				<File
-					RelativePath=".\SRC\ProtoBase\datapdu.cc"
+					RelativePath=".\SRC\Application\ApplicationWithTimer.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\SRC\ProtoBase\droppdu.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\SRC\ProtoBase\packet-callbacks.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\SRC\ProtoBase\packet.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\SRC\ProtoBase\portdemux.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\SRC\ProtoBase\protograph.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\SRC\ProtoBase\serializable.cc"
+					RelativePath=".\SRC\Application\ApplicationWormUDP.cpp"
 					>
 				</File>
 			</Filter>
@@ -1025,7 +1123,23 @@
 					>
 				</File>
 				<File
+					RelativePath=".\SRC\Topology\Inet3.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\Topology\libj_random.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\Topology\PFP.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\SRC\Topology\PlatTopoBase.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\Topology\random.cc"
 					>
 				</File>
 				<File
@@ -1033,7 +1147,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\SRC\Topology\Simple.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\SRC\Topology\star1.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\Topology\StdTS.cpp"
 					>
 				</File>
 				<File
@@ -1041,7 +1163,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\SRC\Topology\TransitSub.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\SRC\Topology\tree1.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\Topology\Waxman.cpp"
 					>
 				</File>
 				<File
@@ -1097,11 +1227,19 @@
 				Name="DataInterface"
 				>
 				<File
+					RelativePath=".\SRC\DataInterface\AppFileScript.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\SRC\DataInterface\FileConfig.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\SRC\DataInterface\FileScript.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\DataInterface\TopoFileScript.cpp"
 					>
 				</File>
 			</Filter>
@@ -1132,10 +1270,18 @@
 					RelativePath=".\SRC\GlobaDef\object.cc"
 					>
 				</File>
+				<File
+					RelativePath=".\SRC\GlobaDef\task-stats.cc"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="GUI"
 				>
+				<File
+					RelativePath=".\SRC\GUI\listview.cpp"
+					>
+				</File>
 				<File
 					RelativePath=".\SRC\GUI\MainWindow.cpp"
 					>
@@ -1221,6 +1367,10 @@
 				Name="Model"
 				>
 				<File
+					RelativePath=".\SRC\Model\AppModel.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\SRC\Model\ElementCustom.cpp"
 					>
 				</File>
@@ -1234,6 +1384,10 @@
 				</File>
 				<File
 					RelativePath=".\SRC\Model\PredicationItem.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\Model\WormScanModel.cpp"
 					>
 				</File>
 			</Filter>
@@ -1298,6 +1452,46 @@
 				>
 				<File
 					RelativePath=".\SRC\L3\ipv4.cc"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Task"
+				>
+				<File
+					RelativePath=".\SRC\Task\Task.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="ProtoBase"
+				>
+				<File
+					RelativePath=".\SRC\ProtoBase\datapdu.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\ProtoBase\droppdu.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\ProtoBase\packet-callbacks.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\ProtoBase\packet.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\ProtoBase\portdemux.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\ProtoBase\protograph.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\SRC\ProtoBase\serializable.cc"
 					>
 				</File>
 			</Filter>

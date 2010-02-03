@@ -1,5 +1,9 @@
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
-//All rights reserved.
+//Project Homepage:http://code.google.com/p/whutnetsim/
+//corresponding author's email: guochi@mail.whu.edu.cn
+
+
+//All rights reserved
 //
 //PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
 //BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
@@ -37,10 +41,10 @@
 //File Purpose:
 //Original Author:
 //Author Organization:
-//Construct Data:
+//Construct Date:
 //Modify Author:
 //Author Organization:
-//Modify Data:
+//Modify Date:
 
 //更改人：李玉
 //更改时间：2010-1-4
@@ -85,8 +89,8 @@ public:
    
   Count_t  LeafCount() { return leafCount;}
    
-  void StarSetLocationViaBoundBox(const Location&, const Location&,
-      Angle_t, Angle_t);
+  void    StarSetLocationViaBoundBox(const Location&, const Location&,
+      Angle_t = 0, Angle_t = 2*M_PI);
 
 public:
   NodeId_t   first;      // First leaf node id

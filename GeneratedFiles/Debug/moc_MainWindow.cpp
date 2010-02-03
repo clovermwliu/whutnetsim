@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'MainWindow.h'
 **
-** Created: Thu Jan 21 15:10:00 2010
+** Created: Tue Feb 2 16:42:21 2010
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.3.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -22,28 +22,32 @@ static const uint qt_meta_data_MainWindow[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   10, // methods
+       9,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
  // signals: signature, parameters, type, tag, flags
       26,   12,   11,   11, 0x05,
       49,   11,   11,   11, 0x05,
+      61,   11,   11,   11, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-      67,   11,   11,   11, 0x0a,
-      78,   11,   11,   11, 0x0a,
-      88,   11,   11,   11, 0x0a,
-      99,   11,   11,   11, 0x0a,
+      80,   11,   11,   11, 0x0a,
+      91,   11,   11,   11, 0x0a,
+     101,   11,   11,   11, 0x0a,
+     112,   11,   11,   11, 0x0a,
+     122,   11,   11,   11, 0x0a,
+     135,   11,   11,   11, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_MainWindow[] = {
     "MainWindow\0\0configureFile\0"
-    "openConfigure(QString)\0closemainwindow()\0"
-    "openfile()\0newfile()\0editfile()\0"
-    "testent()\0"
+    "openConfigure(QString)\0globalfun()\0"
+    "fileready(QString)\0openfile()\0newfile()\0"
+    "editfile()\0testent()\0dirsetting()\0"
+    "fileprocess(QString)\0"
 };
 
 const QMetaObject MainWindow::staticMetaObject = {
@@ -72,13 +76,16 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: openConfigure((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 1: closemainwindow(); break;
-        case 2: openfile(); break;
-        case 3: newfile(); break;
-        case 4: editfile(); break;
-        case 5: testent(); break;
+        case 1: globalfun(); break;
+        case 2: fileready((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 3: openfile(); break;
+        case 4: newfile(); break;
+        case 5: editfile(); break;
+        case 6: testent(); break;
+        case 7: dirsetting(); break;
+        case 8: fileprocess((*reinterpret_cast< QString(*)>(_a[1]))); break;
         }
-        _id -= 6;
+        _id -= 9;
     }
     return _id;
 }
@@ -91,7 +98,14 @@ void MainWindow::openConfigure(const QString & _t1)
 }
 
 // SIGNAL 1
-void MainWindow::closemainwindow()
+void MainWindow::globalfun()
 {
     QMetaObject::activate(this, &staticMetaObject, 1, 0);
+}
+
+// SIGNAL 2
+void MainWindow::fileready(QString _t1)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 2, _a);
 }

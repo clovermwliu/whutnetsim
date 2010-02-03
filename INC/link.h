@@ -176,6 +176,7 @@ protected:
   static Link*    defaultLink;      //默认链路类型
   static Random*  defaultJitter;    //默认jitter随机数
   static Random*  berRng;           //位错误比例随机数
+public:
   static bool     useSeqEvents;     // True代表将linkevent放在本地事件队列，否则放在系统事件队列
 };
 

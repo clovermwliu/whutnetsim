@@ -80,6 +80,27 @@ NodeImpl::NodeImpl(Node* n)
 
 NodeImpl::~NodeImpl()
 {
+	//释放节点的每一个应用，在应用当中释放了第四层协议 2010-1-29
+
+	ApplicationVec_t::iterator iter; 
+	for ( iter=pappvec.begin(); iter!=pappvec.end(); ++iter )
+	{
+		//删除应用所指的L4协议
+		//delete (*iter)->GetL4();
+		//删除应用
+		delete *iter;
+	}
+	pappvec.clear(); //应用数组的清空
+
+	//节点接口的释放 2010-1-29
+	IFVec_t::iterator iterinterface;
+	for ( iterinterface=interfaces.begin(); iterinterface!=interfaces.end(); iterinterface++ )
+	{
+		delete *iterinterface;
+	}
+	int test = interfaces.size();
+	interfaces.clear();
+
 }
 
 // IP Address Management
@@ -672,7 +693,7 @@ void NodeImpl::Down()
   down = true;
   Simulator::instance->TopologyChanged(false);
 #ifdef HAVE_QT  
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   Display(qtw);
 #endif
 }
@@ -687,7 +708,7 @@ void NodeImpl::Up()
   down = false;
   Simulator::instance->TopologyChanged(true);
 #ifdef HAVE_QT
-  QTWindow* qtw = Simulator::instance->GetQTWindow();
+  QTWindow* qtw = QTWindow::qtWin;
   Display(qtw);
 #endif
 }

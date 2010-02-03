@@ -111,11 +111,12 @@ L4Protocol::~L4Protocol()
 #ifdef HAVE_QT
   if (color) delete color;
 #endif
-  if (localApplication)
-    {
-			if (deleteAppOnComplete)
-	      delete localApplication;
-    }
+  //由应用对象释放第四层对象，应用对象由simulator的析构函数释放 2010-1-29
+  //if (localApplication)
+  //  {
+		//	if (deleteAppOnComplete)
+	 //     delete localApplication;
+  //  }
 }
 
 // Event Handler

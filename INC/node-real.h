@@ -94,6 +94,11 @@ public:
                     color(Qt::black),
                     hasColor(false), placeImage(false), nodePolygon(nil),
                     nodeSprite(nil) {}
+  ~NodeAnimation()
+  {
+	  //delete nodePolygon;
+	  //delete nodeSprite;
+  }
 
 public:
   bool          show;         // True if animation display desired
@@ -156,6 +161,7 @@ public:
 
 //应用
   Application* AddApplication(const Application& a);//给本地结点添加指定应用
+  ApplicationVec_t* GetApplicationVec(){ return &pappvec; } //查询应用
 
 //路由
   void DefaultRoute(RoutingEntry);//指定发送数据包的默认路由项

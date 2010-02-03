@@ -102,6 +102,9 @@ typedef std::string     Error_str;
 
 #define PRECISION	1e-10
 
+// #define TRUE !0
+// #define FALSE 0;
+
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 \
 			+ __GNUC_PATCHLEVEL__)
 

@@ -65,6 +65,7 @@ public:
   typedef enum {DefaultInitialSize = 4} EvCQSize_t;
 public:
   EventCQ();
+  ~EventCQ();
 
   bool empty()
   {

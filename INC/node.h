@@ -143,6 +143,7 @@ typedef std::vector<Interface*>   IFVec_t;
 typedef std::vector<NodeIfWeight> NodeWeightVec_t; 
 typedef std::vector<NodeIf>       NodeIfVec_t;     
 typedef std::vector<Dist_t>       DistVec_t;
+typedef std::vector<Application*> ApplicationVec_t;
 
 const Dist_t   INF  = 0xffffffff;
 
@@ -257,6 +258,7 @@ public:
 
 //应用
   Application* AddApplication(const Application& a);//给本地结点添加指定应用
+  ApplicationVec_t* GetApplication();
 
 //邻接结点管理：在一些路由协议中使用
   virtual void Neighbors(NodeWeightVec_t &, bool = false); // 获取所有的邻近结点

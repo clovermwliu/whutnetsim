@@ -1,5 +1,9 @@
 //Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
-//All rights reserved.
+//Project Homepage:http://code.google.com/p/whutnetsim/
+//corresponding author's email: guochi@mail.whu.edu.cn
+
+
+//All rights reserved
 //
 //PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
 //BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
@@ -37,10 +41,10 @@
 //File Purpose:
 //Original Author:
 //Author Organization:
-//Construct Data:
+//Construct Date:
 //Modify Author:
 //Author Organization:
-//Modify Data:
+//Modify Date:
 
 
 //更改人：李玉
@@ -68,10 +72,10 @@ public:
 	CClique(Count_t,
 			IPAddr_t i= IPADDR_NONE,
 			const Linkp2p& = Linkp2p::Default(),
-			SystemId_t = 0);
+			SystemId_t s = 0);
 
-	bool GenerateTopo();
-	void SetLocationViaBoundBox(const Location&, const Location&, BoxType type = DEFAULT);
+	virtual bool GenerateTopo();
+	virtual void SetLocationViaBoundBox(const Location&, const Location&, BoxType type = DEFAULT);
 	
 	
 	Linkp2p* GetLink(Count_t, Count_t); // Get link between specified nodes

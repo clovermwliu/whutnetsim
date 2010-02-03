@@ -148,6 +148,7 @@ public:
 
 //应用
   virtual Application* AddApplication(const Application& a) = 0;//给本地结点添加指定应用
+  virtual ApplicationVec_t* GetApplicationVec() = 0;  //获取应用
 
 //邻接结点管理：在路由协议中使用
   virtual void Neighbors(NodeWeightVec_t &, bool); //获取所有的邻近结点
@@ -299,10 +300,12 @@ public:
   
 protected:
   Node*    pNode;// 指向相应结点接口对象
+  ApplicationVec_t pappvec; //该节点绑定的应用
   bool     usewormcontainment;//判断这个结点是否包含蠕虫功能
 //real和ghost之间的数据成员
   IPAddr_t ipAddr;//本地结点的IP地址
   IFVec_t  interfaces;//所有的接口
+  //LineVec_t plinkvec;  //本节点所有的边 2010-1-30
   Count_t  neighborCount;//邻接接口总数
   bool     down;//判断结点是否无效
 };

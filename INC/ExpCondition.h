@@ -1,5 +1,6 @@
 #ifndef EXPCONDITION_H_
 #define EXPCONDITION_H_
+#pragma once
 
 
 #include <map>
@@ -106,6 +107,18 @@ private:
 	string str_error_exp;//str_conditon的子串，从可能出错的地方开始，由SetErrorStr()维护
 
 	int id;//该条件的ID号
+
+	bool RevelantToNode;//该自谓词项是否和结点相关
+
+	Node *node;
+
+public:
+
+	void AttachNode(Node *n);
+
+	bool GetRevelantToNode() const { return RevelantToNode; }
+
+	void SetRevelantToNode(bool revelantToNode) { RevelantToNode = revelantToNode; }
 
 
 };

@@ -109,6 +109,8 @@ InterfaceReal::~InterfaceReal()
 //  delete arpmodule;
   delete pQueue;
   delete pL2Proto;
+  //调用父类的析构函数，用来释放Link和本地event队列
+  Interface::~Interface();
 }
 
 ////void InterfaceReal::SetWormContainment(WormContainment* cont)

@@ -58,6 +58,7 @@
 #include <list>
 
 #include "G_common_defs.h"
+#include "GUI_Defs.h"
 #include "simulator.h"
 #include "MainWindow.h"
 
@@ -72,8 +73,10 @@
 #include <Qt3Support/q3vbox.h>
 #include <QtGui/qpushbutton.h>//#include <qpushbutton.h>
 #include <QtGui/qpainter.h>//#include <qpainter.h>
+#include "location.h"
+//#include "task.h"
 #endif
-
+class CTask;
 class Node;
 class BlueNode;
 class Interface;
@@ -208,12 +211,12 @@ protected:
 class QTWindow : public QObject, public Handler {
   Q_OBJECT
 public:
-  QTWindow(bool);
+  QTWindow(bool,QApplication*);
   ~QTWindow();
 public:
   void Handle(Event*, Time_t);
   void DisplayTopology();
-  void DisplayTopologyAndReturn();
+  void setdown(bool);
   void ProcessEvents();
   void AnimationUpdateRate(Time_t);
   void UpdateTopology(bool = true); // True if forced topo redisplay
@@ -223,8 +226,8 @@ public:
   bool PlaybackMode(){return playbackMode;}
   Mult_t PlaybackRate(){return currentUpdateRate;}
   void PlaybackPause();
-  QPoint  LocationToPixels(const Location&); // Convert a location to pixels
-  QPoint  LocationToPixelsAbs(const Location&); // Convert a location to pixels
+  MyPoint  LocationToPixels(const Location&); // Convert a location to pixels
+  MyPoint  LocationToPixelsAbs(const Location&); // Convert a location to pixels
   QTCoord_t NodePixelSize() const { return nodePixelSize; }
 #ifdef MOVED_TO_WLAN
   void    WirelessTxStart(Node*, InterfaceWireless*, Node*, Meters_t);
@@ -235,7 +238,7 @@ public:
   //void    BasebandTxEnd(BlueNode*, Meters_t);
   QTCoord_t CanvasX() { return canvasX;}
   QTCoord_t CanvasY() { return canvasY;}
-  Q3Canvas*  Canvas()  { return canvas; }
+  MyCanvas* Canvas()  { return canvas; }
   //QApplication* GetApp() { return app; }
   
 public slots:
@@ -248,9 +251,10 @@ public slots:
   void Quit();
   void Exit();
   void TimerDone();
+  void newtask(QString);
 public:
   void    Initialize();        // Initialize constants
-  QPoint  NodeLocation(Node*); // Get the pixel coords, CENTER of the node
+  MyPoint NodeLocation(Node*); // Get the pixel coords, CENTER of the node
   void    DrawNode(Node*, Count_t);     // Draw the node
   void    DrawP2P(Node*, Node*);        // Draw a point to point link  
   // Redraw after failure/recovery
@@ -278,7 +282,8 @@ private:
   //void    BasebandTxEnd(BlueNode*, Meters_t, Count_t);
   void    RecordNextFrame(QTEvent*);
   // Private members
-  //QApplication* app;
+  CTask*  t;
+  QApplication* app;
   Q3Canvas*     canvas;
   Q3CanvasView* view;
   QLCDNumber*   updateRate;
@@ -321,21 +326,19 @@ private:
   Count_t       recordingFrame;
   CItemVec_t    nodeItems;
   CPItemVec_t   linkItems;
-  CPItemVec_t   packetItems;
-  NNIfLVec_t    displayedLinks;
+  CPItemVec_t   packetItems;//好像没什么用
+  NNIfLVec_t    displayedLinks;//好像也没什么用
   QueueVec_t    displayedQueues;
   double        updateRates[MAX_SLIDER];
-public slots:
-  void closeEvent(QCloseEvent *);
-signals:
-  void closeqtwindow();
 
+public:
+  static QTWindow* qtWin;
 };
 
 #else
 class QTEvent;
 //Doc:ClassXRef
-    class QTWindow : public Handler {
+class QTWindow : public Handler {
 public:
   QTWindow();
   ~QTWindow();
@@ -345,11 +348,7 @@ public:
   void DisplayTopologyAndReturn();
   void ProcessEvents();
   void AnimationUpdateRate(Time_t);
-/*
-  QApplication* GetApp() ;
-  void    AddChild(QTChildWindow*);     // Add a child
-  void    DeleteChildWindow(QTChildWindow*);  // Remove a child
-*/
+
 };
 #endif
 
