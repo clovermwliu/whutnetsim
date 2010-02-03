@@ -1,9 +1,0 @@
-[Total]
-name=First Simulator
-owner=whu
-createTime=201001261639
-modifyTime=201001264639
-description=SimulationTest
-style=Platopo
-topoScriptpath=D:\Demosimulator\task\topoScript.sci
-appScriptpath=D:\Demosimulator\task\appScript.sci
