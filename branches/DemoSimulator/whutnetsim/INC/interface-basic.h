@@ -89,6 +89,7 @@ protected:
   Link* pLink;//与本接口绑定的链路
   EventCQ* evList;//事件列表
   bool down;//接口状态，True表示接口关闭
+  bool used; //事件列表是否使用
 };
 
 #endif

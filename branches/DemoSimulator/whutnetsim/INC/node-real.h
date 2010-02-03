@@ -94,6 +94,11 @@ public:
                     color(Qt::black),
                     hasColor(false), placeImage(false), nodePolygon(nil),
                     nodeSprite(nil) {}
+  ~NodeAnimation()
+  {
+	  //delete nodePolygon;
+	  //delete nodeSprite;
+  }
 
 public:
   bool          show;         // True if animation display desired

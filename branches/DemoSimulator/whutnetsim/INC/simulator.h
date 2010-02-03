@@ -119,7 +119,10 @@ public:
   EventPair() : time(0.0), event(nil) { }
   EventPair(Time_t t, Event* e) : time(t), event(e) { }
   //添加eventpair类析构函数
-  ~EventPair() { delete event;}
+  ~EventPair() 
+  { 
+	  //delete event;
+  }
 public:
   Time_t time;
   Event* event;

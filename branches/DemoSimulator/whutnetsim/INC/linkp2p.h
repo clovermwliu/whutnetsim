@@ -100,6 +100,7 @@ public:
   MyCanvasLine* linkAnimation;  //链路显示的画布单元
   PacketVec_t animatedPackets;//存储数据包动画的数组，以便重复使用
   PacketVec_t::size_type usedAnim;//已经使用过的数据包动画数目
+  bool used;
 
 public:
 

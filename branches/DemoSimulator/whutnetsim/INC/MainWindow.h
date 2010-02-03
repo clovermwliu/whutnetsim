@@ -25,17 +25,17 @@ public:
 	void createAction( );
 	void createMenuBar( );
 	void createToolbar( );
-    void createDockWidget( );
+	void createDockWidget( );
 
-    void printfError(string s);
+	void printfError(string s);
 
 
 	void changeEvent(QEvent *event);
 	void closeEvent(QCloseEvent *event);
 
-    QString WorkSpace;
+	QString WorkSpace;
 	QString currentfilepath;   //当前文件路径
-    listview *dirlist;         //list显示
+	listview *dirlist;         //list显示
 	QTreeView *tree;           //tree显示
 	QDirModel *model;           //tree model
 	TabItem   *Info;           //其它信息显示
@@ -46,25 +46,24 @@ private:
 	QMenu *helpMenu;
 	QToolBar *fileToolBar;
 
-    QAction *newAct;
+	QAction *newAct;
 	QAction *openAct;
 	QAction *editAct;
 	QAction *quitAct;
 	QAction *dirsetAct;
 	QAction *testentry;
 public slots:
-    void openfile();
+	void openfile();
 	void newfile();
 	void editfile();
 	void testent();
 	void dirsetting();
-
 	void fileprocess(QString);
 
 signals: 
-	void openConfigure(const QString& configureFile);
-	void globalfun();
-	void fileready(QString);
+		void openConfigure(const QString& configureFile);
+		void globalfun();
+		void fileready(QString);
 };
 
 #endif // WHUTNETSIM_H

@@ -233,7 +233,11 @@ public:
     //Doc:Return Pointer to the single layer 4 object, or {\tt nil} if 
     //Doc:Return none, or {\tt nil} if more than one.
 
-  void DelL4proto() { delete l4proto; }
+  void DelL4proto() 
+  { 
+	 // if ( l4proto!= nil )
+		//delete l4proto;
+  }
 
 public:
   //Doc:Member

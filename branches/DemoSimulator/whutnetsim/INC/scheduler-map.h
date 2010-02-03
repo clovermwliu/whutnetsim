@@ -74,6 +74,7 @@ public:
   
   void    PrintStats();//打印仿真当中的一些细节信息
   bool    IsScheduled(Event*);//调试用，检测事件是否放入事件队列中
+  bool Clearlist();
 
 private:
   EventMap_t      eventList;   //事件队列
