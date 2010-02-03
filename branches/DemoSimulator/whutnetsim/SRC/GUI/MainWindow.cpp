@@ -9,7 +9,7 @@
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
-	: QMainWindow(parent, flags)
+: QMainWindow(parent, flags)
 {
 	WorkSpace = ".//";
 	createAction();
@@ -21,18 +21,18 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
 void MainWindow::createAction()
 {
 	newAct = new QAction(QIcon("./resources/new.png"), tr("&New File"),this);
-    connect(newAct, SIGNAL(triggered()), this, SLOT(newfile()));
-	
+	connect(newAct, SIGNAL(triggered()), this, SLOT(newfile()));
+
 	openAct = new QAction(QIcon("./resources/open.png"), tr("&open File"),this);
 	connect(openAct, SIGNAL(triggered()), this, SLOT(openfile()));
-	
+
 	editAct = new QAction(QIcon("./resources/edit.png"), tr("&edit File"),this);
 	connect(editAct, SIGNAL(triggered()), this, SLOT(editfile()));
-	
+
 	quitAct = new QAction(QIcon("./resources/quit.png"), tr("&quit"),this);
 	connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    dirsetAct = new QAction(QIcon("./resources/dirsetting.png"),tr("&WorkSpace"),this);
+	dirsetAct = new QAction(QIcon("./resources/workspace.png"),tr("&WorkSpace"),this);
 	connect(dirsetAct,SIGNAL(triggered()),this,SLOT(dirsetting()));
 
 	testentry = new QAction(QIcon("./resources/testentry.png"), tr("&testentry"),this);
@@ -48,7 +48,7 @@ void MainWindow::createMenuBar()
 	fileMenu->addAction(quitAct);
 
 	settingMenu = menuBar()->addMenu(tr("&Setting"));
-    settingMenu->addAction(dirsetAct);
+	settingMenu->addAction(dirsetAct);
 
 	viewMenu = menuBar()->addMenu(tr("&View"));
 	helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -69,7 +69,7 @@ void MainWindow::createDockWidget()
 	QDockWidget* dock= new QDockWidget(tr("Dir"),this);
 	dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 	model = new QDirModel;
-    tree = new QTreeView(dock);
+	tree = new QTreeView(dock);
 	tree->setModel(model);
 	tree->setRootIndex(model->index(WorkSpace));
 	dock->setWidget(tree);
@@ -81,7 +81,7 @@ void MainWindow::createDockWidget()
 	dirlist = new listview( );
 	//connect(list,SIGNAL(doubleClicked(const QModelIndex &) ),this,SLOT(open(const QModelIndex &))) ;
 	dock1->setWidget(dirlist);
-    tabifyDockWidget(dock,dock1);
+	tabifyDockWidget(dock,dock1);
 	viewMenu->addAction(dock1->toggleViewAction());
 	QObject::connect(dirlist,SIGNAL(currentfile(QString)),this,SLOT(fileprocess(QString)));
 
@@ -116,47 +116,51 @@ void MainWindow::editfile()
 
 void MainWindow::testent()
 {
-     emit globalfun();
+	emit globalfun();
 }
 
 void MainWindow::fileprocess(QString s)
 {
-    if (currentfilepath!="")
-    {
+	if (currentfilepath!="")
+	{
 		QTWindow::qtWin->Quit();
-    }
+	}
 	currentfilepath = s;
-// 从文件中读取文本
+	// 从文件中读取文本
 	QFile file( currentfilepath ); 
 	if ( file.open( IO_ReadOnly ) ) 
 	{
 		QTextStream ts( &file );
 		Info->fileinfo->setText( ts.read() );
 	}  
-//发送文件路径	
+	//发送文件路径	
 	emit fileready(currentfilepath);
-	
+
 }
 
 void MainWindow::dirsetting()
 {
-	QString directory = QFileDialog::getExistingDirectory(this,
+	WorkSpace = QFileDialog::getExistingDirectory(this,
 		tr("Find Files"), QDir::currentPath());
-    
-	tree = nil;
-	model = nil;
-	model = new QDirModel;
-	tree->setModel(model);
-	tree->setRootIndex(model->index(WorkSpace));
+	if (!WorkSpace.isEmpty()) 
+	{
+		if(currentfilepath != "")
+		{
+			QTWindow::qtWin->Quit();
+		}
+		dirlist->lastindexFlag = 0;
+		tree->setRootIndex(model->index(WorkSpace));
+		dirlist->changeModel(WorkSpace);
+	}
 }
 
 
 void MainWindow::printfError(string s)
 {
-   QString t;
-   t = t + QString(s.c_str());
-   QTextStream ts(&t);
-   Info->ErrorInfo->setText(ts.read());
+	QString t;
+	t = t + QString(s.c_str());
+	QTextStream ts(&t);
+	Info->ErrorInfo->setText(ts.read());
 
 }
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -165,21 +169,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	{
 		QTWindow::qtWin->Quit();
 	}
-	
+
 }
 
 void MainWindow::changeEvent(QEvent *event)
 {
 	if(event->WindowStateChange == Qt::WindowMinimized)
 	{
-       this->hide();
+		this->hide();
 	}
 }
 
 MainWindow::~MainWindow()
 {
-   delete tree;
-   delete Info;
+	delete tree;
+	delete Info;
 
 }
 

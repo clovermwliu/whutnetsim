@@ -75,6 +75,7 @@
 //#include "tcpdemux.h"
 #include "timerbuckets.h"
 #include "tcp-tahoe.h"
+#include "node-real.h"
 //#include "packet-callbacks.h"
 
 using namespace std;

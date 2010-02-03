@@ -778,7 +778,7 @@ void QTWindow::Handle(Event* e, Time_t t)
 
 void QTWindow::DisplayTopology()
 {	
-   if (canvas) return;            // Already initialized
+  // if (canvas) return;            // Already initialized
    mw->show();
    DisplayAllNodes( );
 }
@@ -797,11 +797,12 @@ void QTWindow::setdown(bool down)
 
 void QTWindow::newtask(QString s)
 {
-    setdown(false);
 	if(t)
 	{
 		delete t;
 	}
+	mw->dirlist->currentitem->setIcon(QIcon(".\\Resources\\play.png"));
+	setdown(false);
 	char c[64];
 	strcpy(c, s.toLatin1().data());
 
@@ -1066,7 +1067,7 @@ void QTWindow::Pause()
 }
 
 void QTWindow::Quit()
-{
+{ 
   mw->currentfilepath = "";
   //清除画布
   Q3CanvasItemList items = canvas->allItems();
@@ -1078,8 +1079,20 @@ void QTWindow::Quit()
   canvas->update();
   //file窗口任务图标转换
   mw->dirlist->currentitem->setIcon(QIcon(".\\Resources\\pause.png"));
+  setdown(true);
   Exit();
   Simulator::instance->Halt();
+
+  qtEvent = nil;
+  topologyDisplayed = false;
+  updateScheduled = false;
+  ready = true;
+  paused = false;
+  quit = false;
+  oneShot = false;
+  playbackMode = false; 
+  recording = false;
+  recordingFrame = 0;
 
 }
 

@@ -85,6 +85,9 @@ NodeImpl::~NodeImpl()
 	ApplicationVec_t::iterator iter; 
 	for ( iter=pappvec.begin(); iter!=pappvec.end(); ++iter )
 	{
+		//删除应用所指的L4协议
+		//delete (*iter)->GetL4();
+		//删除应用
 		delete *iter;
 	}
 	pappvec.clear(); //应用数组的清空

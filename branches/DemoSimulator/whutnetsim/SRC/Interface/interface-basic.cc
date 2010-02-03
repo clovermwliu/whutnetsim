@@ -60,28 +60,31 @@
 using namespace std;
 
 InterfaceBasic::InterfaceBasic()
-    : pNode(nil), pLink(nil), evList(nil), down(false)
+    : pNode(nil), pLink(nil), evList(nil), down(false),used(false)
 {
   DEBUG0((cout << "InterfaceBasic default constructor" << endl));
+
 }
 
 InterfaceBasic::InterfaceBasic(Node* n)
-    : pNode(n), pLink(nil), evList(nil), down(false)
+    : pNode(n), pLink(nil), evList(nil), down(false),used(false)
 {
   DEBUG0((cout << "InterfaceBasic constructor " << this << endl));
+
 }
 
 InterfaceBasic::~InterfaceBasic()
 {
 	//释放link和本地event队列，需要在子类中调用父类的析构函数 2010-1-29
-	if ( pLink != nil )
-	{
-		delete pLink;
-	}
-	//if ( evList != nil )
+	//if ( pLink != nil )
 	//{
-	//	delete evList;
+	//	delete pLink;
 	//}
+	if ( used == true ) 
+	{
+		delete evList;
+		used = false;
+	}
 
 }
 
@@ -103,6 +106,7 @@ void InterfaceBasic::ScheduleRx(LinkEvent* e, Time_t t, bool schedule)
   if (!evList)
     {
       evList = new EventCQ();
+	  used = true;
     }
   bool needSchedule = evList->empty();
   e->fifoEvent = true; // Note this event is in fifo queue

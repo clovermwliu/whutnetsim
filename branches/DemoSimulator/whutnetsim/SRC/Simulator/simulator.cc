@@ -216,6 +216,9 @@ Simulator::~Simulator()
 {
   DEBUG0((cout << "Hello from Simulator Destructor" << endl));
   instance = nil;
+  //eventlist的清理2010-2-2
+  Scheduler::ClearEventlist();
+
   const NodeVec_t& nodes = Node::GetNodes();
   //if (cleanUp)
   //  {
@@ -223,7 +226,6 @@ Simulator::~Simulator()
       {
 
           DEBUG0((nodes[i]->DumpNV())); //打印节点的调试信息
-
           delete nodes[i];
       }
       DEBUG0((ReuseBase::DumpQ())); //打印内存应用的调试信息

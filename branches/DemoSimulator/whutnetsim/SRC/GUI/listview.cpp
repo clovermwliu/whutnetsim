@@ -1,23 +1,24 @@
 #include "listview.h"
+#include "qtwindow.h"
 #include<io.h> 
 #include <iostream>
 using namespace std;
 
 listview::listview()
-	: QListView( )
+: QListView( )
 {
 
 	lastindexFlag = 0;	 
 	filecount = filesearch(".//", 0);
 	model = new QStandardItemModel(filecount,1);
 	model->setHeaderData(0, Qt::Horizontal, tr("FileName"));
-    QMap<QStandardItem*,QString> ::iterator iter;
+	QMap<QStandardItem*,QString> ::iterator iter;
 	int index = 0;
 	for(iter = tasklib.begin(); iter != tasklib.end(); iter++)
-	 {
-		 model->setItem(index, 0, iter.key());
-		 index++;
-	 }
+	{
+		model->setItem(index, 0, iter.key());
+		index++;
+	}
 	setModel(model);
 }
 
@@ -53,13 +54,13 @@ int listview::filesearch(char* path,int layer)
 			char* targetstr = "tad.";
 			char* resultstr;
 			strrev(objstr);
-            resultstr =strstr(objstr,targetstr);
+			resultstr =strstr(objstr,targetstr);
 			if (objstr==resultstr)
 			{
 				string filename=path;
 				filename+="\\";
 				filename+=filefind.name;
-				
+
 				QString t = QString(filename.c_str());
 
 				item = new QStandardItem(QString(filefind.name));
@@ -70,7 +71,7 @@ int listview::filesearch(char* path,int layer)
 		}   
 	}           
 	_findclose(handle);    
-   return count;
+	return count;
 }
 
 void listview::mouseDoubleClickEvent(QMouseEvent *event)
@@ -78,7 +79,7 @@ void listview::mouseDoubleClickEvent(QMouseEvent *event)
 	if (event->button() == Qt::LeftButton) 
 	{
 		QModelIndex index0 = currentIndex();
-        currentitem = model->itemFromIndex(index0);
+		currentitem = model->itemFromIndex(index0);
 		if (lastindexFlag==0)
 		{
 			lastindex = index0;
@@ -86,23 +87,36 @@ void listview::mouseDoubleClickEvent(QMouseEvent *event)
 		}
 		else
 		{
-            QStandardItem *lastitem = model->itemFromIndex(lastindex);
-			lastitem->setIcon(QIcon(".\\Resources\\pause.png"));
-			lastindex = index0;
+			if (lastindex!=index0)
+			{	
+				QStandardItem *lastitem = model->itemFromIndex(lastindex);
+			    lastitem->setIcon(QIcon(".\\Resources\\pause.png"));
+			    lastindex = index0;
+			}
 		}
-		currentitem->setIcon(QIcon(".\\Resources\\play.png"));
+		//currentitem->setIcon(QIcon(".\\Resources\\play.png"));
 		QMap<QStandardItem*,QString>::iterator iter;
 		iter = tasklib.find(currentitem);
 
-        emit currentfile(iter.value());		
-		//QString s = index0.data().toString();
-		//char *a = s.toLatin1().data();
-		//string b = a;
-        //map<string,string> ::iterator iter;
-		//iter = configlib.find(b);
-        //const char* c = iter->second.c_str();
+		emit currentfile(iter.value());		
+	
 	}
 }
+
+void listview::changeModel(QString s)
+{
+	model->clear();
+	tasklib.clear();
+	filesearch(s.toLatin1().data(), 0);
+	QMap<QStandardItem*,QString> ::iterator iter;
+	int index = 0;
+	for(iter = tasklib.begin(); iter != tasklib.end(); iter++)
+	{
+		model->setItem(index, 0, iter.key());
+		index++;
+	}
+}
+
 
 listview::~listview()
 {

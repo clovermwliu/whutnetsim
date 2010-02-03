@@ -115,6 +115,7 @@ NodeReal::~NodeReal()
 	 if (graph) delete graph;
 #endif
 	 if (demux) delete demux;
+	 if (animInfo) delete animInfo;
 	//if(wormcontainment) delete wormcontainment;
 	 count--;
 	 NodeImpl::~NodeImpl();

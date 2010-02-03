@@ -137,4 +137,14 @@ bool MapScheduler::IsScheduled(Event* p )
   return i != eventList.end();
 }
 
+bool MapScheduler::Clearlist()
+{
+	EventMap_t::iterator iter;
+	for ( iter=eventList.begin(); iter!=eventList.end(); iter++ )
+	{
+		delete (*iter).second;
+	}
+	eventList.clear();
+	return true;
+}
 

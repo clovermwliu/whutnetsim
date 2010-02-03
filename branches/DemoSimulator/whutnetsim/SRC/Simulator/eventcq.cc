@@ -69,8 +69,13 @@ EventCQ::~EventCQ()
 	EventCQVec_t::iterator iter;
 	for ( iter=events.begin(); iter!=events.end(); iter++ )
 	{
-		delete *iter;
+		if ( (*iter) != nil )
+		{
+			delete *iter;
+		}
+
 	}
+	events.clear();
 }
 
 #ifdef  MOVED_TO_H

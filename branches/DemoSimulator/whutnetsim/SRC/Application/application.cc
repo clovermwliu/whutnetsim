@@ -63,7 +63,7 @@ using namespace std;
 
 // Copy constructor
 Application::Application(const Application& a)
-  : deleteOnComplete(a.deleteOnComplete), copyOnConnect(a.copyOnConnect), node(NULL), pModel(NULL)
+  : deleteOnComplete(a.deleteOnComplete), copyOnConnect(a.copyOnConnect), node(a.node), pModel(a.pModel), l4proto(a.l4proto)
 /*
 描述：复制构造函数，所有派生类的Copy()方法使用这种构造函数创建一个新的对象拷贝
 */

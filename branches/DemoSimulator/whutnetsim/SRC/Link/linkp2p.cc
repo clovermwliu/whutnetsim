@@ -62,14 +62,14 @@ Linkp2p* Linkp2p::defaultp2p; //默认p2p链路指针
 Count_t  Linkp2p::count = 0;
 
 Linkp2p::Linkp2p()
-    : LinkReal(), pPeer(nil), linkAnimation(nil), usedAnim(0)
+    : LinkReal(), pPeer(nil), linkAnimation(nil), usedAnim(0), used(false)
 //创建一条链路
 {
   count++;
 }
 
 Linkp2p::Linkp2p(Rate_t b, Time_t d)
-    : LinkReal(b, d), pPeer(nil), linkAnimation(nil), usedAnim(0)
+    : LinkReal(b, d), pPeer(nil), linkAnimation(nil), usedAnim(0), used(false)
 //创建一条链路，设定其带宽和延时
 { 
   count++;
@@ -88,7 +88,8 @@ Linkp2p::~Linkp2p()
 {
   count--;
 #ifdef HAVE_QT
-  delete linkAnimation;
+	//if (used)
+	//delete linkAnimation;
 #endif
 }
 
@@ -245,6 +246,7 @@ void Linkp2p::AnimateLink()
     {
       // Create a new canvas item
       linkAnimation = new MyCanvasLine(qtw->Canvas());
+	  used = true;
     }
   
   linkAnimation->show();
