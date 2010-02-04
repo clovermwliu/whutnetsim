@@ -80,7 +80,7 @@ class NodeImpl;
 ////class WormContainment;
 class Image;
 
-class  gui_ctrl;
+class  QTWindow;
 class  NodeAnimation;
 //调用Qt的类库，若没有Qt配置，则不使用
 // Define a callback for custom shapes in animation
@@ -383,8 +383,8 @@ public:
 //QT窗口信息
   void Show(bool); //根据参数确定是否要显示窗口
   bool Show();//返回显示是否要被激活
-  MyCanvasItem* Display(gui_ctrl*);//确定点显示的形状、大小等，显示位置为点当前的位置
-  MyCanvasItem* Display(const MyPoint&, gui_ctrl*);//确定点显示的形状、大小等，显示位置参数中提供的位置
+  MyCanvasItem* Display(QTWindow*);//确定点显示的形状、大小等，显示位置为点当前的位置
+  MyCanvasItem* Display(const MyPoint&, QTWindow*);//确定点显示的形状、大小等，显示位置参数中提供的位置
   ////void WirelessTxColor(const MyColor&);
   ////const MyColor& WirelessTxColor();
   ////bool PushWirelessTx(MyCanvasItem*);
@@ -444,10 +444,15 @@ public:
   double   getComputePower(void);//获取本地结点CPU功耗
   void     setComputePower(double);//设置本地结点CPU功耗
 
+public:
+  bool GetDomainRoute()                 {return domainRoute;}
+  void SetDomainRoute(bool _domainroute){domainRoute=_domainroute;}
+
 //代理路由相关内容
 private:
   IPAddr_t    proxyIP;//代理路由IP
   Mask        proxyMask;//代理路由掩码
+  bool        domainRoute;//边界路由
 
 public:
   void        SetProxyRoutingConfig(IPAddr_t ip, Mask mask);//设置代理路由IP和掩码

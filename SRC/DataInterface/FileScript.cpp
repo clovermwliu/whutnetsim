@@ -1,5 +1,6 @@
 
 #include "FileScript.h"
+#include "simulator.h"
 
 CFileScript::CFileScript(const string& strFilePath)
 :CFileConfig(strFilePath)
@@ -134,14 +135,15 @@ CFileScript::InitExpressionBySectionName(const string& exp_section,
 	 //根据远程参数是否与结点的状态有关设置该表达式对象的RevelantToNode，初始值为false
 	 //*****
 
-	 //if (item.MyValue() == "cur_time"){
+	 if (item.MyValue() == "cur_time")
+	 {
+		 (form.MyValue()).SetRemoteCallAddrs(v[j],Simulator::Now);
+	 }
+	 else
+	 {
 
-		// (form.MyValue()).SetRemoteCallAddrs(v[j],CTest::GetValue1);
-
-	 //}else{
-
-		// (form.MyValue()).SetRemoteCallAddrs(v[j],CTest::GetValue2);
-	 //}
+		 //(form.MyValue()).SetRemoteCallAddrs(v[j],CTest::GetValue2);
+	 }
  }
 
  exp=form.MyValue();

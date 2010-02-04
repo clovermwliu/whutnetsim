@@ -56,9 +56,39 @@
 #include "FileScript.h"
 
 
-#define  DEFAULT_VALUE                                    1
-#define  ERROR_APPSCRIPT_SUCCESS			              ERROR_NO_ERROR
-#define  ERROR_APPSCRIPT_FILENOTEXSIT                     0x00060101
+#define DEFAULT_VALUE                                    1
+#define ERROR_APPSCRIPT_SUCCESS			              ERROR_NO_ERROR
+#define ERROR_APPSCRIPT_NODES_EMPTY                    0x00060101
+#define ERROR_APPSCRIPT_GET_NODES                     0x00060102
+#define ERROR_APPSCRIPT_GET_NODES_SIZE                 0x00060103
+#define ERROR_APPSCRIPT_GET_NODES_SECTION               0x00060104
+#define ERROR_APPSCRIPT_GET_APP_TYPE               0x00060105
+#define ERROR_APPSCRIPT_GET_APP_PARA              0x00060106
+#define ERROR_APPSCRIPT_GET_APP_SET               0x00060107
+#define ERROR_APPSCRIPT_GET_WORM_SET              0x00060108
+#define ERROR_APPSCRIPT_GET_WORM_MODEL_PATH              0x00060109
+#define ERROR_APPSCRIPT_GET_WORM_STARTID             0x0006010A
+#define ERROR_APPSCRIPT_GET_WORM_NODE_BY_ID             0x0006010B
+#define ERROR_APPSCRIPT_GET_TCPSERVER_NODE_BY_ID             0x0006010C
+#define ERROR_APPSCRIPT_GET_TCPSEND_NODE_BY_ID             0x0006010D
+#define ERROR_APPSCRIPT_GET_NODE_ID                     0x0006010E
+#define ERROR_APPSCRIPT_GET_WORM_SCANRATE              0x0006010F
+#define ERROR_APPSCRIPT_WORM_MODEL_PARA              0x00060110
+#define ERROR_APPSCRIPT_WORM_WHEN_CONSTRUCT_MODEL              0x00060111
+#define ERROR_APPSCRIPT_GET_TCPSERVER_SET              0x00060112
+#define ERROR_APPSCRIPT_GET_TCPSEND_PARA              0x00060113
+#define ERROR_APPSCRIPT_GET_TCPSEND_BINDPORT          0x00060114
+#define ERROR_APPSCRIPT_GET_TCPSERVER_BINDPORT        0x00060115
+#define ERROR_APPSCRIPT_GET_TCPSEND_TARGETID          0x00060116
+#define ERROR_APPSCRIPT_GET_TCPSEND_COUNTNUM          0x00060117
+#define ERROR_APPSCRIPT_GET_TCPSEND_SET               0x00060118
+#define ERROR_APPSCRIPT_GET_TCPSEND_ISSTART           0x00060119
+#define ERROR_APPSCRIPT_GET_TCPSEND_STARTTTIME        0x0006011A
+#define ERROR_APPSCRIPT_GET_WORM_MODEL_TYPE           0x0006011B
+#define ERROR_APPSCRIPT_GET_WORM_MODEL_DPREF_FILE     0x0006011C
+#define ERROR_APPSCRIPT_OPEN_DPREF_FILE               0x0006011D
+#define ERROR_APPSCRIPT_GET_WORM_STARTTYPE            0x0006011E
+
 
 
 class CAppFileScript:public CFileScript
@@ -75,6 +105,16 @@ public:
 	int ReadAppbyInifile();    //读应用脚本
 
 	int WriteAppbyInifile();  //写应用脚本
+
+private:
+	//TCPSend
+	int InitTCPSend(int node_id, string appSec, string paraSec, string settingSec);
+	//TCPServer
+	int InitTCPServer(int node_id, string appSec, string paraSec, string settingSec);
+	//wormudp
+	vector<double> * pVulDistribute;
+	bool bInitVul;
+	int InitWormUDP(int node_id, string appSec, string paraSec, string settingSec);
 
 
 

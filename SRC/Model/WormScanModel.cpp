@@ -44,6 +44,7 @@
 
 
 #include "WormScanModel.h"
+#include <math.h>
 
 
 WormScanModel::WormScanModel(Count_t range, string StrScriptCache) 
@@ -126,62 +127,63 @@ WormScanModel::Initialize(void *p)
 //////////////////////////////////////////////////////////////////////////
 //构造函数
 DynamicVulPrefScan::DynamicVulPrefScan(Count_t range,
-									   vector<double> &InDistribute,
+									   vector<double> *InDistribute,
 									   CFileScript &f
-									   ):VulDistribute(InDistribute),
+									   ):pVulDistribute(InDistribute),
 									   WormScanModel(range, f)
 /*
 描述：构造函数，直接指定配置缓存对象
 */
 
 {
-	GroupNum = VulDistribute.size();
+	GroupNum = pVulDistribute->size();
 	GroupSize = scanrange/GroupNum;
 	id = 0;
 
 }
 
 DynamicVulPrefScan::DynamicVulPrefScan(Count_t range,
-									   vector<double> &InDistribute,
+									   vector<double> *InDistribute,
 									   string StrScriptCache
-									   ):VulDistribute(InDistribute),
+									   ):pVulDistribute(InDistribute),
 									   WormScanModel(range, StrScriptCache)
 /*
 描述：构造函数，根据配置缓存路径创建配置缓存对象
 */
 {
-	GroupNum = VulDistribute.size();
+	GroupNum = pVulDistribute->size();
 	GroupSize = scanrange/GroupNum;
 	id = 0;
 }
 
 
 DynamicVulPrefScan::DynamicVulPrefScan(Mask m,
-									   vector<double> &InDistribute,
+									   vector<double> *InDistribute,
 									   CFileScript &f
-									   ):VulDistribute(InDistribute),
+									   ):pVulDistribute(InDistribute),
 									   WormScanModel(m, f)
 /*
 描述：构造函数，直接指定配置缓存对象
 */
 {
-	GroupNum = VulDistribute.size();
-	GroupSize = scanrange/GroupNum;
+	GroupNum = pVulDistribute->size();
+
+	GroupSize = (pow((double)2, (double)(m.NBits()))-1)/GroupNum;
 	id = 0;
 
 }
 
 DynamicVulPrefScan::DynamicVulPrefScan(Mask m,
-									   vector<double> &InDistribute,
+									   vector<double> *InDistribute,
 									   string StrScriptCache
-									   ):VulDistribute(InDistribute),
+									   ):pVulDistribute(InDistribute),
 									   WormScanModel(m, StrScriptCache)
 /*
 描述：构造函数，根据配置缓存路径创建配置缓存对象
 */
 {
-	GroupNum = VulDistribute.size();
-	GroupSize = scanrange/GroupNum;
+	GroupNum = pVulDistribute->size();
+	GroupSize = (pow((double)2, (double)(m.NBits())-1))/GroupNum;
 	id = 0;
 }
 
@@ -202,7 +204,7 @@ DynamicVulPrefScan::IsValidVulDistribute()
 	double sum = 0;
 	for (int i = 0; i < (int)GroupNum; ++i)
 	{
-		sum += VulDistribute[i];
+		sum += pVulDistribute->at(i);
 	}
 	if (sum != 1)
 		return false;
@@ -220,20 +222,20 @@ DynamicVulPrefScan::Initialize(void *p)
 {
 	WormScanModel::Initialize(p);
 
-	//检查数据合法性
-	if (!IsValidVulDistribute())
-	{
-		//错误处理
-		cout << "数据不合法!" << endl;
-		return;
-	}
+	////检查数据合法性
+	//if (!IsValidVulDistribute())
+	//{
+	//	//错误处理
+	//	cout << "数据不合法!" << endl;
+	//	return;
+	//}
 
 	//加入自定义部件,当前模型值存在一个自定义部件
 	AppModel::AddElement(id, false, CUSTOM_ELEMENT_SECTION);
 	if (AppModel::GetLastError() != ERROR_MODEL_SUCCESS)
 	{
 		//错误处理
-		cout << "该id已存在!" << endl;
+		SetLastError(ERROR_MODEEL_ADD_ELEMENT_ID_EXIST);
 		return;
 	}
 	
@@ -258,6 +260,8 @@ DynamicVulPrefScan::GetModelValue(void **p)
 	//根据偏好因子选择IP
 	IPAddr_t *ip = new IPAddr_t(GenerateIPByPrefFactor(prefFactor));
 
+	string str_ip = IPAddr::ToDotted(*ip);
+
 	*p = ip;
 
 	return true;
@@ -269,16 +273,19 @@ DynamicVulPrefScan::GenerateIPByPrefFactor(double prefFactor)
 {
 	vector<double> tmpProDistribute;
     //计算扫描各组的概率
-	int sum = 0;
+	double sum = 0;
 	for (int i = 0; i < (int)GroupNum; ++i)
 	{
-		sum += pow(VulDistribute.at(i), prefFactor);
+		double tmp = pow(pVulDistribute->at(i), prefFactor);
+		sum += tmp;
 	}
 	for (int i = 0; i < (int)GroupNum; ++i)
 	{
-		tmpProDistribute.push_back(pow(VulDistribute.at(i), prefFactor)/sum);
+		tmpProDistribute.push_back(pow(pVulDistribute->at(i), prefFactor)/sum);
 	}
 	int GroupIndex = SpecProRandom(tmpProDistribute);
+
+	//GroupIndex = 4;
 
 	//在被选择的组里随机选择某一IP，作为返回值，即下一拍扫描的主机的IP
 	Random * rngT = new Uniform(GroupIndex*GroupSize, (GroupIndex+1)*GroupSize);
@@ -286,6 +293,8 @@ DynamicVulPrefScan::GenerateIPByPrefFactor(double prefFactor)
 	IPAddr_t SelectIP = rngT->IntValue();
 
 	delete rngT;
+
+	//SelectIP = IPAddr::ToIP("4.16.8.3");
 
 
 	return SelectIP;

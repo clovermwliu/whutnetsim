@@ -63,7 +63,7 @@ using namespace std;
 
 // Copy constructor
 Application::Application(const Application& a)
-  : deleteOnComplete(a.deleteOnComplete), copyOnConnect(a.copyOnConnect), node(a.node), pModel(a.pModel), l4proto(a.l4proto)
+  : deleteOnComplete(a.deleteOnComplete), copyOnConnect(a.copyOnConnect), node(a.node), pModel(a.pModel)
 /*
 描述：复制构造函数，所有派生类的Copy()方法使用这种构造函数创建一个新的对象拷贝
 */
@@ -75,7 +75,7 @@ Application::~Application()
 描述：析构函数，空
 */
 { // Destructor
-	DelL4proto();
+	//DelL4proto();
 }
 
 void Application::Start(Time_t t)
@@ -198,7 +198,8 @@ void Application::AttachNode(Node* n)
 描述：绑定相应的第四层协议对象到结点n
 */
 { // Overridden by subclass if needed
-	if(!pModel)
+	node = n;
+	if(pModel)
 		pModel->AttachNode(n);
 }
 

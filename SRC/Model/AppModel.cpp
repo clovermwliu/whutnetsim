@@ -57,15 +57,15 @@ AppModel::AppModel(string StrScriptCache):bprivateCache(true)
 {
 	CFileScript *f = new CFileScript(StrScriptCache);
 
-	if (!f->LoadFile())
+	if (!(f->LoadFile()))
 	{
-		cout << f->GetLastError()<<":"<<f->GetLastErrorIdentify()<<":"<< f->GetLastErrorEx()<<"\n"<<endl;
+		SetLastError(f->GetLastError());
 	}
 	else
 	{
 		pScriptCache = f;
 	}
-	SetLastError(ERROR_MODEL_SUCCESS);
+	//SetLastError(ERROR_MODEL_SUCCESS);
 }
 
 
@@ -75,7 +75,7 @@ AppModel::~AppModel(void)
 	if (bprivateCache)//类内部创建的配置缓存对象，应销毁
 	{
 		//销毁pConfigCache
-		delete pScriptCache;
+		//delete pScriptCache;
 
 	}
 }
@@ -89,17 +89,17 @@ AppModel::AttachNode(Node *n)
 */
 {
 	node = n;
-	//遍历ElementIndex中需要绑定结点的自定义部件
-	//绑定到和结点相关的自定义部件上
-	map<int, ElementStruct>::iterator it = ElementIndex.begin();
-	while(it != ElementIndex.end())
-	{
-		if ((it->second).RevelantToNode)//需要绑定结点到自定义部件
-		{
-			(it->second).thisElement.AttachNode(n);
-		}
-		++it;
-	}
+	////遍历ElementIndex中需要绑定结点的自定义部件
+	////绑定到和结点相关的自定义部件上
+	//map<int, ElementStruct>::iterator it = ElementIndex.begin();
+	//while(it != ElementIndex.end())
+	//{
+	//	if ((it->second).RevelantToNode)//需要绑定结点到自定义部件
+	//	{
+	//		(it->second).thisElement.AttachNode(n);
+	//	}
+	//	++it;
+	//}
 
 }
 
@@ -117,10 +117,19 @@ AppModel::AddElement(int id, bool revelantToNode, string strSectionName)
 
 	CElementCustom ce;
 
-	if(!pScriptCache->InitCustomElementBySectionName(strSectionName, ce))
+	if(!(pScriptCache->InitCustomElementBySectionName(strSectionName, ce)))
 	{
 		SetLastError(ERROR_MODEL_WHEN_INIT_CUSTOMELEMENT);
 		return ElementIndex.size();
+	}
+	if (revelantToNode)
+	{
+		if (!node)//模型尚未绑定结点
+		{
+			SetLastError(ERROR_MODEL_NOT_ATTACH_NODE);
+			return ElementIndex.size();
+		}
+		ce.AttachNode(node);
 	}
 
 	ElementStruct eStruct;
@@ -181,6 +190,10 @@ AppModel::GetLastErrorEx()
 		return "When get by id, this element_id does not exist";
 	case ERROR_MODEL_WHEN_INIT_CUSTOMELEMENT:
 		return "Error when init custom element";
+	case ERROR_MODEL_NOT_ATTACH_NODE:
+		return "Error model has not attached node ";
+	case ERROR_MODEEL_ADD_ELEMENT_ID_EXIST:
+		return "Error when add an element, this id has already exist";
 
 	default:
 		return "UNKNOWN";

@@ -96,23 +96,23 @@ public:
 	////构造函数
 	//动态
 	DynamicVulPrefScan(Count_t range,
-		               vector<double> &InDistribute,
+		               vector<double> *InDistribute,
 					   CFileScript &f
 					   );
 
 	DynamicVulPrefScan(Count_t range,
-		               vector<double> &InDistribute,
+		               vector<double> *InDistribute,
 					   string StrScriptCache
 					   );
 
 
 	DynamicVulPrefScan(Mask m,
-		               vector<double> &InDistribute,
+		               vector<double> *InDistribute,
 					   CFileScript &f
 					   );
 
 	DynamicVulPrefScan(Mask m,
-		               vector<double> &InDistribute,
+		               vector<double> *InDistribute,
 					   string StrScriptCache
 					   );
 
@@ -125,7 +125,7 @@ public:
 
 private:
 
-	vector<double> & VulDistribute;//脆弱主机分布
+	vector<double> * pVulDistribute;//脆弱主机分布
 //
 	Size_t GroupNum;//网络被分成的组数
 

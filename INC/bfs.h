@@ -53,6 +53,8 @@
 #define __BFS_H__
 
 #include <iostream>
+#include <map>
+#include <vector>
      
 #include "node.h"
 #include "link.h"
@@ -72,6 +74,10 @@ NodeId_t BFS(const NodeVec_t& N,       // List of nodes in the graph
          NodeVec_t&           Parent,  // Returned "Parent" vector
          IPAddr_t             targetIP,// IP Address of target
          IPAddrVec_t&         aliases);// List of IP's with same path
+
+NodeId_t BFSForDefaultRoute(map<NodeId_t, int>& N,       // List of nodes in the graph
+							NodeId_t rootID,    // Root node for route computations
+							NodeId_t targetID);// List of IP's with same path
 #endif
 
 //extern int bfs_calls;

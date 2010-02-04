@@ -62,13 +62,14 @@ ApplicationWormUDP::ApplicationWormUDP()
 	infected = false;//	标志当前结点是否已被感染
 	vulnerable = true;//	标志当前结点是否可以被蠕虫感染（是否存在漏洞）
 
-	IPscanrange = 65535;//	扫描范围
+	//IPscanrange = 65535;//	扫描范围
 
 	baseIP = IPAddr("192.168.0.0");//目的IP地址的基IP
 
 	initialized = false;
 
-	udp = NULL;
+	//udp = NULL;
+	l4proto = NULL;
 
 	node = NULL;
 
@@ -119,7 +120,7 @@ ApplicationWormUDP::Timeout(TimerEvent *ev)
 {
 	if (!node)
 	{
-		cout << "WormApplication::Timeout with no attached node "<<endl;
+		//cout << "WormApplication::Timeout with no attached node "<<endl;
 		return;
 	}
 
@@ -185,20 +186,21 @@ ApplicationWormUDP::AttachNode(Node* n)
 {
 	Application::AttachNode(n);
 
-	udp = new UDP(n);
+	l4proto = new UDP(n);
+	//udp = new UDP(n);
 
-	l4proto = udp;
+	//l4proto = udp;
 	//l4proto = new UDP(n);
 
 	//l4proto->Attach(n);
-	udp->Attach(n);
-	udp->Bind(infectionport);
-	udp->AttachApplication(this);
-	DEBUG0((cout << "udp " << udp << " , attach App " << this << endl));
-	if(udp) 
+	l4proto->Attach(n);
+	l4proto->Bind(infectionport);
+	l4proto->AttachApplication(this);
+	DEBUG0((cout << "udp " << l4proto << " , attach App " << this << endl));
+	if(l4proto) 
 	{ 
-		udp->Attach(node);
-		udp->Bind(infectionport);
+		l4proto->Attach(node);
+		l4proto->Bind(infectionport);
 	}
 
 }
@@ -215,8 +217,13 @@ ApplicationWormUDP::SendWormPacket()
 	//需要调用模型生成NextIP
 	IPAddr_t target = GenerateNextIPAddress(); 
 
+	//test_start
+	//IPAddr_t ip = Node::nodes[150]->GetProxyIP();
+
+	//test_end
+
 	//DEBUG0((cout<<"sending worm packet to "<<IPAddr::ToDotted(target)<<endl));
-	udp->SendTo(infectionlength, target, infectionport);
+	l4proto->SendTo(infectionlength, target, infectionport);
 }
 
 
@@ -258,10 +265,10 @@ ApplicationWormUDP::StartInfection()
 	DEBUG0(( cout<<"Infected machine:"<< IPAddr::ToDotted(node->GetIPAddr())<<endl ));
 	infected = true;
 	DEBUG0(( cout<<" Now starting timer event"<<endl));
-#ifdef HAVE_QT
+//#ifdef HAVE_QT
 	// Set the node to red on animation
-	node->Color(Qt::red);
-#endif
+	node->Color(QColor(Qt::red));
+//#endif
 	ScheduleNextPacket();
 }
 
@@ -275,6 +282,10 @@ ApplicationWormUDP::GenerateNextIPAddress()
 	if (!initialized)//如果还没有初始化扫描策略模型
 	{
 		//调用扫描策略模型的初始化函数进行初始化
+		IPAddr_t *p = new IPAddr_t();
+		*p = baseIP;
+		pModel->Initialize(p);
+		initialized = true;
 
 	}
 	IPAddr_t *IP = new IPAddr_t;

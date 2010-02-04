@@ -60,7 +60,7 @@ private:
 
 	TimerEvent*   timeoutevent;//所使用的TimerEvent事件
 
-	UDP*		udp;//使用的UDP协议对象指针
+	//UDP*		udp;//使用的UDP协议对象指针
 
 	//和蠕虫传播相关的变量
 	//这些变量都应给出默认值
@@ -73,7 +73,7 @@ private:
 	bool	infected;//	标志当前结点是否已被感染
 	bool	vulnerable;//	标志当前结点是否可以被蠕虫感染（是否存在漏洞）
 	
-	Count_t	IPscanrange;//	扫描范围
+	//Count_t	IPscanrange;//	扫描范围
 	
 	IPAddr_t	baseIP	;//目的IP地址的基IP
 
@@ -136,7 +136,7 @@ public:
 
 	void SetInfectionport(PortId_t port) { infectionport = port; }
 
-	void SetIPscanrange(Count_t scanrange) { IPscanrange = scanrange; }
+	//void SetIPscanrange(Count_t scanrange) { IPscanrange = scanrange; }
 
 	void SetBaseIP(IPAddr_t base) { baseIP = base; }
 
