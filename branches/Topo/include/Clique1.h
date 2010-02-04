@@ -75,7 +75,9 @@ public:
 			SystemId_t s = 0);
 
 	virtual bool GenerateTopo();
-	virtual void SetLocationViaBoundBox(const Location&, const Location&, BoxType type = DEFAULT);
+	void SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
+		                        const Location& BoundBoxRightUpper,
+		                        BoxType  type = DEFAULT);
 	
 	
 	Linkp2p* GetLink(Count_t, Count_t); // Get link between specified nodes

@@ -64,6 +64,13 @@ Queue*   CClique::GetQueue(Count_t c1, Count_t c2)
 }
 
 void CClique::SetLocationViaBoundBox(const Location& ll, const Location& ur, BoxType type)
+/*
+描述：通过绑定位置来给节点设置坐标
+参数：[in]ll                 ——左下角的位置
+      [in]ur                 ——右上角的位置
+      [in]type               ——设置位置的类型
+返回值：无
+*/
 {
 	// Make copies of the passed in locations, as we may have 
 	// to change these.

@@ -107,6 +107,7 @@ public:
 						 Count_t  numOfTopo2);
 	
 	 void AutoSetTopoIP();
+	 bool AutoSetDefaultRoute();
 	 bool GetNodeByConnectInfo(ConnectInfo& connectinfo,Node*& connectId);
 
 	 Count_t  GetLay1Num(){return transitTopoVec.size();}

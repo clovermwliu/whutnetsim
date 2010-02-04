@@ -55,6 +55,8 @@
 #define NodesInLan      10
 #include "HiberTopoBase.h"
 #include "duplexlink.h "
+#include "node.h"
+#include "bfs.h"
 CHiberTopoBase::CHiberTopoBase(IPAddr_t i,
 							   const Linkp2p& link1 ,
 							   SystemId_t id1)
@@ -75,6 +77,95 @@ CHiberTopoBase::~CHiberTopoBase(void)
 */
 {
 
+}
+bool CHiberTopoBase::AutoSetDefaultRoute()
+{
+	//第一层
+	for(size_t  domain = 0;domain!=transitTopoVec.size();domain++)
+	{
+		CPlatTopoBase* needSetTopo = transitTopoVec[domain];
+		map<NodeId_t, int> N;
+		NodeId_t routeId=needSetTopo->GetDefaultRouteId();
+		for (NodeId_t nodenum=0;nodenum<needSetTopo->NodeCount();nodenum++)
+		{
+			N.insert(make_pair(needSetTopo->GetNode(nodenum)->Id(), -1));
+		}
+		for (NodeId_t nodenum=0;nodenum<needSetTopo->NodeCount();nodenum++)
+		{
+			int re = BFSForDefaultRoute(N, nodenum, routeId);
+			if (re==-1)
+			{
+				needSetTopo->GetNode(nodenum)->SetDomainRoute(true);
+				continue;
+			}
+			Node* nextRoute = Node::GetNode(re);
+			if (nextRoute==NULL)
+			{
+				return false;
+			}
+			needSetTopo->GetNode(nodenum)->DefaultRoute(nextRoute);
+		}
+		
+	}
+	//第二层
+	CPlatTopoBase* needSetStubTopo;
+	for (size_t stub = 0;stub!=(stubTopoVec.size());stub++)
+	{
+		needSetStubTopo = stubTopoVec[stub];
+		map<NodeId_t, int> N;
+		NodeId_t routeId=needSetStubTopo->GetDefaultRouteId();
+		for (NodeId_t nodenum=0;nodenum<needSetStubTopo->NodeCount();nodenum++)
+		{
+			N.insert(make_pair(needSetStubTopo->GetNode(nodenum)->Id(), -1));
+		}
+		for (NodeId_t nodenum=0;nodenum<needSetStubTopo->NodeCount();nodenum++)
+		{
+			int re = BFSForDefaultRoute(N, nodenum, routeId);
+			
+			if (re==-1)
+			{
+				Node* upRoute;
+				//needSetStubTopo->GetNode(nodenum)->SetDomainRoute(true);
+				GetNodeByConnectInfo(needSetStubTopo->routerConnect[0],upRoute);
+				if (upRoute==NULL)
+				{
+					needSetStubTopo->GetNode(nodenum)->SetDomainRoute(true);
+					continue;
+				}
+				needSetStubTopo->GetNode(nodenum)->DefaultRoute(upRoute);
+				continue;
+			}
+			Node* nextRoute = Node::GetNode(re);
+			if (nextRoute==NULL)
+			{
+				return false;
+			}
+			needSetStubTopo->GetNode(nodenum)->DefaultRoute(nextRoute);
+		}
+	}
+	//第三层
+	CPlatTopoBase* LanTopo;
+	for (size_t lan = 0;lan<lanTopoVec.size();lan++)
+	{
+		LanTopo = lanTopoVec[lan];
+		NodeId_t routeId=LanTopo->GetDefaultRouteId();
+		Node* Route = Node::GetNode(routeId);
+
+		Node* upRoute;
+		GetNodeByConnectInfo(needSetStubTopo->routerConnect[0],upRoute);
+		if (upRoute==NULL)
+		{
+			Route->SetDomainRoute(true);
+			continue;
+		}
+        Route->DefaultRoute(upRoute);
+		
+		for (NodeId_t nodenum=1;nodenum<=LanTopo->NodeCount();nodenum++)
+		{
+			needSetStubTopo->GetNode(nodenum)->DefaultRoute(Route);
+		}
+	}
+	return true;
 }
 void CHiberTopoBase::AutoSetTopoIP()
 /*
@@ -160,6 +251,12 @@ void CHiberTopoBase::AutoSetTopoIP()
 		{
 			stubIp = getUpIp|lanNodeNum;
 			LanTopo->GetNode(lanNodeNum-1)->SetIPAddr(stubIp);
+
+			IFVec_t interfaces = LanTopo->GetNode(lanNodeNum-1)->Interfaces();
+			if (interfaces.size()>0)
+			{
+				interfaces[0]->SetIPAddr(stubIp);
+			}
 			stubIp = 0;
 		}
 	}
@@ -314,7 +411,8 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 	case 3:
 		if (numOfTopo1 <lanTopoVec.size())
 		{
-			left = lanTopoVec[numOfTopo1]->GetNode(topo1NodeId);
+		   left = lanTopoVec[numOfTopo1]->GetNode(topo1NodeId);
+
 			if (left==nil)
 			{
 				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
@@ -408,7 +506,8 @@ bool  CHiberTopoBase::ConnectDomain(Count_t layer1,
 	case 3:
 		if (numOfTopo2 <lanTopoVec.size())
 		{
-			right = lanTopoVec[numOfTopo2]->GetNode(topo2NodeId);
+			//right = lanTopoVec[numOfTopo2]->GetNode(topo2NodeId);
+			right = lanTopoVec[numOfTopo2]->GetHub();
 			if (right==nil)
 			{
 				SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);

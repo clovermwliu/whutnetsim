@@ -195,7 +195,7 @@ Node* Star1::GetHub()
 
 Node* Star1::GetLeaf(Count_t c)
 { // Get specified leaf node
-  if (c >= leafCount) return nil;
+  if (c > leafCount) return nil;
   return Node::GetNode(first + c);
 }
 
@@ -228,7 +228,7 @@ Queue*   Star1::LeafQueue(Count_t c)
 }
 
 void Star1::StarSetLocationViaBoundBox(const Location& ll, const Location& ur,
-									  Angle_t startAngle, Angle_t arcSize)
+									   Angle_t startAngle, Angle_t arcSize)
 {
   // Make copies of the passed in locations, as we may have 
   // to change these.
@@ -258,7 +258,7 @@ void Star1::StarSetLocationViaBoundBox(const Location& ll, const Location& ur,
   //Angle_t theta = startAngle - arcSize / 2;
   Angle_t theta = startAngle;
   Angle_t adder = arcSize / LeafCount();
-  for (Count_t i = 0; i < LeafCount(); ++i)
+  for (Count_t i = 1; i <=LeafCount(); ++i)
     {
       Location leafLoc(hubLoc.X() + cos(theta) * arcDist,
                        hubLoc.Y() + sin(theta) * arcDist);
@@ -269,21 +269,20 @@ void Star1::StarSetLocationViaBoundBox(const Location& ll, const Location& ur,
 
 // Private methods
 void Star1::ConstructorHelper(Count_t l, Node* h,
-                             IPAddr_t ip,
-                             const Linkp2p& link,
-                             SystemId_t id)
+                              IPAddr_t ip,
+                              const Linkp2p& link,
+                              SystemId_t id)
 {
   leafCount = l;
   hub = h;
   int adder = 1;
-  
+  first = Node::nextId;
   if (!hub)
     { // No hub specified, need to allocate
       hub = new Node(id);
 	  hub->SetIPAddr(ip++);
       DEBUG0((cout << "ST HubId " << hub->Id() << endl));
     }
-  first = Node::nextId;
   if (ip != IPADDR_NONE)
     {
       if (ip & 0x1)
