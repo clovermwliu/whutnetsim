@@ -5,5 +5,5 @@ createTime=201001261639
 modifyTime=201001264639
 description=SimulationTest
 style=Platopo
-topoScriptpath=E:\GTnet\Demosimulator(gyp)\task\topoScript.sci
-appScriptpath=E:\GTnet\Demosimulator(gyp)\task\appScript.sci
+topoScriptpath=E:\GTnet\whusim\task\topoScript.sci
+appScriptpath=E:\GTnet\whusim\task\appScript.sci
