@@ -37,6 +37,20 @@ Dumbbell1::Dumbbell1(Count_t l, Count_t r,Mult_t m,
 					 IPAddr_t lip, IPAddr_t rip,
 					 const Linkp2p& link, SystemId_t id)
 :CHiberTopoBase(lip,link,id),leftCount(l),rightCount(r),bound(m),leftip(lip),rightip(rip)
+/*
+描述：Dumbbell1网络拓扑的生成         
+参数：[IN] l     ：
+      [IN] r     ：
+	  [IN] m     ：
+	  [IN] lip   ： 左边的拓扑节点的基IP
+	  [IN]  rip  ： 右边的拓扑节点的基IP
+	  [IN] link  ：
+	  [IN]  id   ：分布式系统标识符
+      [IN]   i   ：
+      [IN] link  ：拓扑的节点间的连接方式                                                 
+返回：无                                                                                       
+备注：
+*/
 {
 }
 bool Dumbbell1::GenerateTopo()

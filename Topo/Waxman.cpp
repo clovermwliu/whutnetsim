@@ -56,9 +56,14 @@ CWaxman::CWaxman(Count_t count,double _alpha,double _beta,
 					SystemId_t id,const Linkp2p& link)
 :CPlatTopoBase(count,i,link,id),alpha(_alpha),beta(_beta)
 /*
-描述：          
-参数：                                                 
-返回值：无                                                                                       
+描述：随机网络拓扑的生成         
+参数：[IN] count ：拓扑的节点数目
+      [IN] _alpha：范围[0,1]
+      [IN] _beta    ：新增节点，连接方式选择时的概率
+      [IN] i     ：拓扑节点的基IP
+      [IN] id    ：分布式系统标识符 
+      [IN] link  ：拓扑的节点间的连接方式                                                 
+返回：无                                                                                       
 备注： 
 */
 {

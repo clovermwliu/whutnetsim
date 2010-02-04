@@ -258,7 +258,6 @@ bool CTopoFileScript::ReadOncePFPInfo(const string& PlatType,CPlatTopoBase*& new
 			break;
 		}
 		
-
 		//case 5:break;
 	default:
 		SetLastError(ERROR_NO_WRITE_YET);

@@ -93,7 +93,7 @@ public:
       Angle_t = 0, Angle_t = 2*M_PI);
 
 public:
-  NodeId_t   first;      // First leaf node id
+ // NodeId_t   first;      // First leaf node id
   NodeId_t   last;       // Just log first/last+1 entries
   Node*      hub;        // Points to hub node
   Count_t    leafCount;  // Number of leaf nodes

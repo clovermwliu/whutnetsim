@@ -56,8 +56,9 @@ void CStdTS::SetLocationViaBoundBox(const Location& BoundBoxLeftDown,
 	{
 		Meters_t xPase = xBound/LthreeNum;
 		Location low(baseLow.X()+l3*xPase,baseLow.Y());
-		Location high(baseLow.X()+(l3+1)*xPase,baseLow.Y()+(l3+1)*yPase);
-		lanTopoVec[l3]->SetLocationViaBoundBox(low,high);
+		Location high(baseLow.X()+(l3+1)*xPase,baseLow.Y()+yPase);
+		//lanTopoVec[l3]->SetLocationViaBoundBox(low,high);
+		lanTopoVec[l3]->StarSetLocationViaBoundBox(low,high,-M_PI/4,-M_PI/2);
 	}
 	baseLow.Y(baseLowcopy.Y()+yPase*3/2);
 	baseLowcopy = baseLow;
