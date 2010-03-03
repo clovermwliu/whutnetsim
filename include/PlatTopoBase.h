@@ -159,16 +159,13 @@ public:
 //protected:
 	Node* GetNode(Count_t);    // Get node at specified level, index
 
-
-	NodeId_t GetDefaultRouteId() {return first;}//获得默认路由
-
+	NodeId_t  GetFirst(){return first;}
 public:
 	vector<ConnectInfo>  brotherConnect; //同一层的拓扑之间的连接
 	vector<ConnectInfo>  routerConnect;  //与路由的连接，即控制这一层的路由
 	vector<ConnectInfo>  controlConnect; //这一层可以控制的下一层的拓扑
 private:
 	pHook      hook;        //关于钩子的操作
-	NodeId_t   defaultroute;
 
 protected:	
 	NodeId_t   first;       // 第一个叶子结点,即第一个主机结点
@@ -176,7 +173,6 @@ protected:
 	Count_t    nodeCount;   // 网络主机结点的数目、、此处有问题 
 	Count_t    edgeCount;
 	//NodeVec_t  nodes;	    // 存储所有主机结点的向量
-    
 
 	IPAddr_t ip;
 	const Linkp2p&  link;
