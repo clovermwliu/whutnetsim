@@ -1,8 +1,59 @@
+//Copyright (c) 2010, Information Security Institute of Wuhan Universtiy(ISIWhu)
+//Project Homepage:http://code.google.com/p/whutnetsim/
+//corresponding author's email: guochi@mail.whu.edu.cn
+
+
+//All rights reserved
+//
+//PLEASE READ THIS DOCUMENT CAREFULLY BEFORE UTILIZING THE PROGRAM
+//BY UTILIZING THIS PROGRAM, YOU AGREE TO BECOME BOUND BY THE TERMS OF
+//THIS LICENSE.  IF YOU DO NOT AGREE TO THE TERMS OF THIS LICENSE, DO
+//NOT USE THIS PROGRAM OR ANY PORTION THEREOF IN ANY FORM OR MANNER.
+//
+//This License allows you to:
+//1. Make copies and distribute copies of the Program's source code provide that any such copy 
+//   clearly displays any and all appropriate copyright notices and disclaimer of warranty as set 
+//   forth in this License.
+//2. Modify the original copy or copies of the Program or any portion thereof ("Modification(s)"). 
+//   Modifications may be copied and distributed under the terms and conditions as set forth above. 
+//   Any and all modified files must be affixed with prominent notices that you have changed the 
+//   files and the date that the changes occurred.
+
+//Termination:
+//   If at anytime you are unable to comply with any portion of this License you must immediately 
+//   cease use of the Program and all distribution activities involving the Program or any portion 
+//   thereof.
+
+//Statement:
+//   In this program, part of the code is from the GTNetS project, The Georgia Tech Network 
+//   Simulator (GTNetS) is a full-featured network simulation environment that allows researchers in 
+//   computer networks to study the behavior of moderate to large scale networks, under a variety of 
+//   conditions. Our work have great advance due to this project, Thanks to Dr. George F. Riley from 
+//   Georgia Tech Research Corporation. Anyone who wants to study the GTNetS can come to its homepage:
+//   http://www.ece.gatech.edu/research/labs/MANIACS/GTNetS/
+//
+
+
+//File Information:
+//
+//
+//File Name:
+//File Purpose:
+//Original Author:
+//Author Organization:
+//Construct Date:
+//Modify Author:
+//Author Organization:
+//Modify Date:
+
+//更改人：李玉
+//更改时间：2010-3-9
 #include "TopoFileScript.h"
 #include "Waxman.h"
 #include "PFP.h"
 #include "Simple.h"
 #include "StdTS.h"
+#include "SelectSetIp.h"
 
 
 CTopoFileScript::CTopoFileScript(const string& _file)
@@ -258,6 +309,7 @@ bool CTopoFileScript::ReadOncePFPInfo(const string& PlatType,CPlatTopoBase*& new
 			break;
 		}
 		
+
 		//case 5:break;
 	default:
 		SetLastError(ERROR_NO_WRITE_YET);
@@ -371,6 +423,9 @@ bool CTopoFileScript::CreatePlatTopo(CPlatTopoBase*& newTopo)
 		ReadOnceSimpleInfo(style,newTopo);
 		return true;
 	}
+	else if (Type=="Se")
+	{
+	}
 	return true;
 }
 bool CTopoFileScript::CreateHiberTopo(CHiberTopoBase*& newTopo)
@@ -392,8 +447,62 @@ bool CTopoFileScript::CreateHiberTopo(CHiberTopoBase*& newTopo)
 	{
 		ReadOnceTSInfo(style,newTopo);
 		return true;
+	}	
+	else if (Type =="SE")
+	{
+		ReadOnceSelectSetIPInfo(style,newTopo);
 	}
 	return true;
+}
+bool CTopoFileScript::ReadOnceSelectSetIPInfo(const string& PlatType,CHiberTopoBase*& newPlatTopo)
+{
+
+
+	CGenericConfigItem<int> item1(*this,PlatType,"N");
+	int NMax=item1.MyValue();
+
+	CGenericConfigItem<int> item2(*this,PlatType,"NetId");
+	int NetIdbit=item2.MyValue();
+
+	newPlatTopo = new CSelectSetIp(NetIdbit); 
+	newPlatTopo->GenerateTopo();
+	newPlatTopo->AutoSetDefaultRoute();
+	newPlatTopo->AutoSetTopoIP();
+
+	CGenericConfigItem<string> item3(*this,PlatType,"FileVulDistribute");
+	string FileVulDistribute=item3.MyValue();
+
+	std::ifstream  readVul(FileVulDistribute.c_str());
+	if (!readVul)
+	{
+		std::cerr<<"unable to open input file!";
+		return false;
+	}
+	Count_t oneHostLan;
+	double oneHostp;
+	double allP = 0;
+	CHostTopo* newHost;
+	vector<CHostTopo*> hostLay;
+	newPlatTopo->GetHostLay(hostLay);
+
+	size_t addHostNum = 0;
+	while (readVul>>oneHostp)
+	{
+		allP += oneHostp;
+		if (allP>1)
+		{
+			return false;
+		}
+		oneHostLan = oneHostp*NMax;
+		if (addHostNum<hostLay.size())
+		{
+			hostLay[addHostNum++]->AddHosts(oneHostLan);
+		}
+		else 
+		{
+			return false;
+		}
+	}   
 }
 bool CTopoFileScript::ReadOnceTSInfo(const string& PlatType,CHiberTopoBase*& newPlatTopo)
 {

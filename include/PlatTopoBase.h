@@ -47,7 +47,7 @@
 //Modify Date:
 
 //更改人：李玉
-//更改时间：2010-1-4
+//更改时间：2010-3-9
 
 #pragma once
 #include <vector>
@@ -158,8 +158,19 @@ public:
 
 //protected:
 	Node* GetNode(Count_t);    // Get node at specified level, index
+	NodeId_t GetDefaultRouteId() {return first;}//获得默认路由
+	NodeId_t   defaultroute;
 
-	NodeId_t  GetFirst(){return first;}
+
+	NodeId_t GetFirst(){return first;}
+	Node* GetBoundRoute()
+	{ 
+		if (first<nodeCount)
+	    {
+			return Node::nodes[first];
+	    }
+		else return NULL;
+	}
 public:
 	vector<ConnectInfo>  brotherConnect; //同一层的拓扑之间的连接
 	vector<ConnectInfo>  routerConnect;  //与路由的连接，即控制这一层的路由

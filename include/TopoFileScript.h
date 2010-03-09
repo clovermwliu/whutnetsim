@@ -50,7 +50,7 @@
 
 
 //更改人：李玉
-//更改时间：2010-1-15
+//更改时间：2010-3-9
 
 #ifndef __TOPOFILE_H__ 
 #define __TOPOFILE_H__
@@ -91,6 +91,8 @@ public:
 	bool ReadOnceWaxmanInfo(const string& PlatType);//获得新建一个平面拓扑时的信息
 	bool ReadOncePHPInfo(const string& PlatType);
 	bool ReadOnceTSInfo(const string& PlatType,CHiberTopoBase*& newPlatTopo);
+
+	bool ReadOnceSelectSetIPInfo(const string& PlatType,CHiberTopoBase*& newPlatTopo);
 
 	bool ReadOnceConnectInfo();//获得一个连接信息，然后连接
 

@@ -48,7 +48,7 @@
 
 
 //更改人：李玉
-//更改时间：2010-1-15
+//更改时间：2010-3-9
 
 #ifndef __HIBERTOPOBASE_H__   
 #define __HIBERTOPOBASE_H__ 
@@ -59,6 +59,7 @@
 #include "PlatTopoBase.h"
 #include "G_common_defs.h"
 #include "ErrorHandler.h"
+#include "bfs.h"
 #include <string>
 using namespace std;
 
@@ -71,6 +72,7 @@ using namespace std;
 //#define ERROR_HIBERTOPO_NOT_EXSITING	 0x00050001
 //#define ERROR_FILE_WRITE_FAIL            0x00050002
 
+class CHostTopo;
 class CHiberTopoBase  : public CErrorHandler
 {
 public:
@@ -106,8 +108,8 @@ public:
 						 Count_t layer2,
 						 Count_t  numOfTopo2);
 	
-	 void AutoSetTopoIP();
-	 bool AutoSetDefaultRoute();
+	 virtual void AutoSetTopoIP();
+	 virtual bool AutoSetDefaultRoute();
 	 bool GetNodeByConnectInfo(ConnectInfo& connectinfo,Node*& connectId);
 
 	 Count_t  GetLay1Num(){return transitTopoVec.size();}
@@ -117,6 +119,8 @@ public:
 	 vector<CPlatTopoBase*>& GetTransit(){return transitTopoVec;}
 	 vector<CPlatTopoBase*>& GetStub(){return stubTopoVec;}
 	 vector<CPlatTopoBase*>& GetLan(){return lanTopoVec;}
+
+	 virtual void  GetHostLay(vector<CHostTopo*>&){return;}
 protected:
 	 IPAddr_t ip;
 	 const Linkp2p&  link;
