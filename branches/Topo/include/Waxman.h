@@ -47,7 +47,7 @@
 //Modify Date:
 
 //更改人：李玉
-//更改时间：2010-1-11
+//更改时间：2010-3-9
 #ifndef __WAXMAN_H__ 
 #define __WANMAN_H__
 
@@ -57,7 +57,7 @@
 class CWaxman: public CPlatTopoBase
 {
 public:
-	CWaxman(Count_t count,double _alpha,double _beta,
+	CWaxman(Count_t count,double _alpha = 1,double _beta = 0.2,
 			IPAddr_t i = IPADDR_NONE,     
 		    SystemId_t id = 0,const Linkp2p& link = Linkp2p::Default());
 	~CWaxman(void);

@@ -47,7 +47,7 @@
 //Modify Date:
 
 //更改人：李玉
-//更改时间：2010-1-28
+//更改时间：2010-3-9
 
 #define DomainNum       6
 #define NodesInDomain   7
@@ -56,7 +56,7 @@
 #include "HiberTopoBase.h"
 #include "duplexlink.h "
 #include "node.h"
-#include "bfs.h"
+
 CHiberTopoBase::CHiberTopoBase(IPAddr_t i,
 							   const Linkp2p& link1 ,
 							   SystemId_t id1)
@@ -80,7 +80,7 @@ CHiberTopoBase::~CHiberTopoBase(void)
 }
 bool CHiberTopoBase::AutoSetDefaultRoute()
 {
-	//第一层
+	//最上面一层
 	for(size_t  domain = 0;domain!=transitTopoVec.size();domain++)
 	{
 		CPlatTopoBase* needSetTopo = transitTopoVec[domain];
@@ -92,10 +92,11 @@ bool CHiberTopoBase::AutoSetDefaultRoute()
 		}
 		for (NodeId_t nodenum=0;nodenum<needSetTopo->NodeCount();nodenum++)
 		{
-			int re = BFSForDefaultRoute(N, nodenum, routeId);
+			int re = BFSForDefaultRoute(N, nodenum + needSetTopo->GetFirst(), routeId);
 			if (re==-1)
 			{
 				needSetTopo->GetNode(nodenum)->SetDomainRoute(true);
+				needSetTopo->GetNode(nodenum)->IsRouteNode(true);
 				continue;
 			}
 			Node* nextRoute = Node::GetNode(re);
@@ -104,10 +105,11 @@ bool CHiberTopoBase::AutoSetDefaultRoute()
 				return false;
 			}
 			needSetTopo->GetNode(nodenum)->DefaultRoute(nextRoute);
+			needSetTopo->GetNode(nodenum)->IsRouteNode(true);
 		}
-		
+		int i = 1;
 	}
-	//第二层
+	//中间层
 	CPlatTopoBase* needSetStubTopo;
 	for (size_t stub = 0;stub!=(stubTopoVec.size());stub++)
 	{
@@ -120,8 +122,9 @@ bool CHiberTopoBase::AutoSetDefaultRoute()
 		}
 		for (NodeId_t nodenum=0;nodenum<needSetStubTopo->NodeCount();nodenum++)
 		{
-			int re = BFSForDefaultRoute(N, nodenum, routeId);
-			
+			int re = BFSForDefaultRoute(N, nodenum+ needSetStubTopo->GetFirst(), routeId);
+
+
 			if (re==-1)
 			{
 				Node* upRoute;
@@ -130,9 +133,11 @@ bool CHiberTopoBase::AutoSetDefaultRoute()
 				if (upRoute==NULL)
 				{
 					needSetStubTopo->GetNode(nodenum)->SetDomainRoute(true);
+					needSetStubTopo->GetNode(nodenum)->IsRouteNode(true);
 					continue;
 				}
 				needSetStubTopo->GetNode(nodenum)->DefaultRoute(upRoute);
+				needSetStubTopo->GetNode(nodenum)->IsRouteNode(true);
 				continue;
 			}
 			Node* nextRoute = Node::GetNode(re);
@@ -141,6 +146,7 @@ bool CHiberTopoBase::AutoSetDefaultRoute()
 				return false;
 			}
 			needSetStubTopo->GetNode(nodenum)->DefaultRoute(nextRoute);
+			needSetStubTopo->GetNode(nodenum)->IsRouteNode(true);
 		}
 	}
 	//第三层
@@ -150,19 +156,22 @@ bool CHiberTopoBase::AutoSetDefaultRoute()
 		LanTopo = lanTopoVec[lan];
 		NodeId_t routeId=LanTopo->GetDefaultRouteId();
 		Node* Route = Node::GetNode(routeId);
+		Route->IsRouteNode(true);
+		//Route->IsSwitchNode(true);
 
-		Node* upRoute;
-		GetNodeByConnectInfo(needSetStubTopo->routerConnect[0],upRoute);
+		Node* upRoute; 
+		GetNodeByConnectInfo(LanTopo->routerConnect[0],upRoute);
 		if (upRoute==NULL)
 		{
 			Route->SetDomainRoute(true);
 			continue;
 		}
-        Route->DefaultRoute(upRoute);
-		
+		Route->DefaultRoute(upRoute);
+
 		for (NodeId_t nodenum=1;nodenum<=LanTopo->NodeCount();nodenum++)
 		{
-			needSetStubTopo->GetNode(nodenum)->DefaultRoute(Route);
+			LanTopo->GetLeaf(nodenum)->DefaultRoute(Route);
+			LanTopo->GetLeaf(nodenum)->IsHostNode(true);
 		}
 	}
 	return true;
@@ -173,12 +182,12 @@ void CHiberTopoBase::AutoSetTopoIP()
 参数：无
 返回值：无                                                                                 
 备注：实现方法，三层。
-      第一层 很多个域，Domain1、Domain2、Domain3，域占最高位的DomainNum位
-	  对每个域遍历，域中的节点占接下来的NodesInDomain位
-	  第二层，先找到管这一层的路由节点，然后根据路由节点的IP，对这一层的节点赋IP，
-	  占接下来的NodesInStub位
-	  第三层，和第二层很类似，找到管这一层的stub，然后根据上一层的节点的IP，对这一层的节点赋IP，
-	  占最后的NodesInLan位
+第一层 很多个域，Domain1、Domain2、Domain3，域占最高位的DomainNum位
+对每个域遍历，域中的节点占接下来的NodesInDomain位
+第二层，先找到管这一层的路由节点，然后根据路由节点的IP，对这一层的节点赋IP，
+占接下来的NodesInStub位
+第三层，和第二层很类似，找到管这一层的stub，然后根据上一层的节点的IP，对这一层的节点赋IP，
+占最后的NodesInLan位
 */
 {
 	IPAddr_t  newIp;
@@ -208,11 +217,11 @@ void CHiberTopoBase::AutoSetTopoIP()
 	{
 		needSetStubTopo = stubTopoVec[stub];
 		if(needSetStubTopo->routerConnect.size()==0) continue;
-       
+
 		Node* up;
 		//Node* up = Node::GetNode(needSetStubTopo->routerConnect[0].nodeNum);//一个节点可以有多个路由节点吗
 		GetNodeByConnectInfo(needSetStubTopo->routerConnect[0],up);
-		
+
 		if (up==nil)
 		{
 			SetLastError(ERROR_ID_OUT_OF_NODECOUNT_FAIL);
