@@ -50,7 +50,7 @@
 
 
 //更改人：李玉
-//更改时间：2010-3-9
+//更改时间：2010-1-15
 
 #ifndef __TOPOFILE_H__ 
 #define __TOPOFILE_H__
@@ -83,6 +83,8 @@ public:
 public:
 	void ReadFile();
 	void WriteFile();
+	void OutputTopo(string outputTopoFile);
+	void InputTopo(string outputTopoFile);
 
 	bool ReadAllTopoInfo();
 	//这个似乎应该在main中写?

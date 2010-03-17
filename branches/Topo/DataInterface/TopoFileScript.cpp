@@ -47,13 +47,18 @@
 //Modify Date:
 
 //更改人：李玉
-//更改时间：2010-3-9
+//更改时间：2010-3-17
 #include "TopoFileScript.h"
 #include "Waxman.h"
 #include "PFP.h"
 #include "Simple.h"
 #include "StdTS.h"
 #include "SelectSetIp.h"
+//#define DEGBUG
+#ifndef DEGBUG
+#include <time.h>
+#endif
+
 
 
 CTopoFileScript::CTopoFileScript(const string& _file)
@@ -454,7 +459,7 @@ bool CTopoFileScript::CreateHiberTopo(CHiberTopoBase*& newTopo)
 	}
 	return true;
 }
-bool CTopoFileScript::ReadOnceSelectSetIPInfo(const string& PlatType,CHiberTopoBase*& newPlatTopo)
+bool CTopoFileScript::ReadOnceSelectSetIPInfo(const string& PlatType,CHiberTopoBase*& newHiberTopo)
 {
 
 
@@ -464,10 +469,20 @@ bool CTopoFileScript::ReadOnceSelectSetIPInfo(const string& PlatType,CHiberTopoB
 	CGenericConfigItem<int> item2(*this,PlatType,"NetId");
 	int NetIdbit=item2.MyValue();
 
-	newPlatTopo = new CSelectSetIp(NetIdbit); 
-	newPlatTopo->GenerateTopo();
-	newPlatTopo->AutoSetDefaultRoute();
-	newPlatTopo->AutoSetTopoIP();
+	newHiberTopo = new CSelectSetIp(NetIdbit); 
+	newHiberTopo->GenerateTopo();
+
+#ifndef DEGBUG
+	clock_t start,end,alltime;
+	start = clock();
+#endif
+	newHiberTopo->AutoSetRouteAllDomainRoute();
+#ifndef DEGBUG
+	end = clock();
+	alltime = (end - start)/CLOCKS_PER_SEC;
+#endif
+
+	newHiberTopo->AutoSetTopoIP();
 
 	CGenericConfigItem<string> item3(*this,PlatType,"FileVulDistribute");
 	string FileVulDistribute=item3.MyValue();
@@ -483,7 +498,7 @@ bool CTopoFileScript::ReadOnceSelectSetIPInfo(const string& PlatType,CHiberTopoB
 	double allP = 0;
 	CHostTopo* newHost;
 	vector<CHostTopo*> hostLay;
-	newPlatTopo->GetHostLay(hostLay);
+	newHiberTopo->GetHostLay(hostLay);
 
 	size_t addHostNum = 0;
 	while (readVul>>oneHostp)
@@ -494,9 +509,22 @@ bool CTopoFileScript::ReadOnceSelectSetIPInfo(const string& PlatType,CHiberTopoB
 			return false;
 		}
 		oneHostLan = oneHostp*NMax;
+		if (oneHostLan == 0)
+		{
+			addHostNum++;
+			continue;
+		}
 		if (addHostNum<hostLay.size())
 		{
+			#ifndef DEGBUG
+				//clock_t start,end,alltime;
+				start = clock();
+			#endif
 			hostLay[addHostNum++]->AddHosts(oneHostLan);
+			#ifndef DEGBUG
+				end = clock();
+				alltime = (end - start)/CLOCKS_PER_SEC;
+			#endif
 		}
 		else 
 		{
@@ -512,4 +540,139 @@ bool CTopoFileScript::ReadOnceTSInfo(const string& PlatType,CHiberTopoBase*& new
 	ReadOneLayerInfo(3,newPlatTopo->GetLan(),PlatType);
 	ReadAllConnectInfo(newPlatTopo);
 	return true;
+}
+void CTopoFileScript::OutputTopo(string outputTopoFile)
+/*
+描述：将拓扑输出        
+参数：[IN] outputTopoFile  ：保存拓扑的文件路径
+返回值：空                                                                                       
+备注：
+*/
+{
+	ofstream coutTopo(outputTopoFile.c_str());
+
+	NodeVec_t& nodes = Node::nodes;
+	Node* outNode;
+
+	
+	coutTopo<<nodes.size()<<endl<<endl;                //输出节点的总个数nodeCount
+
+	for (size_t i = 0;i<nodes.size();i++)
+	{
+		outNode = nodes[i];
+		coutTopo<<outNode->Id()<<endl;                  //id
+		coutTopo<<outNode->GetProxyIP()<<endl;          //proxyIP
+		coutTopo<<outNode->GetProxyMask().NBits()<<endl;//proxyMask
+
+		coutTopo<<outNode->GetDomainRoute()<<endl;      //domainRoute
+		NodeWeightVec_t nwv;
+		outNode->Neighbors(nwv);
+
+		coutTopo<<nwv.size()<<" ";                     //邻居节点的个数
+		NodeWeightVec_t::iterator iter;
+		for (iter=nwv.begin();iter!=nwv.end();iter++)
+		{
+			coutTopo<<iter->node->Id()<<" ";           //neighboursId
+		}
+		coutTopo<<endl;
+
+		coutTopo<<outNode->GetIPAddr()<<endl;          //ipAddr
+		coutTopo<<outNode->GetLocation().X()<<endl;    //x
+		coutTopo<<outNode->GetLocation().Y()<<endl;    //y
+		coutTopo<<outNode->GetLocation().Z()<<endl;    //z
+
+		if (outNode->IsSwitchNode())
+		{
+			coutTopo<<1<<endl;                         //isswitch
+		}
+		else coutTopo<<0<<endl;
+
+		if (outNode->IsRouteNode())
+		{
+			coutTopo<<1<<endl;                         //isroute
+		}
+		else coutTopo<<0<<endl;
+
+		if (outNode->IsHostNode())
+		{
+			coutTopo<<1<<endl;                         //ishost
+		}
+		else coutTopo<<0<<endl;
+
+
+
+
+
+		coutTopo<<endl;
+	}
+}
+void CTopoFileScript::InputTopo(string outputTopoFile)
+{
+	ifstream cinTopo(outputTopoFile.c_str());
+
+	NodeVec_t& nodes = Node::nodes;
+	Node* outNode;
+
+	size_t nodeCount;
+	cinTopo>>nodeCount;                                  //输出节点的总个数nodeCount
+	for (size_t i = 0;i<nodeCount;i++)
+	{
+		Node* newNode = new Node();
+	}
+
+	NodeId_t id;
+	IPAddr_t proxyIP;
+	Mask_t proxyMask;
+	bool domainRoute;
+	size_t  neighCount;
+	NodeId_t     neighboursId;   
+	IPAddr_t ipAddr;
+	Meters_t x;
+	Meters_t y;
+	Meters_t z;
+	bool isswitch;
+	bool isroute;
+	bool ishost;
+
+	while (cinTopo.peek()!=EOF)
+	{
+		cinTopo>>id>>proxyIP>>proxyMask>>domainRoute;
+		cinTopo>>neighCount;
+		for (size_t i = 0;i<neighCount;i++)
+		{
+			cinTopo>>neighboursId;                       //与邻居节点相连
+			nodes[id]->AddDuplexLink(nodes[neighboursId]);
+		}
+		
+		cinTopo>>ipAddr>>x>>y>>z>>isswitch>>isroute>>ishost;
+		Mask mask(proxyMask);
+		nodes[id]->SetProxyRoutingConfig(proxyIP,mask);
+		if (domainRoute)
+		{
+			nodes[id]->SetDomainRoute(true);
+		}
+		else nodes[id]->SetDomainRoute(false);
+		
+		nodes[id]->SetIPAddr(ipAddr);
+
+		nodes[id]->SetLocation(x,y,z);
+
+		if (isswitch)
+		{
+			nodes[id]->IsSwitchNode(true);
+		}
+		else nodes[id]->IsSwitchNode(false);
+
+		if (isroute)
+		{
+			nodes[id]->IsRouteNode(true);
+		}
+		else nodes[id]->IsRouteNode(false);
+
+		if (ishost)
+		{
+			nodes[id]->IsHostNode(true);
+		}
+		else nodes[id]->IsHostNode(false);
+	}
 }
