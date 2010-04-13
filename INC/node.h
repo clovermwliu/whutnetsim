@@ -89,19 +89,19 @@ typedef MyCanvasPolygonalItem*(*CustomShape_t)(MyCanvas*, Node*,
                                               MyCanvasPolygonalItem*);
 
 // For radio interface list
-//class RadioItem
-//{
-//public:
-//  RadioItem() : inf(nil), dist(0) {}
-//  RadioItem(InterfaceWireless* i, Meters_t d) : inf(i), dist(d) {}
-//
-//public:
-//  InterfaceWireless* inf;
-//  Meters_t           dist;
-//};
+class RadioItem
+{
+public:
+  RadioItem() : inf(nil), dist(0) {}
+  RadioItem(InterfaceWireless* i, Meters_t d) : inf(i), dist(d) {}
+
+public:
+  InterfaceWireless* inf;
+  Meters_t           dist;
+};
 
 //typedef std::vector<RadioItem> RadioVec_t;
-//typedef std::list<RadioItem> RadioVec_t;
+typedef std::list<RadioItem> RadioVec_t;
 
 class NodeIfWeight
 //在路由协议中使用
@@ -173,6 +173,8 @@ public:
                  CUSTOM, //由一般回调显示
                  IMAGE   //显示一个Qt图形文件
   } Shape_t;
+
+
 
 public:
 
@@ -413,6 +415,12 @@ private:
   NodeId_t id; // 本地结点id
 public:
   NodeImpl* pImpl; //ghost或者 real型结点
+private:
+	/*
+	*     节点介数
+	*/
+	Size_t _btns;
+
 
 //静态成员
 public:
@@ -462,7 +470,13 @@ public:
 //
 //  RouteTable* getRouteTable(void);//返回本地结点的路由表
 //  void        setRouteTable(RouteTable*);//设置本地结点路由表
-  
+public:
+	/*
+	*     增加节点的介数
+	*/
+	int add_btns(size_t);
+	size_t get_btns();
+
 };
 
 
