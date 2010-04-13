@@ -69,6 +69,7 @@ using namespace std;
 
 NodeId_t  Node::nextId = 0;  //要分配的下一个结点Id
 NodeVec_t Node::nodes;       //Vector容器，包括了所有的结点
+Size_t Node::_btns = 0;
 #ifdef HAVE_QT //v1.01
 Count_t   Node::defaultPixelSize = 10;  //运行中，结点的像素大小
 Node::Shape_t Node::defaultShape = Node::SQUARE;  //所有结点的默认形状:方形
@@ -1341,3 +1342,15 @@ int Node::GetLongestPrefixLength(IPAddr_t ip)
 //{
 //  return pImpl->getRouteTable();
 //}
+
+
+int Node::add_btns(size_t i)
+{
+	_btns += i;
+	return 1;
+}
+
+size_t Node::get_btns()
+{
+	return _btns;
+}
