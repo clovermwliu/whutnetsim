@@ -646,7 +646,8 @@ void IPV4::DataRequest(Node* n, Packet* p, void* v)
 #endif
 
 }
-
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 void IPV4::DataIndication(Interface* i,Packet* p)
 /*网络层协议相关内容，解析协议报头，向传输层交付（由链路层调用）*/
 {
@@ -756,8 +757,9 @@ void IPV4::DataIndication(Interface* i,Packet* p)
 	
   //pick up the first ip on the list and send it to that ;
   // need to handle load balancing later
-  
-  if (iface == i)
+
+	//////////////////////////////////////////////////////////////////////////  
+  if (iface == i ||n->GetDomainRoute())
   { // Routing loop (output on same interface as input, log err, drop, return
       if (Trace::Enabled())
       {
@@ -1057,7 +1059,7 @@ if (!re.interface_)
 #ifndef WIN32
   if (re.interface == i)
 #else
-  if (re.interface_ == i)
+  if (re.interface_ == i ||n->GetDomainRoute())
 #endif
     { // Routing loop (output on same interface as input, log err, drop, return
       if (Trace::Enabled())
