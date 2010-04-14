@@ -58,16 +58,102 @@
 //int bfs_calls=0;
 //int bfs_nodessearched=0;
 
-#define PROXY_PRUNE
+//#define PROXY_PRUNE
 
 #ifndef TEST_BFS
+
+//double shortestpath(int src, void *p);//单源最短路径，从src到其它各结点的最短路径长度，返回值：长度最大值
+
+#define  MAXDIST 1000000
+NodeId_t BFSForDefaultRoute(map<NodeId_t, int>& N,       // List of nodes in the graph
+							NodeId_t rootID,    // Root node for route computations
+							NodeId_t targetID)// List of IP's with same path
+/*
+描述：在所给结点构成的网络中，计算源结点root到id为targetID的目标结点的最短路径，返回root到targetID的最短路径的下一跳结点id 
+返回值：-1 rootID即为targetID
+        -2 rootID或targetID不存在于N中
+		-3 N中的某结点的某一邻居结点在全局nodes中找不到，一般不会
+		-4 由rootID无法到达targetID，即N中结点不连通		
+*/
+{	
+	if (rootID == targetID)
+	{
+		return -1;
+	}
+	//检查rootID和targetID是否存在于N中
+	if (!N.count(rootID) || !(N.count(targetID)))
+	{
+		return -2;
+	}
+	//最短路径初始值为MAXDIST
+	map<NodeId_t, NodeId_t> nextHop;//从源结点达到各结点时，下一跳路由结点
+	map<NodeId_t, int>::iterator N_it = N.begin();//id dist
+	while(N_it != N.end())
+	{
+		nextHop.insert(make_pair(N_it->first, -4));//nextHop初始值
+		N_it->second = MAXDIST;
+		++N_it;
+	}
+	N.find(rootID)->second = 0;
+	//局部变量
+	double weight;
+	double tmp_weight;
+	double default_weight = 1;//权值默认都为1
+	//NodeId_t neighbor_id;
+	NodeId_t sou_id = rootID;
+	multimap<double, int> active;//权值，源节点id,求最短路径时用
+	multimap<double, int>::iterator active_it;		
+	active.insert(make_pair(0, sou_id));
+
+	while(!active.empty())
+	{
+		active_it = active.begin();
+		sou_id = active_it->second;//源结点
+		weight = active_it->first;//权值
+		active_it = active.erase(active_it);
+		//对sou_id的各邻居结点
+		NodeWeightVec_t nwv;
+		Node * u = Node::GetNode(sou_id);
+		if (!u)//sou_id不存在
+		{
+			return -3;
+		}
+		u->Neighbors(nwv, true); // Get neighbors, ignoring leaf nodes
+		for (NodeWeightVec_t::size_type i = 0; i < nwv.size(); ++i)//循环取结点u的邻居结点
+		{
+			NodeIfWeight& nw = nwv[i];
+			Node*         neighbor = nw.node;//邻居
+			NodeId_t      neighbor_id = neighbor->Id();
+			if (neighbor_id == sou_id) continue;              // Insure not self adjacancy
+			//如果邻居结点不在N内
+			if (!N.count(neighbor_id) ) continue;
+			tmp_weight = weight + default_weight; //权值
+			double tmp = N.find(neighbor_id)->second;
+			if (tmp_weight < tmp)
+			{
+				N.find(neighbor_id)->second = tmp_weight;
+				active.insert(make_pair(tmp_weight, neighbor_id));
+				if (sou_id == rootID)
+				{
+					nextHop.find(neighbor_id)->second = neighbor_id;
+				}
+				else
+				{
+					nextHop.find(neighbor_id)->second = nextHop.find(sou_id)->second;
+				}
+			}
+		}
+	}
+	return nextHop.find(targetID)->second;	
+}
 
 NodeId_t BFS(
 			 const NodeVec_t& N,
 			 Node*            root,
 			 NodeIfVec_t&     NextHop,
 			 NodeVec_t&       Parent,
-			 IPAddr_t         targetIP,
+			 //IPAddr_t         targetIP,
+			 IPAddr_t        targetIP,
 			 IPAddrVec_t&     aliases)
 /*
 描述：利用宽度优先遍历算法计算从根结点（源结点）到其它各结点的最短路径
@@ -179,6 +265,7 @@ NodeId_t BFS(
 						{
 							longestPrefix = uPrefix;
 							r = u->Id();//更好的路由
+							//targetIP = Node::GetNode(r)->GetIPAddr();
 							DEBUG(1, (cout<<"Found a better one  Routable!"<<endl));
 						}
 					} else
@@ -189,6 +276,7 @@ NodeId_t BFS(
 			if (localIP || localIf)
 			{ // Found the target
 				r = u->Id();
+				//targetIP = Node::GetNode(r)->GetIPAddr();
 #undef USE_ALIASES
 #ifdef USE_ALIASES
 				if (localIf)
@@ -263,7 +351,7 @@ NodeId_t BFS(
 						}
 					}
 				}
-
+				//targetIP = Node::GetNode(r)->GetIPAddr();
 				return r;
 			}
 		}
@@ -292,7 +380,6 @@ NodeId_t BFS(
 
 		if (!pruned) //
 		{
-
 			u->Neighbors(nwv, true); // Get neighbors, ignoring leaf nodes
 			DEBUG0((cout << "Number adj " << nwv.size() << endl));
 			DEBUG0((cout << "Neighbor count is " << nwv.size() << endl));
@@ -347,6 +434,7 @@ NodeId_t BFS(
 
 		Q.pop_front();
 	}
+	//targetIP = Node::GetNode(r)->GetIPAddr();
 	return r;
 }
 #endif
