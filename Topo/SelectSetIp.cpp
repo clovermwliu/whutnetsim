@@ -57,11 +57,84 @@
 //#define _alpha 0.2
 //#define _beta  0.2
 
+const Count_t maxsize = 16777216; //pow((double)2,(double)32)
+bool  CHostTopo::AddHosts(Count_t hnum)
+{  
+	if (route!=NULL)
+	{
+		routeIp = route->GetProxyIP();
+		moveBit  =32 - route->GetProxyMask().NBits();
+	}
+
+	//Count_t maxsize = pow((double)2,(double)32);
+	//vector<bool> test(maxsize,false);
+
+	for (Count_t i = 0;i<hnum;i++)
+	{
+		AddHost();
+	}
+	ips.clear();
+	return true;
+} 
+void CHostTopo::SetLocationViaBoundBox(const Location& BoundBoxLeftDown, 
+							           const Location& BoundBoxRightUpper
+							/*BoxType  type = DEFAULT*/)
+{
+	Meters_t  Xbound = BoundBoxRightUpper.X() - BoundBoxLeftDown.X();
+	Meters_t  Ybound = BoundBoxRightUpper.Y() - BoundBoxLeftDown.Y();
+	Meters_t   xstep = Xbound/(hostNum+1);
+
+	Meters_t	x = BoundBoxLeftDown.X();
+	Meters_t	y =  BoundBoxRightUpper.Y() - Ybound/2;
+	for (size_t i = 0;i<hostNum;i++)
+	{
+		hosts[i]->SetLocation(x,y);
+		x += xstep;
+	}
+}
+bool  CHostTopo::AddHost()
+{  
+	Node* newNode = new Node();
+	if (route!=NULL)
+	{
+		route ->AddDuplexLink(newNode);
+		//newNode->DefaultRoute(route);
+		newNode->IsHostNode(true);
+	
+
+	    Random * rngT = new Uniform(0, pow((double)2,(double)moveBit)-1);
+		while (1)
+		{
+			IPAddr_t SelectIP = rngT->IntValue();
+		   //IPAddr_t SelectIP = 0;
+
+			pair<map<IPAddr_t,int>::iterator,bool> ret = ips.insert(make_pair(SelectIP,-1));
+			if (ret.second)
+			{
+			    newNode->SetIPAddr(routeIp+SelectIP);
+				break;
+			}
+		}
+		delete rngT;
+	}
+	hostNum++;
+	hosts.push_back(newNode);
+	return true;
+}        
 CSelectSetIp::CSelectSetIp(NodeId_t _IpBits):CHiberTopoBase(),IpBits(_IpBits)
 {
 }
 CSelectSetIp::~CSelectSetIp(void)
 {
+}
+void CSelectSetIp::ClearIpHosts(void)
+{
+	for (size_t i = 0;i<hostLay.size();i++)
+	{
+		CHostTopo* hostLan = hostLay[i];
+		delete hostLan;
+ 	}
+	hostLay.clear();
 }
  bool CSelectSetIp::GenerateTopo()
 {
@@ -152,7 +225,22 @@ CSelectSetIp::~CSelectSetIp(void)
 			 needSetTopo->GetNode(nodenum)->IsRouteNode(true);
 		 }
 	 }
+	 return true;
+ }
+ bool CSelectSetIp::AutoSetRouteAllDomainRoute()
+ //自动设置默认路由，第一层的都设置为边界路由
+ {
+	 //最上面一层
+	 for(size_t  domain = 0;domain!=transitTopoVec.size();domain++)
+	 {
+		 CPlatTopoBase* needSetTopo = transitTopoVec[domain];
 
+		 for (NodeId_t nodenum=0;nodenum<needSetTopo->NodeCount();nodenum++)
+		 {
+			 needSetTopo->GetNode(nodenum)->SetDomainRoute(true);
+			 needSetTopo->GetNode(nodenum)->IsRouteNode(true);
+		 }
+	 }
 	 return true;
  }
  void CSelectSetIp::AutoSetTopoIP()
