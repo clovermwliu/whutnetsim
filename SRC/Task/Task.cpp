@@ -203,7 +203,20 @@ int CTask::InitTopo()
 		CTopoFileScript* topofile = new CTopoFileScript(topoScriptpath);
 		topofile->LoadFile();
 		topofile->CreateHiberTopo(cht);
+
+		//cht->ClearIpHosts();
+		cht->SetLocationViaBoundBox(Location(0,0),Location(300,300));
+		//cht->AutoSetTopoIP();
+		//cht->AutoSetDefaultRoute();
+		topofile->OutputTopo("outTopo.txt");
 		scritpVec.push_back(topofile);
+	}
+	else if ( style == "InputTopo")
+	{
+		CTopoFileScript* topofile = new CTopoFileScript(topoScriptpath);
+		topofile->LoadFile();
+
+		topofile->InputTopo(topoScriptpath);
 	}
 	
 	return GetLastError();
