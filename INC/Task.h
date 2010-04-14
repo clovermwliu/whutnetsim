@@ -119,7 +119,7 @@ public:
 
 	Time_t runtime; //仿真运行时间
 
-
+	static string currentAppType;
 
 };
 
