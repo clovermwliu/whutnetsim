@@ -80,7 +80,7 @@ void
 CGraph::clear(int clearType)
 //清除图，tTopo为TRUE表示清除其他信息保留拓扑，FALSE表示不保留拓扑
 /*
-0: 全部清除
+0: 全部清除(除了路由)
 1: 保留拓扑
 2: 保留拓扑和路由
 */

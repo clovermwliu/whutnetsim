@@ -2,6 +2,7 @@
 #include "StdAfx.h"
 #include "Test.h"
 #include "ShortestPath.h"
+#include "EfficientRoute.h"
 #include "GNRanTrafficEvent.h"
 #include "GNRanTrafficStrategy.h"
 #include "Scheduler_map.h"
@@ -22,7 +23,142 @@
 #define HIGH 10
 using namespace std;
 
-//int TestMain(const string str_ini_file)
+
+int TestMain(const string str_ini_file)//按照rate改变
+{
+	CWhuSimulatorApp* pRunApp;
+	pRunApp = (CWhuSimulatorApp*)AfxGetApp();
+	//Packet::OpenTracePacket("d://trace.txt");
+	CFileConfig iniFile(str_ini_file);
+	if ( iniFile.LoadFile() != SUCCESS_NO_ERROR )
+	{
+		//配置文件读取出错处理
+		SetLastError(ERROR_TASK_FILENOTEXSIT);
+		return 0;
+	}
+
+	//队列吞吐
+	CGenericConfigItem<double> _throughPut_A(iniFile,"Throughput","throughput_a");
+	double throughPut = _throughPut_A.MyValue();
+	pRunApp->graph->SetThroughPut(throughPut);
+
+	///链路cost、delay
+	CGenericConfigItem<double> _costDelayRanL(iniFile,"EdgeCostDelay","Low");
+	double Low = _costDelayRanL.MyValue();
+	CGenericConfigItem<double> _costDelayRanH(iniFile,"EdgeCostDelay","High");
+	double High = _costDelayRanH.MyValue();
+	pRunApp->graph->set_ran_cost_delay(Low, High);
+
+	// dat [7/23/2010 Administrator]
+	//批处理
+	CGenericConfigItem<int> _initR(iniFile,"Traffic","initR");
+	int initR = _initR.MyValue();
+	CGenericConfigItem<double> _step(iniFile,"Traffic","step");
+	double step = _step.MyValue();
+	CGenericConfigItem<int> _times(iniFile,"Traffic","times");
+	int times = _times.MyValue();
+
+	DEBUG3(GlobalVariable::out_debug_packet.open("c:\\debug_packet.txt"));
+	DEBUG4(GlobalVariable::out_eventlistSize.open("c:\\eventlistSize.txt"));
+
+	DEBUG4(GlobalVariable::out_time.open("c:\\windowSize.txt"));
+
+	DEBUG5(GlobalVariable::out_eventMapSize.open("c:\\eventMapSize.txt"));
+
+	DEBUG7(GlobalVariable::out_test_time.open("testTime.txt",std::ofstream::app));	
+
+	//读取路由rate信息
+	CGenericConfigItem<double> _routeB(iniFile,"Route","rate");
+	double rate = _routeB.MyValue();
+	CGenericConfigItem<double> _routebeta(iniFile,"Route","beta");
+	double beta= _routebeta.MyValue();
+	CGenericConfigItem<int> _routestr(iniFile,"Route","strategy");
+	int type= _routestr.MyValue();
+	ofstream outfile;
+	for (int i = 0;i<times;i++)
+	{
+		clock_t start = clock();			
+
+		int packetNum = initR;
+
+		//绑定路由
+		CRoute* r;
+		if (type==5)
+		{
+			rate += i*step;
+			outfile.open("d:\\detaLoader.txt",std::ofstream::app);
+			outfile<<"**************rate = "<<rate<<endl;
+			outfile.close();
+			r = new CShortOpti(rate); 
+			pRunApp->graph->NodeBoundRoute(r);
+		} 
+		else
+		{
+			beta += i*step;
+			outfile.open("d:\\detaLoader.txt",std::ofstream::app);
+			outfile<<"**************beta = "<<beta<<endl;
+			outfile.close();
+			r = new CEfficientPath(beta); 
+			pRunApp->graph->NodeBoundRoute(r);
+		}
+
+		//初始化事件队列
+		CEventBase* GNevent = new CGNRanTrafficEvent(packetNum);
+		// handler [8/3/2010 Administrator]
+		CHandler* pstart = new CGNRanTrafficStrategy();//流量事件一直用这个处理指针
+		GNevent->handler = pstart;
+		GNevent->Time(CSimulator::Now());
+		CScheduler_map::InsertEvent(GNevent);
+
+		//插入结束事件
+		CGenericConfigItem<int> _endTime(iniFile,"EndTime","endTime");
+		int endTime = _endTime.MyValue();
+		CEndEvent* Endevent = new CEndEvent();
+		CHandler* pend = new CEndEventStrategy();
+		Endevent->handler = pend;
+		Endevent->Time(endTime);
+		CScheduler_map::InsertEndEvent(Endevent);
+
+		//粒度
+		CGenericConfigItem<int> _initGran(iniFile,"MapInfo","GranP");
+		int GranP = _initGran.MyValue();
+		CScheduler_map::SetVecLaterSize(endTime, GranP);
+
+		CSimulator* s = new CSimulator();
+		s->Run();
+		pRunApp->graph->ClearNodeRoute();
+		delete s;
+		delete r;
+
+		delete pstart;
+		delete pend;
+
+		DEBUG4(GlobalVariable::out_eventlistSize<<"--------出、入队时间，路由时间，插入事件事件,总时间----"<<endl);
+		DEBUG4(GlobalVariable::out_eventlistSize<<GlobalVariable::enqueTime<<"  "<<GlobalVariable::routeTime<<"  "<<GlobalVariable::eventTime);
+
+		clock_t end = clock();	
+		DEBUG7(GlobalVariable::out_test_time<<"第" << i+1 << "次实验计时："<<(double)(end-start)/CLOCKS_PER_SEC <<endl);
+	}
+
+	DEBUG4(GlobalVariable::out_eventlistSize<<endl<<GlobalVariable::allEvents);
+
+	DEBUG4(GlobalVariable::out_eventlistSize.close());
+	DEBUG4(GlobalVariable::out_time.close());
+
+	//图中信息删除
+	// clear [8/2/2010 Administrator]
+	pRunApp->graph->clear(0);
+
+	DEBUG3(GlobalVariable::out_debug_packet.close());
+	DEBUG3(GlobalVariable::out_new.close());
+	DEBUG5(GlobalVariable::out_eventMapSize.close());
+	DEBUG8(GlobalVariable::out_loc.close());
+	//Packet::CloseTracePacket();
+	return 1;
+}
+
+//
+//int TestMain(const string str_ini_file)//按照packet改变
 //{
 //	CWhuSimulatorApp* pRunApp;
 //	pRunApp = (CWhuSimulatorApp*)AfxGetApp();
@@ -68,6 +204,12 @@ using namespace std;
 //			double a = _routeB.MyValue();
 //			r = new CShortOpti(a); 
 //		}
+//	case 6://有效路径
+//		{
+//			CGenericConfigItem<double> _routeB(iniFile,"Route","beta");
+//			double a = _routeB.MyValue();
+//			r = new CEfficientPath(a); 
+//		}
 //		break;
 //	default:break;
 //	}
@@ -110,11 +252,16 @@ using namespace std;
 //
 //	DEBUG7(GlobalVariable::out_test_time.open("testTime.txt",std::ofstream::app));	
 //	
+//    ofstream outfile;
 //	for (int i = 0;i<times;i++)
 //	{
-//		clock_t start = clock();			
-//
+//		clock_t start = clock();		
 //		int packetNum = initR+i*step;
+//
+//		outfile.open("d:\\detaLoader.txt",std::ofstream::app);
+//		outfile<<"**************packet= "<<packetNum<<endl;
+//		outfile.close();
+//
 //		//初始化事件队列
 //		CEventBase* GNevent = new CGNRanTrafficEvent(packetNum);
 //		// handler [8/3/2010 Administrator]
@@ -180,121 +327,3 @@ using namespace std;
 //	//Packet::CloseTracePacket();
 //	return 1;
 //}
-
-int TestMain(const string str_ini_file)//关怡萍
-{
-	CWhuSimulatorApp* pRunApp;
-	pRunApp = (CWhuSimulatorApp*)AfxGetApp();
-	//Packet::OpenTracePacket("d://trace.txt");
-	CFileConfig iniFile(str_ini_file);
-	if ( iniFile.LoadFile() != SUCCESS_NO_ERROR )
-	{
-		//配置文件读取出错处理
-		SetLastError(ERROR_TASK_FILENOTEXSIT);
-		return 0;
-	}
-
-	//队列吞吐
-	CGenericConfigItem<double> _throughPut_A(iniFile,"Throughput","throughput_a");
-	double throughPut = _throughPut_A.MyValue();
-	pRunApp->graph->SetThroughPut(throughPut);
-
-	///链路cost、delay
-	CGenericConfigItem<double> _costDelayRanL(iniFile,"EdgeCostDelay","Low");
-	double Low = _costDelayRanL.MyValue();
-	CGenericConfigItem<double> _costDelayRanH(iniFile,"EdgeCostDelay","High");
-	double High = _costDelayRanH.MyValue();
-	pRunApp->graph->set_ran_cost_delay(Low, High);
-
-	// dat [7/23/2010 Administrator]
-	//批处理
-	CGenericConfigItem<int> _initR(iniFile,"Traffic","initR");
-	int initR = _initR.MyValue();
-	CGenericConfigItem<double> _step(iniFile,"Traffic","step");
-	double step = _step.MyValue();
-	CGenericConfigItem<int> _times(iniFile,"Traffic","times");
-	int times = _times.MyValue();
-
-	DEBUG3(GlobalVariable::out_debug_packet.open("c:\\debug_packet.txt"));
-	DEBUG4(GlobalVariable::out_eventlistSize.open("c:\\eventlistSize.txt"));
-
-	DEBUG4(GlobalVariable::out_time.open("c:\\windowSize.txt"));
-
-	DEBUG5(GlobalVariable::out_eventMapSize.open("c:\\eventMapSize.txt"));
-
-	DEBUG7(GlobalVariable::out_test_time.open("testTime.txt",std::ofstream::app));	
-
-	//读取路由rate信息
-	CGenericConfigItem<double> _routeB(iniFile,"Route","rate");
-	double rate = _routeB.MyValue();
-	ofstream outfile;
-	for (int i = 0;i<times;i++)
-	{
-		clock_t start = clock();			
-
-		int packetNum = initR;
-
-		//绑定路由
-		CRoute* r;	
-		rate =+ i*step;
-		
-		outfile.open("d:\\detaLoader.txt",std::ofstream::app);
-		outfile<<"**************rate = "<<rate<<endl;
-		outfile.close();
-		r = new CShortOpti(rate); 
-		pRunApp->graph->NodeBoundRoute(r);
-
-		//初始化事件队列
-		CEventBase* GNevent = new CGNRanTrafficEvent(packetNum);
-		// handler [8/3/2010 Administrator]
-		CHandler* pstart = new CGNRanTrafficStrategy();//流量事件一直用这个处理指针
-		GNevent->handler = pstart;
-		GNevent->Time(CSimulator::Now());
-		CScheduler_map::InsertEvent(GNevent);
-
-		//插入结束事件
-		CGenericConfigItem<int> _endTime(iniFile,"EndTime","endTime");
-		int endTime = _endTime.MyValue();
-		CEndEvent* Endevent = new CEndEvent();
-		CHandler* pend = new CEndEventStrategy();
-		Endevent->handler = pend;
-		Endevent->Time(endTime);
-		CScheduler_map::InsertEndEvent(Endevent);
-
-		//粒度
-		CGenericConfigItem<int> _initGran(iniFile,"MapInfo","GranP");
-		int GranP = _initGran.MyValue();
-		CScheduler_map::SetVecLaterSize(endTime, GranP);
-
-		CSimulator* s = new CSimulator();
-		s->Run();
-		pRunApp->graph->ClearNodeRoute();
-		delete s;
-		delete r;
-
-		delete pstart;
-		delete pend;
-
-		DEBUG4(GlobalVariable::out_eventlistSize<<"--------出、入队时间，路由时间，插入事件事件,总时间----"<<endl);
-		DEBUG4(GlobalVariable::out_eventlistSize<<GlobalVariable::enqueTime<<"  "<<GlobalVariable::routeTime<<"  "<<GlobalVariable::eventTime);
-
-		clock_t end = clock();	
-		DEBUG7(GlobalVariable::out_test_time<<"第" << i+1 << "次实验计时："<<(double)(end-start)/CLOCKS_PER_SEC <<endl);
-	}
-
-	DEBUG4(GlobalVariable::out_eventlistSize<<endl<<GlobalVariable::allEvents);
-
-	DEBUG4(GlobalVariable::out_eventlistSize.close());
-	DEBUG4(GlobalVariable::out_time.close());
-
-	//图中信息删除
-	// clear [8/2/2010 Administrator]
-	pRunApp->graph->clear(0);
-
-	DEBUG3(GlobalVariable::out_debug_packet.close());
-	DEBUG3(GlobalVariable::out_new.close());
-	DEBUG5(GlobalVariable::out_eventMapSize.close());
-	DEBUG8(GlobalVariable::out_loc.close());
-	//Packet::CloseTracePacket();
-	return 1;
-}

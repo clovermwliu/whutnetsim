@@ -313,6 +313,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\EfficientRoute.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\IntegrateRoute.cpp"
 					>
 				</File>
@@ -504,6 +508,10 @@
 				>
 				<File
 					RelativePath=".\DegreeQueueRoute.h"
+					>
+				</File>
+				<File
+					RelativePath=".\EfficientRoute.h"
 					>
 				</File>
 				<File

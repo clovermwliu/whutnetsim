@@ -101,7 +101,8 @@ CEfficientPath::dijkstra()
 		{
 			NodeId_t nv_id = it->first;//ÁÚ¾Ó½áµãid
 
-			double new_cost = this_cost + this_node->get_neighbor_cost(nv_id);
+			double extra_cost = pow((double)pApp->graph->get_node(nv_id)->get_degree(), beta); 
+			double new_cost = this_cost + extra_cost;
 
 			map<NodeId_t, vector<CRouteEntry>>::iterator nv_it = _route_table.find(nv_id);
 
