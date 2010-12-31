@@ -34,7 +34,7 @@ void CGNRanTrafficStrategy::Handle(CEventBase* e, Time_t t)
 	{
 		//源节点、目的节点随机指定，产生包
 		NodeId_t src = CRandom::Random_U(0,pTrApp->graph->get_node_num()-1);//关怡萍
-        //NodeId_t src = 0;
+       // NodeId_t src = 0;
 		//NodeId_t des = 3;
 		NodeId_t des;
 		do 
